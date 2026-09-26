@@ -70,6 +70,15 @@ describe('extractKnownSkills', () => {
     expect(keys).toEqual(expect.arrayContaining(['react', 'nodejs', 'postgresql', 'aws', 'cicd', 'c++', 'c#']));
   });
 
+  it('matches ambiguous English words only when capitalized like the technology', () => {
+    expect(extractKnownSkills('APIs with Node and Express').map((s) => s.key)).toEqual(
+      expect.arrayContaining(['nodejs', 'express']),
+    );
+    const plain = extractKnownSkills('Able to express ideas clearly and node trees').map((s) => s.key);
+    expect(plain).not.toContain('express');
+    expect(plain).not.toContain('nodejs');
+  });
+
   it('does not match substrings or ambiguous short terms', () => {
     const keys = extractKnownSkills('Reactive programming and going to the javanese market').map(
       (s) => s.key,

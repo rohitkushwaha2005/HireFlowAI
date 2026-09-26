@@ -4,23 +4,19 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./seed": "./src/seed/fixtures.ts"
   },
   "scripts": {
     "generate": "dotenv -e ../../.env -- prisma generate",
     "migrate:dev": "dotenv -e ../../.env -- prisma migrate deploy",
     "migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
     "reset": "dotenv -e ../../.env -- prisma migrate reset --force",
-    "seed": "dotenv -e ../../.env -- tsx src/seed/index.ts",
     "studio": "dotenv -e ../../.env -- prisma studio",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
     "postinstall": "prisma generate",
     "migrate:new": "dotenv -e ../../.env -- node scripts/new-migration.mjs"
-  },
-  "prisma": {
-    "schema": "prisma/schema.prisma",
-    "seed": "tsx src/seed/index.ts"
   },
   "dependencies": {
     "@hireflow/shared": "workspace:*",

@@ -92,12 +92,12 @@ export const RELATED_SKILL_CREDIT = 0.5;
 /** Importance multiplier for required vs. preferred requirements. */
 export const REQUIRED_MULTIPLIER = 2;
 /**
- * Cosine similarity band mapped to 0–100 for the semantic component. Values are calibrated for
- * bge-small-en-v1.5, where unrelated professional texts sit around 0.45–0.55 and strong matches
- * reach 0.80+.
+ * Cosine similarity band mapped to 0–100 for the semantic component. Calibrated on the seed data
+ * for bge-small-en-v1.5 profile ↔ job-description pairs: unrelated roles sit around 0.60–0.65,
+ * adjacent roles 0.70–0.80 and strong matches 0.85–0.92.
  */
-export const SEMANTIC_FLOOR = 0.5;
-export const SEMANTIC_CEILING = 0.85;
+export const SEMANTIC_FLOOR = 0.6;
+export const SEMANTIC_CEILING = 0.9;
 
 export function normalizeWeights(weights: MatchingWeights): MatchingWeights {
   const entries = Object.entries(weights) as [keyof MatchingWeights, number][];

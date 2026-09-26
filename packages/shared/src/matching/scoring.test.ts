@@ -121,10 +121,10 @@ describe('scoreEducation', () => {
 describe('scoreSemantic', () => {
   it('maps the calibrated band to 0–100 and clamps outside it', () => {
     expect(scoreSemantic(0.3)).toBe(0);
-    expect(scoreSemantic(0.5)).toBe(0);
-    expect(scoreSemantic(0.85)).toBe(100);
+    expect(scoreSemantic(0.6)).toBe(0);
+    expect(scoreSemantic(0.9)).toBe(100);
     expect(scoreSemantic(0.99)).toBe(100);
-    expect(scoreSemantic(0.675)).toBe(50);
+    expect(scoreSemantic(0.75)).toBe(50);
   });
   it('is not applicable without similarity', () => {
     expect(scoreSemantic(null)).toBeNull();
@@ -159,7 +159,7 @@ describe('computeMatch', () => {
         totalExperienceYears: 5,
         highestEducation: 'BACHELOR',
       },
-      semanticSimilarity: 0.85,
+      semanticSimilarity: 0.9,
     });
     expect(result.overallScore).toBe(100);
     expect(result.matchedSkills).toEqual(['React', 'Node.js', 'PostgreSQL', 'AWS']);

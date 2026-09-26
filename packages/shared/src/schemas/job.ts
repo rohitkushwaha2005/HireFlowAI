@@ -15,6 +15,8 @@ export const jobRequirementInputSchema = z.object({
   required: z.boolean().default(true),
   weight: z.number().int().min(1).max(5).default(3),
   minimumYears: z.number().min(0).max(30).nullable().default(null),
+  /** True when the requirement came from AI analysis (kept even after recruiter edits). */
+  aiGenerated: z.boolean().default(false),
 });
 export type JobRequirementInput = z.infer<typeof jobRequirementInputSchema>;
 
@@ -43,10 +45,13 @@ const jobFieldsSchema = z.object({
   educationLevel: z.enum(EDUCATION_LEVELS).nullable().default(null),
   responsibilities: z.array(z.string().trim().min(1).max(300)).max(30).default([]),
   requirements: z.array(jobRequirementInputSchema).max(40).default([]),
+  /** Summary and keywords from AI analysis the recruiter reviewed in the editor. */
+  analysisSummary: z.string().trim().max(600).nullable().default(null),
+  keywords: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
 });
 
-const salaryRangeValid = (v: { salaryMin?: number | null; salaryMax?: number | null }) =>
-  v.salaryMin == null || v.salaryMax == null || v.salaryMin <= v.salaryMax;
+const salaryRangeValid = ({ salaryMin, salaryMax }: { salaryMin?: number | null; salaryMax?: number | null }) =>
+  typeof salaryMin !== 'number' || typeof salaryMax !== 'number' || salaryMin <= salaryMax;
 
 export const createJobSchema = jobFieldsSchema.refine(salaryRangeValid, {
   path: ['salaryMax'],
@@ -76,6 +81,8 @@ export const updateJobSchema = z
     educationLevel: z.enum(EDUCATION_LEVELS).nullable().optional(),
     responsibilities: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
     requirements: z.array(jobRequirementInputSchema).max(40).optional(),
+    analysisSummary: z.string().trim().max(600).nullable().optional(),
+    keywords: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   })
   .refine(salaryRangeValid, {
     path: ['salaryMax'],

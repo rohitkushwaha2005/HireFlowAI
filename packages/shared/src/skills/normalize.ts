@@ -22,7 +22,7 @@ export function skillKey(raw: string): string {
     .toLowerCase()
     .trim()
     .replace(/\(.*?\)/g, '')
-    .replace(/[\s._\-]+/g, '');
+    .replace(/[\s._-]+/g, '');
 }
 
 const ALIAS_INDEX: ReadonlyMap<string, string> = buildAliasIndex(SKILL_TAXONOMY);
@@ -95,14 +95,19 @@ export function skillDisplayName(key: string): string {
  */
 export function extractKnownSkills(text: string): NormalizedSkill[] {
   const haystack = ` ${text.toLowerCase().replace(/[^a-z0-9+#/.\s-]/g, ' ')} `;
+  const original = ` ${text.replace(/[^A-Za-z0-9+#/.\s-]/g, ' ')} `;
   const found = new Map<string, NormalizedSkill>();
 
   for (const [id, def] of Object.entries(SKILL_TAXONOMY)) {
     const candidates = [def.name, ...(def.aliases ?? [])];
     for (const candidate of candidates) {
       const needle = candidate.toLowerCase();
-      if (needle.length < 2 || AMBIGUOUS_TERMS.has(needle)) continue;
-      if (containsTerm(haystack, needle)) {
+      if (needle.length < 2 || NEVER_IN_FREE_TEXT.has(needle)) continue;
+      const matched = AMBIGUOUS_TERMS.has(needle)
+        ? // Ambiguous English words count only when capitalized like the technology ("Express", "Swift").
+          containsTerm(original, needle.charAt(0).toUpperCase() + needle.slice(1))
+        : containsTerm(haystack, needle);
+      if (matched) {
         found.set(id, { key: id, name: def.name, category: def.category, known: true });
         break;
       }
@@ -111,8 +116,8 @@ export function extractKnownSkills(text: string): NormalizedSkill[] {
   return [...found.values()];
 }
 
-/** Terms too ambiguous to detect in free text (they are fine as explicit skill entries). */
-const AMBIGUOUS_TERMS = new Set([
+/** Terms never detected in free text (too short or too generic); fine as explicit skill entries. */
+const NEVER_IN_FREE_TEXT = new Set([
   'c',
   'go',
   'r',
@@ -126,14 +131,9 @@ const AMBIGUOUS_TERMS = new Set([
   'ws',
   'rest',
   'next',
-  'node',
   'nest',
   'shell',
   'elastic',
-  'express',
-  'spring',
-  'swift',
-  'rails',
   'torch',
   'kanban',
   'lambda',
@@ -150,6 +150,9 @@ const AMBIGUOUS_TERMS = new Set([
   'unix',
   'rtk',
 ]);
+
+/** Common English words that are also technologies; matched only with canonical capitalization. */
+const AMBIGUOUS_TERMS = new Set(['node', 'express', 'spring', 'swift', 'rails', 'flask', 'figma', 'redux', 'vite', 'jest']);
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

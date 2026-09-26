@@ -25,7 +25,7 @@
     "db:generate": "pnpm --filter @hireflow/database generate",
     "db:migrate": "pnpm --filter @hireflow/database migrate:dev",
     "db:deploy": "pnpm --filter @hireflow/database migrate:deploy",
-    "db:seed": "pnpm --filter @hireflow/database seed",
+    "db:seed": "pnpm --filter @hireflow/api seed",
     "db:reset": "pnpm --filter @hireflow/database reset",
     "db:studio": "pnpm --filter @hireflow/database studio",
     "db:migration:new": "pnpm --filter @hireflow/database migrate:new"
