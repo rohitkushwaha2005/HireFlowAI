@@ -83,7 +83,7 @@ export const applicationListInclude = {
     },
   },
   match: { select: { overallScore: true, matchedSkills: true } },
-  resume: { select: { parsingStatus: true } },
+  resume: { select: { id: true, parsingStatus: true } },
   _count: { select: { interviews: true } },
 } satisfies Prisma.ApplicationInclude;
 export type ApplicationListRow = Prisma.ApplicationGetPayload<{

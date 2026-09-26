@@ -196,7 +196,7 @@ export class ResumeService {
   }
 
   /**
-   * A resume is readable by its owner, and by staff of an organization the candidate applied to.
+   * A resume is readable by its owner, and by staff of an organization it was submitted to.
    * Returns the organization id for staff access (for auditing).
    */
   private async assertCanRead(auth: AuthContext, resumeId: string): Promise<string | null> {
@@ -207,9 +207,10 @@ export class ResumeService {
       if (!own) throw new NotFoundError('Resume');
       return null;
     }
+    // Staff may only read resumes the candidate actually submitted to their organization.
     const access = await this.prisma.application.findFirst({
       where: {
-        candidate: { resumes: { some: { id: resumeId } } },
+        resumeId,
         job: { organization: { members: { some: { userId: auth.userId } } } },
       },
       select: { job: { select: { organizationId: true } } },

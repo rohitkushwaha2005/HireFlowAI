@@ -9,9 +9,11 @@ import {
   registerRecruiter,
   resetDatabase,
   tokenFromEmail,
+  uploadResume,
   type Session,
   type TestContext,
 } from '../helpers';
+import { CANDIDATES } from '@hireflow/database/seed';
 
 let ctx: TestContext;
 let orgA: Session;
@@ -108,6 +110,39 @@ describe('tenant isolation', () => {
       .set('X-Organization-Id', orgA.organizationId!)
       .expect(403);
     expect(res.body.error.message).toMatch(/not a member/);
+  });
+});
+
+describe('resume privacy', () => {
+  it('lets recruiters read only resumes submitted to their organization', async () => {
+    const applicant = await registerCandidate(ctx.app, 'private@example.com');
+    const submitted = await uploadResume(ctx.app, applicant, CANDIDATES[1]);
+    await request(ctx.app)
+      .post(`/api/jobs/${jobA.id}/applications`)
+      .set(auth(applicant))
+      .send({ resumeId: submitted })
+      .expect(201);
+    // A second resume that was never submitted anywhere.
+    const privateResume = await uploadResume(ctx.app, applicant, CANDIDATES[2]);
+
+    await request(ctx.app).get(`/api/resumes/${submitted}/download`).set(auth(orgA)).expect(200);
+    await request(ctx.app)
+      .get(`/api/resumes/${privateResume}/download`)
+      .set(auth(orgA))
+      .expect(404);
+    await request(ctx.app).get(`/api/resumes/${submitted}/download`).set(auth(orgB)).expect(404);
+    await request(ctx.app)
+      .get(`/api/resumes/${privateResume}/download`)
+      .set(auth(applicant))
+      .expect(200);
+
+    const candidateId = (await request(ctx.app).get('/api/candidates/me').set(auth(applicant))).body
+      .data.id;
+    const view = await request(ctx.app)
+      .get(`/api/candidates/${candidateId}`)
+      .set(auth(orgA))
+      .expect(200);
+    expect(view.body.data.profile.resumes.map((r: { id: string }) => r.id)).toEqual([submitted]);
   });
 });
 

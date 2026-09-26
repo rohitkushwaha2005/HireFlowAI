@@ -18,10 +18,11 @@ COPY packages packages
 COPY apps/api apps/api
 RUN pnpm --filter @hireflow/database generate && pnpm --filter @hireflow/api build
 # Self-contained production node_modules for the API package.
-RUN pnpm --filter @hireflow/api deploy --prod --legacy /out && \
+# The Prisma CLI is a runtime dependency (migrations on start), so no network access is needed later.
+RUN pnpm --filter @hireflow/api deploy --prod --ignore-scripts /out && \
     cp -r apps/api/dist /out/dist && \
     cp -r packages/database/prisma /out/prisma && \
-    cd /out && npx prisma@6 generate --schema prisma/schema.prisma
+    cd /out && ./node_modules/.bin/prisma generate --schema prisma/schema.prisma
 
 FROM node:22-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* \

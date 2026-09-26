@@ -68,16 +68,23 @@ services:
       context: .
       dockerfile: docker/api.Dockerfile
     env_file: .env
-    environment:
+    environment: &app-env
       NODE_ENV: production
+      # Local demo stack only: fixed secrets so `docker compose --profile app up` works out of the
+      # box. Real deployments must inject their own secrets (see docs/DEPLOYMENT.md).
+      JWT_SECRET: ${COMPOSE_JWT_SECRET:-local-compose-demo-access-secret-do-not-deploy}
+      JWT_REFRESH_SECRET: ${COMPOSE_JWT_REFRESH_SECRET:-local-compose-demo-refresh-secret-do-not-deploy}
+      WEB_URL: http://localhost:8080
+      API_URL: http://localhost:8080
+      TRUST_PROXY: 'true'
       DATABASE_URL: postgresql://hireflow:hireflow@postgres:5432/hireflow?schema=public
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT: http://s3:9000
+      EMAIL_PROVIDER: smtp
       SMTP_HOST: mailpit
       SMTP_PORT: '1025'
       EMBEDDING_CACHE_DIR: /app/.cache/models
-      RUN_MIGRATIONS: 'true'
-    command: ['node', 'dist/server.js']
+    command: ['sh', '-c', 'RUN_MIGRATIONS=true node dist/server.js']
     ports:
       - '4000:4000'
     volumes:
@@ -107,14 +114,7 @@ services:
       context: .
       dockerfile: docker/api.Dockerfile
     env_file: .env
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://hireflow:hireflow@postgres:5432/hireflow?schema=public
-      REDIS_URL: redis://redis:6379
-      S3_ENDPOINT: http://s3:9000
-      SMTP_HOST: mailpit
-      SMTP_PORT: '1025'
-      EMBEDDING_CACHE_DIR: /app/.cache/models
+    environment: *app-env
     command: ['node', 'dist/worker.js']
     volumes:
       - model-cache:/app/.cache/models

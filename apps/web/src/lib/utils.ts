@@ -68,3 +68,16 @@ export function pluralize(count: number, singular: string, plural = `${singular}
 export function initialsOf(first: string, last: string): string {
   return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
 }
+
+/** Returns the URL only if it is http(s); guards every user/AI-provided href (defense in depth). */
+export function safeHref(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+      ? parsed.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}

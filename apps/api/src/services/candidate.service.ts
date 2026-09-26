@@ -489,13 +489,16 @@ export class CandidateService {
       }),
     ]);
 
+    const dto = toCandidateProfileDto(profile);
+    const submitted = new Set(applications.map((a) => a.resume?.id).filter(Boolean));
     await this.audit.recordQuietly(actor, {
       action: 'CANDIDATE_VIEWED',
       entityType: 'Candidate',
       entityId: candidateId,
     });
     return {
-      profile: toCandidateProfileDto(profile),
+      // Only resumes submitted to this organization are visible to it.
+      profile: { ...dto, resumes: dto.resumes.filter((r) => submitted.has(r.id)) },
       applications: applications.map(toApplicationListItemDto),
       interviews: interviews.map(toInterviewDto),
     };

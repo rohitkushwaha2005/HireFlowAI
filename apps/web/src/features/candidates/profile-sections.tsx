@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { EDUCATION_LEVEL_LABELS, type CandidateProfileDto } from '@hireflow/shared';
 import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
-import { formatMonthYear, formatYears } from '@/lib/utils';
+import { formatMonthYear, formatYears, safeHref } from '@/lib/utils';
 
 function period(start: string | null, end: string | null, current = false) {
   return `${formatMonthYear(start)} – ${current ? 'Present' : end ? formatMonthYear(end) : '—'}`;
@@ -24,7 +24,9 @@ export function ContactLinks({ profile }: { profile: CandidateProfileDto }) {
     { href: profile.linkedinUrl, label: 'LinkedIn', icon: Link2 },
     { href: profile.githubUrl, label: 'GitHub', icon: CodeXml },
     { href: profile.portfolioUrl, label: 'Portfolio', icon: Globe },
-  ].filter((l) => l.href);
+  ]
+    .map((l) => ({ ...l, href: safeHref(l.href) }))
+    .filter((l) => l.href);
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
       <a
@@ -46,7 +48,7 @@ export function ContactLinks({ profile }: { profile: CandidateProfileDto }) {
       {links.map((l) => (
         <a
           key={l.label}
-          href={l.href!}
+          href={l.href}
           target="_blank"
           rel="noopener noreferrer nofollow"
           className="flex items-center gap-1.5 hover:text-foreground"
@@ -172,9 +174,9 @@ export function ProjectsCard({ profile }: { profile: CandidateProfileDto }) {
         {profile.projects.map((p) => (
           <div key={p.id}>
             <p className="font-medium">
-              {p.url ? (
+              {safeHref(p.url) ? (
                 <a
-                  href={p.url}
+                  href={safeHref(p.url)}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="hover:text-primary"

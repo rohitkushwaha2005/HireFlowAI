@@ -395,7 +395,7 @@ export function toApplicationDetailDto(row: ApplicationDetailRow): ApplicationDe
       match: row.match
         ? { overallScore: row.match.overallScore, matchedSkills: row.match.matchedSkills }
         : null,
-      resume: row.resume ? { parsingStatus: row.resume.parsingStatus } : null,
+      resume: row.resume ? { id: row.resume.id, parsingStatus: row.resume.parsingStatus } : null,
     }),
     coverLetter: row.coverLetter,
     resume: row.resume ? toResumeDto(row.resume) : null,

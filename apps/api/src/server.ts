@@ -12,9 +12,14 @@ async function main(): Promise<void> {
 
   if (config.runMigrations) {
     logger.info('Applying database migrations');
-    execFileSync('npx', ['prisma', 'migrate', 'deploy', '--schema', 'prisma/schema.prisma'], {
-      stdio: 'inherit',
-    });
+    // Uses the Prisma CLI installed as a runtime dependency (never downloaded at runtime).
+    execFileSync(
+      'node_modules/.bin/prisma',
+      ['migrate', 'deploy', '--schema', 'prisma/schema.prisma'],
+      {
+        stdio: 'inherit',
+      },
+    );
   }
 
   const container = buildContainer(config, logger);

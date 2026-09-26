@@ -84,6 +84,25 @@ const cap = (value: string | null, max: number): string | null => {
   return trimmed ? trimmed.slice(0, max) : null;
 };
 
+/**
+ * Links extracted from untrusted resumes are rendered as hrefs in the recruiter UI, so only plain
+ * http(s) URLs survive (a crafted PDF must not be able to plant `javascript:` or `data:` links).
+ * Scheme-less values such as "github.com/x" are upgraded to https.
+ */
+export function safeHttpUrl(value: string | null): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed.length > 500) return null;
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    if (!url.hostname.includes('.')) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 const finiteOrNull = (value: number | null, min: number, max: number): number | null =>
   value !== null && Number.isFinite(value) && value >= min && value <= max
     ? Math.round(value * 10) / 10
@@ -133,18 +152,18 @@ export function sanitizeResumeAnalysis(analysis: ResumeAnalysis): ResumeAnalysis
       name: p.name.trim().slice(0, 120) || 'Project',
       description: cap(p.description, 2000),
       technologies: [...new Set(p.technologies.map((t) => t.trim()).filter(Boolean))].slice(0, 20),
-      url: cap(p.url, 500),
+      url: safeHttpUrl(p.url),
     })),
     certifications: [...new Set(analysis.certifications.map((c) => c.trim()).filter(Boolean))]
       .map((c) => c.slice(0, 160))
       .slice(0, 30),
     links: {
-      portfolio: cap(analysis.links.portfolio, 500),
-      linkedin: cap(analysis.links.linkedin, 500),
-      github: cap(analysis.links.github, 500),
+      portfolio: safeHttpUrl(analysis.links.portfolio),
+      linkedin: safeHttpUrl(analysis.links.linkedin),
+      github: safeHttpUrl(analysis.links.github),
       other: analysis.links.other
-        .map((l) => l.trim().slice(0, 500))
-        .filter(Boolean)
+        .map((l) => safeHttpUrl(l))
+        .filter((l): l is string => l !== null)
         .slice(0, 10),
     },
   };

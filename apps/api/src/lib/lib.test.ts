@@ -6,7 +6,7 @@ import {
   meanPool,
   toVectorLiteral,
 } from '../ai/embeddings';
-import { sanitizeJobAnalysis, sanitizeResumeAnalysis } from '../ai/ai-service';
+import { safeHttpUrl, sanitizeJobAnalysis, sanitizeResumeAnalysis } from '../ai/ai-service';
 import { parseToolInput } from '../ai/copilot/toolbox';
 import { verifyReferences } from '../services/copilot.service';
 import { durationToSeconds, loadConfig } from '../config/env';
@@ -112,6 +112,21 @@ describe('AI output sanitization', () => {
     });
     expect(result.requiredSkills[0]!.weight).toBe(5);
     expect(result.preferredSkills).toEqual([]);
+  });
+});
+
+describe('safeHttpUrl', () => {
+  it('keeps http(s) links and upgrades scheme-less ones', () => {
+    expect(safeHttpUrl('github.com/ada')).toBe('https://github.com/ada');
+    expect(safeHttpUrl('http://example.com/x')).toBe('http://example.com/x');
+  });
+  it('drops dangerous or malformed links from untrusted resumes', () => {
+    expect(safeHttpUrl('javascript:alert(1)')).toBeNull();
+    expect(safeHttpUrl('JaVaScRiPt:alert(1)')).toBeNull();
+    expect(safeHttpUrl('data:text/html,<script>alert(1)</script>')).toBeNull();
+    expect(safeHttpUrl('vbscript:msgbox')).toBeNull();
+    expect(safeHttpUrl('not a url')).toBeNull();
+    expect(safeHttpUrl('')).toBeNull();
   });
 });
 
