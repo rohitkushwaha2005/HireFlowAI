@@ -56,7 +56,11 @@ export type JobHandlers = { [K in JobName]: (payload: JobPayloads[K]) => Promise
 
 /** Producer-side abstraction. Services depend on this, never on BullMQ directly. */
 export interface JobDispatcher {
-  dispatch<K extends JobName>(name: K, payload: JobPayloads[K], options?: DispatchOptions): Promise<void>;
+  dispatch<K extends JobName>(
+    name: K,
+    payload: JobPayloads[K],
+    options?: DispatchOptions,
+  ): Promise<void>;
   close(): Promise<void>;
 }
 

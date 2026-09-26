@@ -1,11 +1,25 @@
 import { useNavigate } from 'react-router';
 import type { ApplicationListItemDto } from '@hireflow/shared';
 import { ApplicationStatusBadge, ScoreBadge } from '@/components/domain';
-import { Avatar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import {
+  Avatar,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
 import { formatDate, formatYears, initialsOf } from '@/lib/utils';
 
 /** Recruiter application list, ranked by match score when sorted that way. */
-export function ApplicationTable({ items, showJob = true }: { items: ApplicationListItemDto[]; showJob?: boolean }) {
+export function ApplicationTable({
+  items,
+  showJob = true,
+}: {
+  items: ApplicationListItemDto[];
+  showJob?: boolean;
+}) {
   const navigate = useNavigate();
   return (
     <Table>
@@ -21,10 +35,17 @@ export function ApplicationTable({ items, showJob = true }: { items: Application
       </TableHeader>
       <TableBody>
         {items.map((app) => (
-          <TableRow key={app.id} className="cursor-pointer" onClick={() => navigate(`/app/applications/${app.id}`)}>
+          <TableRow
+            key={app.id}
+            className="cursor-pointer"
+            onClick={() => navigate(`/app/applications/${app.id}`)}
+          >
             <TableCell>
               <div className="flex items-center gap-3">
-                <Avatar fallback={initialsOf(app.candidate.firstName, app.candidate.lastName)} className="size-8" />
+                <Avatar
+                  fallback={initialsOf(app.candidate.firstName, app.candidate.lastName)}
+                  className="size-8"
+                />
                 <div className="min-w-0">
                   <a
                     href={`/app/applications/${app.id}`}
@@ -36,19 +57,29 @@ export function ApplicationTable({ items, showJob = true }: { items: Application
                   >
                     {app.candidate.firstName} {app.candidate.lastName}
                   </a>
-                  <p className="truncate text-xs text-muted-foreground">{app.candidate.headline ?? app.candidate.email}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {app.candidate.headline ?? app.candidate.email}
+                  </p>
                 </div>
               </div>
             </TableCell>
-            {showJob && <TableCell className="hidden text-muted-foreground md:table-cell">{app.job.title}</TableCell>}
+            {showJob && (
+              <TableCell className="hidden text-muted-foreground md:table-cell">
+                {app.job.title}
+              </TableCell>
+            )}
             <TableCell className="text-center">
               <ScoreBadge score={app.overallScore} pending={app.matchStatus === 'PENDING'} />
             </TableCell>
             <TableCell>
               <ApplicationStatusBadge status={app.status} />
             </TableCell>
-            <TableCell className="hidden text-muted-foreground lg:table-cell">{formatYears(app.candidate.totalExperience)}</TableCell>
-            <TableCell className="hidden text-muted-foreground sm:table-cell">{formatDate(app.appliedAt)}</TableCell>
+            <TableCell className="hidden text-muted-foreground lg:table-cell">
+              {formatYears(app.candidate.totalExperience)}
+            </TableCell>
+            <TableCell className="hidden text-muted-foreground sm:table-cell">
+              {formatDate(app.appliedAt)}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

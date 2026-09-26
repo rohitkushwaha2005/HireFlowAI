@@ -45,7 +45,8 @@ import type {
 } from '../repositories/includes';
 
 const iso = (date: Date): string => date.toISOString();
-const isoOrNull = (date: Date | null | undefined): string | null => (date ? date.toISOString() : null);
+const isoOrNull = (date: Date | null | undefined): string | null =>
+  date ? date.toISOString() : null;
 const name = (person: { firstName: string; lastName: string }) => fullName(person);
 
 export function toUserDto(user: UserPublic): UserDto {
@@ -160,7 +161,10 @@ export function toPublicJobDto(job: PublicJob): PublicJobDto {
     currency: job.currency,
     publishedAt: isoOrNull(job.publishedAt),
     organization: job.organization,
-    skills: job.requirements.filter((r) => r.required).slice(0, 6).map((r) => r.skill),
+    skills: job.requirements
+      .filter((r) => r.required)
+      .slice(0, 6)
+      .map((r) => r.skill),
   };
 }
 
@@ -270,7 +274,10 @@ export function toCandidateProfileDto(profile: CandidateProfileFull): CandidateP
   };
 }
 
-function matchStatus(row: { match: unknown; resume: { parsingStatus: string } | null }): ApplicationListItemDto['matchStatus'] {
+function matchStatus(row: {
+  match: unknown;
+  resume: { parsingStatus: string } | null;
+}): ApplicationListItemDto['matchStatus'] {
   if (row.match) return 'READY';
   if (!row.resume || row.resume.parsingStatus === 'FAILED') return 'UNAVAILABLE';
   return 'PENDING';
@@ -314,7 +321,9 @@ export function toMatchDto(match: CandidateMatch): MatchDto {
     explanation: match.explanation,
     highlights: match.highlights,
     concerns: match.concerns,
-    requirements: (Array.isArray(match.details) ? match.details : []) as unknown as RequirementBreakdown[],
+    requirements: (Array.isArray(match.details)
+      ? match.details
+      : []) as unknown as RequirementBreakdown[],
     weights: parseWeights(match.weights),
     createdAt: iso(match.createdAt),
     updatedAt: iso(match.updatedAt),
@@ -383,7 +392,9 @@ export function toApplicationDetailDto(row: ApplicationDetailRow): ApplicationDe
   return {
     ...toApplicationListItemDto({
       ...row,
-      match: row.match ? { overallScore: row.match.overallScore, matchedSkills: row.match.matchedSkills } : null,
+      match: row.match
+        ? { overallScore: row.match.overallScore, matchedSkills: row.match.matchedSkills }
+        : null,
       resume: row.resume ? { parsingStatus: row.resume.parsingStatus } : null,
     }),
     coverLetter: row.coverLetter,

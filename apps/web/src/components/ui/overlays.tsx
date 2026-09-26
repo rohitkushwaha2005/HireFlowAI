@@ -1,4 +1,10 @@
-import { AlertDialog as AlertDialogPrimitive, Dialog as DialogPrimitive, DropdownMenu as DropdownMenuPrimitive, Popover as PopoverPrimitive, Tooltip as TooltipPrimitive } from 'radix-ui';
+import {
+  AlertDialog as AlertDialogPrimitive,
+  Dialog as DialogPrimitive,
+  DropdownMenu as DropdownMenuPrimitive,
+  Popover as PopoverPrimitive,
+  Tooltip as TooltipPrimitive,
+} from 'radix-ui';
 import { X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
@@ -18,7 +24,9 @@ export function DialogContent({
   children,
   size = 'md',
   ...props
-}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { size?: 'sm' | 'md' | 'lg' | 'xl' }) {
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}) {
   const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
   return (
     <DialogPrimitive.Portal>
@@ -45,17 +53,38 @@ export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLD
   return <div className={cn('flex flex-col gap-1.5 pr-6', className)} {...props} />;
 }
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)} {...props} />;
+  return (
+    <div
+      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
+      {...props}
+    />
+  );
 }
-export function DialogTitle({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
+export function DialogTitle({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return <DialogPrimitive.Title className={cn('text-lg font-semibold', className)} {...props} />;
 }
-export function DialogDescription({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn('text-sm text-muted-foreground', className)} {...props} />;
+export function DialogDescription({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
+  return (
+    <DialogPrimitive.Description
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  );
 }
 
 /** Sheet: dialog anchored to the side of the screen (mobile navigation, detail panes). */
-export function SheetContent({ className, children, side = 'left', ...props }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { side?: 'left' | 'right' }) {
+export function SheetContent({
+  className,
+  children,
+  side = 'left',
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { side?: 'left' | 'right' }) {
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className={overlayClass} />
@@ -82,7 +111,10 @@ export function SheetContent({ className, children, side = 'left', ...props }: R
 export const AlertDialog = AlertDialogPrimitive.Root;
 export const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
-export function AlertDialogContent({ className, ...props }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>) {
+export function AlertDialogContent({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>) {
   return (
     <AlertDialogPrimitive.Portal>
       <AlertDialogPrimitive.Overlay className={overlayClass} />
@@ -96,14 +128,29 @@ export function AlertDialogContent({ className, ...props }: React.ComponentProps
     </AlertDialogPrimitive.Portal>
   );
 }
-export const AlertDialogTitle = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>) => (
+export const AlertDialogTitle = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>) => (
   <AlertDialogPrimitive.Title className={cn('text-lg font-semibold', className)} {...props} />
 );
-export const AlertDialogDescription = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>) => (
-  <AlertDialogPrimitive.Description className={cn('text-sm text-muted-foreground', className)} {...props} />
+export const AlertDialogDescription = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>) => (
+  <AlertDialogPrimitive.Description
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
+  />
 );
-export const AlertDialogCancel = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>) => (
-  <AlertDialogPrimitive.Cancel className={cn(buttonVariants({ variant: 'outline' }), className)} {...props} />
+export const AlertDialogCancel = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel>) => (
+  <AlertDialogPrimitive.Cancel
+    className={cn(buttonVariants({ variant: 'outline' }), className)}
+    {...props}
+  />
 );
 export const AlertDialogAction = AlertDialogPrimitive.Action;
 
@@ -112,20 +159,32 @@ export const AlertDialogAction = AlertDialogPrimitive.Action;
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
-export function DropdownMenuContent({ className, sideOffset = 6, align = 'end', ...props }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>) {
+export function DropdownMenuContent({
+  className,
+  sideOffset = 6,
+  align = 'end',
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>) {
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         sideOffset={sideOffset}
         align={align}
-        className={cn('z-50 min-w-44 overflow-hidden rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg', className)}
+        className={cn(
+          'z-50 min-w-44 overflow-hidden rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg',
+          className,
+        )}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
   );
 }
 
-export function DropdownMenuItem({ className, destructive, ...props }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { destructive?: boolean }) {
+export function DropdownMenuItem({
+  className,
+  destructive,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { destructive?: boolean }) {
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
@@ -137,23 +196,47 @@ export function DropdownMenuItem({ className, destructive, ...props }: React.Com
     />
   );
 }
-export const DropdownMenuLabel = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>) => (
-  <DropdownMenuPrimitive.Label className={cn('px-2 py-1.5 text-xs font-medium text-muted-foreground', className)} {...props} />
+export const DropdownMenuLabel = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label>) => (
+  <DropdownMenuPrimitive.Label
+    className={cn('px-2 py-1.5 text-xs font-medium text-muted-foreground', className)}
+    {...props}
+  />
 );
-export const DropdownMenuSeparator = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>) => (
-  <DropdownMenuPrimitive.Separator className={cn('-mx-1 my-1 h-px bg-border', className)} {...props} />
+export const DropdownMenuSeparator = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>) => (
+  <DropdownMenuPrimitive.Separator
+    className={cn('-mx-1 my-1 h-px bg-border', className)}
+    {...props}
+  />
 );
 
 // ── Tooltip / Popover ───────────────────────────────────────────────────────
 
 export const TooltipProvider = TooltipPrimitive.Provider;
 
-export function Tooltip({ content, children, side = 'top' }: { content: React.ReactNode; children: React.ReactNode; side?: 'top' | 'bottom' | 'left' | 'right' }) {
+export function Tooltip({
+  content,
+  children,
+  side = 'top',
+}: {
+  content: React.ReactNode;
+  children: React.ReactNode;
+  side?: 'top' | 'bottom' | 'left' | 'right';
+}) {
   return (
     <TooltipPrimitive.Root delayDuration={200}>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
-        <TooltipPrimitive.Content side={side} sideOffset={6} className="z-50 max-w-xs rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-md">
+        <TooltipPrimitive.Content
+          side={side}
+          sideOffset={6}
+          className="z-50 max-w-xs rounded-md bg-foreground px-2.5 py-1.5 text-xs text-background shadow-md"
+        >
           {content}
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
@@ -163,13 +246,21 @@ export function Tooltip({ content, children, side = 'top' }: { content: React.Re
 
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
-export function PopoverContent({ className, align = 'start', sideOffset = 6, ...props }: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>) {
+export function PopoverContent({
+  className,
+  align = 'start',
+  sideOffset = 6,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
         align={align}
         sideOffset={sideOffset}
-        className={cn('z-50 w-72 rounded-lg border bg-popover p-4 text-popover-foreground shadow-lg', className)}
+        className={cn(
+          'z-50 w-72 rounded-lg border bg-popover p-4 text-popover-foreground shadow-lg',
+          className,
+        )}
         {...props}
       />
     </PopoverPrimitive.Portal>

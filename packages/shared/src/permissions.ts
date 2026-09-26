@@ -79,4 +79,8 @@ export function isStaffRole(role: UserRole): boolean {
 }
 
 /** Org roles that may be assigned by someone holding `team:manage`. OWNER is transferred, not assigned. */
-export const ASSIGNABLE_ORG_ROLES = ['ADMIN', 'RECRUITER', 'HIRING_MANAGER'] as const satisfies readonly OrgRole[];
+export const ASSIGNABLE_ORG_ROLES = [
+  'ADMIN',
+  'RECRUITER',
+  'HIRING_MANAGER',
+] as const satisfies readonly OrgRole[];

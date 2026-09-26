@@ -50,8 +50,13 @@ const jobFieldsSchema = z.object({
   keywords: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
 });
 
-const salaryRangeValid = ({ salaryMin, salaryMax }: { salaryMin?: number | null; salaryMax?: number | null }) =>
-  typeof salaryMin !== 'number' || typeof salaryMax !== 'number' || salaryMin <= salaryMax;
+const salaryRangeValid = ({
+  salaryMin,
+  salaryMax,
+}: {
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+}) => typeof salaryMin !== 'number' || typeof salaryMax !== 'number' || salaryMin <= salaryMax;
 
 export const createJobSchema = jobFieldsSchema.refine(salaryRangeValid, {
   path: ['salaryMax'],

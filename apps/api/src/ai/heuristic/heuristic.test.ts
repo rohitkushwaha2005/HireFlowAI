@@ -49,8 +49,20 @@ describe('heuristic resume parser', () => {
 
   it('extracts dated work experience with current role', () => {
     expect(parsed.workExperience).toEqual([
-      expect.objectContaining({ title: 'Senior Backend Engineer', company: 'Example Payments', startDate: '2021-01', endDate: null, current: true }),
-      expect.objectContaining({ title: 'Backend Developer', company: 'Sample Corp', startDate: '2018-06', endDate: '2020-12', current: false }),
+      expect.objectContaining({
+        title: 'Senior Backend Engineer',
+        company: 'Example Payments',
+        startDate: '2021-01',
+        endDate: null,
+        current: true,
+      }),
+      expect.objectContaining({
+        title: 'Backend Developer',
+        company: 'Sample Corp',
+        startDate: '2018-06',
+        endDate: '2020-12',
+        current: false,
+      }),
     ]);
     expect(parsed.currentRole).toBe('Senior Backend Engineer');
     expect(parsed.totalExperienceYears).toBeGreaterThan(7);
@@ -67,7 +79,18 @@ describe('heuristic resume parser', () => {
 
   it('combines listed and mentioned skills and derives years from dated roles', () => {
     const skills = new Map(parsed.skills.map((s) => [s.name, s.yearsExperience]));
-    expect([...skills.keys()]).toEqual(expect.arrayContaining(['TypeScript', 'Python', 'Docker', 'AWS', 'Node.js', 'PostgreSQL', 'Kafka', 'Django']));
+    expect([...skills.keys()]).toEqual(
+      expect.arrayContaining([
+        'TypeScript',
+        'Python',
+        'Docker',
+        'AWS',
+        'Node.js',
+        'PostgreSQL',
+        'Kafka',
+        'Django',
+      ]),
+    );
     expect(skills.get('Node.js')).toBeGreaterThan(5);
     expect(skills.get('Docker')).toBeNull();
   });
@@ -124,7 +147,9 @@ This is a fully remote, full-time role.`,
   );
 
   it('separates required and preferred skills', () => {
-    expect(analysis.requiredSkills.map((s) => s.skill)).toEqual(expect.arrayContaining(['React', 'TypeScript', 'GraphQL']));
+    expect(analysis.requiredSkills.map((s) => s.skill)).toEqual(
+      expect.arrayContaining(['React', 'TypeScript', 'GraphQL']),
+    );
     expect(analysis.preferredSkills.map((s) => s.skill)).toEqual(['AWS']);
   });
 
@@ -153,7 +178,14 @@ This is a fully remote, full-time role.`,
 describe('heuristic interview generator', () => {
   it('produces balanced, data-grounded questions', () => {
     const questions = generateQuestionsHeuristically({
-      job: { title: 'Backend Engineer', description: '', requirements: [{ skill: 'Go', required: true, minimumYears: null }, { skill: 'PostgreSQL', required: true, minimumYears: null }] },
+      job: {
+        title: 'Backend Engineer',
+        description: '',
+        requirements: [
+          { skill: 'Go', required: true, minimumYears: null },
+          { skill: 'PostgreSQL', required: true, minimumYears: null },
+        ],
+      },
       candidate: {
         headline: null,
         summary: null,

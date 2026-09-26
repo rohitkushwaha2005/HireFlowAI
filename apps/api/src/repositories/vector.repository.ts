@@ -43,7 +43,11 @@ export class VectorRepository {
       UPDATE resumes SET embedding = ${literal}::vector, "embeddedAt" = NOW() WHERE id = ${resumeId}`;
   }
 
-  async setJobEmbeddings(jobId: string, description: number[], requirements: number[] | null): Promise<void> {
+  async setJobEmbeddings(
+    jobId: string,
+    description: number[],
+    requirements: number[] | null,
+  ): Promise<void> {
     const desc = toVectorLiteral(description);
     const reqs = requirements ? toVectorLiteral(requirements) : null;
     await this.prisma.$executeRaw`
@@ -124,7 +128,10 @@ export class VectorRepository {
   }
 
   /** Published jobs most similar to a candidate profile (candidate dashboard recommendations). */
-  async recommendJobs(candidateId: string, limit: number): Promise<Array<{ jobId: string; similarity: number }>> {
+  async recommendJobs(
+    candidateId: string,
+    limit: number,
+  ): Promise<Array<{ jobId: string; similarity: number }>> {
     const rows = await this.prisma.$queryRaw<Array<{ id: string; similarity: number }>>`
       SELECT j.id, (1 - (j.embedding <=> cp.embedding))::float8 AS similarity
       FROM jobs j, candidate_profiles cp
@@ -138,7 +145,9 @@ export class VectorRepository {
 
   private filterSql(filters: CandidateSearchFilters): Prisma.Sql {
     const clauses: Prisma.Sql[] = [];
-    const appliedClauses: Prisma.Sql[] = [Prisma.sql`j."organizationId" = ${filters.organizationId}`];
+    const appliedClauses: Prisma.Sql[] = [
+      Prisma.sql`j."organizationId" = ${filters.organizationId}`,
+    ];
     if (filters.jobId) appliedClauses.push(Prisma.sql`a."jobId" = ${filters.jobId}`);
     if (filters.statuses?.length) {
       appliedClauses.push(Prisma.sql`a.status::text IN (${Prisma.join(filters.statuses)})`);

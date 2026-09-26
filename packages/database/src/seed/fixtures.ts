@@ -27,9 +27,30 @@ export interface StaffFixture {
 }
 
 export const STAFF: StaffFixture[] = [
-  { key: 'owner', email: `recruiter@${DEMO_EMAIL_DOMAIN}`, firstName: 'Riley', lastName: 'Morgan', globalRole: 'RECRUITER', orgRole: 'OWNER' },
-  { key: 'recruiter2', email: `casey.nguyen@${DEMO_EMAIL_DOMAIN}`, firstName: 'Casey', lastName: 'Nguyen', globalRole: 'RECRUITER', orgRole: 'RECRUITER' },
-  { key: 'manager', email: `hiring.manager@${DEMO_EMAIL_DOMAIN}`, firstName: 'Taylor', lastName: 'Brooks', globalRole: 'HIRING_MANAGER', orgRole: 'HIRING_MANAGER' },
+  {
+    key: 'owner',
+    email: `recruiter@${DEMO_EMAIL_DOMAIN}`,
+    firstName: 'Riley',
+    lastName: 'Morgan',
+    globalRole: 'RECRUITER',
+    orgRole: 'OWNER',
+  },
+  {
+    key: 'recruiter2',
+    email: `casey.nguyen@${DEMO_EMAIL_DOMAIN}`,
+    firstName: 'Casey',
+    lastName: 'Nguyen',
+    globalRole: 'RECRUITER',
+    orgRole: 'RECRUITER',
+  },
+  {
+    key: 'manager',
+    email: `hiring.manager@${DEMO_EMAIL_DOMAIN}`,
+    firstName: 'Taylor',
+    lastName: 'Brooks',
+    globalRole: 'HIRING_MANAGER',
+    orgRole: 'HIRING_MANAGER',
+  },
 ];
 
 export type JobKey = 'frontend' | 'backend' | 'fullstack' | 'ai' | 'devops' | 'analyst';
@@ -253,7 +274,11 @@ Requirements:
 
 Nice to have:
 - Observability with Prometheus and Grafana`,
-    responsibilities: ['Operate Kubernetes clusters', 'Codify infrastructure with Terraform', 'Own CI/CD pipelines'],
+    responsibilities: [
+      'Operate Kubernetes clusters',
+      'Codify infrastructure with Terraform',
+      'Own CI/CD pipelines',
+    ],
     requirements: [
       { skill: 'Kubernetes', category: 'DEVOPS', required: true, weight: 5 },
       { skill: 'Terraform', category: 'DEVOPS', required: true, weight: 4 },
@@ -285,7 +310,11 @@ Requirements:
 
 Nice to have:
 - dbt and Snowflake`,
-    responsibilities: ['Build dashboards and self-serve datasets', 'Answer product questions with data', 'Maintain dbt models'],
+    responsibilities: [
+      'Build dashboards and self-serve datasets',
+      'Answer product questions with data',
+      'Maintain dbt models',
+    ],
     requirements: [
       { skill: 'SQL', category: 'LANGUAGE', required: true, weight: 5 },
       { skill: 'Python', category: 'LANGUAGE', required: true, weight: 4 },
@@ -315,13 +344,25 @@ export interface CandidateFixture {
   links: string[];
   skills: Array<{ label: string; items: string[] }>;
   experience: ExperienceFixture[];
-  education: Array<{ degree: string; institution: string; start: string; end: string; grade?: string }>;
+  education: Array<{
+    degree: string;
+    institution: string;
+    start: string;
+    end: string;
+    grade?: string;
+  }>;
   projects: Array<{ name: string; description: string }>;
   certifications: string[];
-  applications: Array<{ job: JobKey; status: ApplicationStatus; daysAgo: number; coverLetter?: string }>;
+  applications: Array<{
+    job: JobKey;
+    status: ApplicationStatus;
+    daysAgo: number;
+    coverLetter?: string;
+  }>;
 }
 
-const email = (first: string, last: string) => `${first}.${last}`.toLowerCase().replace(/[^a-z.]/g, '') + `@${DEMO_EMAIL_DOMAIN}`;
+const email = (first: string, last: string) =>
+  `${first}.${last}`.toLowerCase().replace(/[^a-z.]/g, '') + `@${DEMO_EMAIL_DOMAIN}`;
 
 export const CANDIDATES: CandidateFixture[] = [
   {
@@ -331,7 +372,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0101',
     location: 'Denver, CO',
     headline: 'Full Stack Developer',
-    summary: 'Full stack developer with 4+ years building web products in React, TypeScript and Node.js. Enjoys owning features end to end, from database schema to polished UI.',
+    summary:
+      'Full stack developer with 4+ years building web products in React, TypeScript and Node.js. Enjoys owning features end to end, from database schema to polished UI.',
     links: ['linkedin.com/in/jordan-rivera-demo', 'github.com/jordan-rivera-demo'],
     skills: [
       { label: 'Languages', items: ['TypeScript', 'JavaScript', 'SQL', 'HTML', 'CSS'] },
@@ -361,8 +403,21 @@ export const CANDIDATES: CandidateFixture[] = [
         ],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Lakeside State University', start: '2017', end: '2021', grade: 'GPA 3.6/4.0' }],
-    projects: [{ name: 'TaskPulse', description: 'Kanban board with live updates using React, Node.js and WebSockets' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Lakeside State University',
+        start: '2017',
+        end: '2021',
+        grade: 'GPA 3.6/4.0',
+      },
+    ],
+    projects: [
+      {
+        name: 'TaskPulse',
+        description: 'Kanban board with live updates using React, Node.js and WebSockets',
+      },
+    ],
     certifications: ['AWS Certified Cloud Practitioner'],
     applications: [{ job: 'frontend', status: 'SCREENING', daysAgo: 9 }],
   },
@@ -373,10 +428,14 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0102',
     location: 'Toronto, ON',
     headline: 'Senior Frontend Engineer',
-    summary: 'Frontend engineer with 7 years of experience building accessible, high-performance React applications and design systems.',
+    summary:
+      'Frontend engineer with 7 years of experience building accessible, high-performance React applications and design systems.',
     links: ['linkedin.com/in/priya-raman-demo', 'priyaraman.dev'],
     skills: [
-      { label: 'Frontend', items: ['React', 'TypeScript', 'Next.js', 'Redux', 'CSS', 'Tailwind CSS', 'GraphQL'] },
+      {
+        label: 'Frontend',
+        items: ['React', 'TypeScript', 'Next.js', 'Redux', 'CSS', 'Tailwind CSS', 'GraphQL'],
+      },
       { label: 'Quality', items: ['Accessibility', 'Jest', 'Playwright'] },
       { label: 'Tools', items: ['Figma', 'Vite', 'Git'] },
     ],
@@ -397,7 +456,10 @@ export const CANDIDATES: CandidateFixture[] = [
         company: 'Orbital Media',
         start: 'Aug 2019',
         end: 'Dec 2021',
-        bullets: ['Built editorial tools in React and Redux', 'Partnered with designers in Figma to ship a new design system'],
+        bullets: [
+          'Built editorial tools in React and Redux',
+          'Partnered with designers in Figma to ship a new design system',
+        ],
       },
       {
         title: 'Web Developer',
@@ -407,8 +469,20 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Developed marketing sites with HTML, CSS and JavaScript'],
       },
     ],
-    education: [{ degree: 'B.Eng. in Software Engineering', institution: 'Northbridge University', start: '2014', end: '2018' }],
-    projects: [{ name: 'a11y-lint-kit', description: 'Open-source ESLint rules for accessible React components' }],
+    education: [
+      {
+        degree: 'B.Eng. in Software Engineering',
+        institution: 'Northbridge University',
+        start: '2014',
+        end: '2018',
+      },
+    ],
+    projects: [
+      {
+        name: 'a11y-lint-kit',
+        description: 'Open-source ESLint rules for accessible React components',
+      },
+    ],
     certifications: [],
     applications: [
       { job: 'frontend', status: 'INTERVIEW', daysAgo: 30 },
@@ -422,7 +496,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0103',
     location: 'Atlanta, GA',
     headline: 'Frontend Developer',
-    summary: 'Frontend developer focused on responsive interfaces and clean CSS, with 2 years of React experience.',
+    summary:
+      'Frontend developer focused on responsive interfaces and clean CSS, with 2 years of React experience.',
     links: ['github.com/marcus-bell-demo'],
     skills: [{ label: 'Skills', items: ['JavaScript', 'React', 'HTML', 'CSS', 'Sass', 'Figma'] }],
     experience: [
@@ -431,11 +506,26 @@ export const CANDIDATES: CandidateFixture[] = [
         company: 'Greenleaf Digital',
         start: 'May 2024',
         end: 'Present',
-        bullets: ['Build landing pages and dashboards in React and Sass', 'Translate Figma designs into responsive layouts'],
+        bullets: [
+          'Build landing pages and dashboards in React and Sass',
+          'Translate Figma designs into responsive layouts',
+        ],
       },
     ],
-    education: [{ degree: 'Associate Degree in Web Development', institution: 'Metro Community College', start: '2021', end: '2023' }],
-    projects: [{ name: 'Recipe Finder', description: 'React single-page app consuming a public recipes API' }],
+    education: [
+      {
+        degree: 'Associate Degree in Web Development',
+        institution: 'Metro Community College',
+        start: '2021',
+        end: '2023',
+      },
+    ],
+    projects: [
+      {
+        name: 'Recipe Finder',
+        description: 'React single-page app consuming a public recipes API',
+      },
+    ],
     certifications: [],
     applications: [{ job: 'frontend', status: 'REJECTED', daysAgo: 33 }],
   },
@@ -446,9 +536,15 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0104',
     location: 'Chicago, IL',
     headline: 'UI Engineer',
-    summary: 'UI engineer with 5 years of experience in Vue.js and TypeScript, passionate about accessibility and testing.',
+    summary:
+      'UI engineer with 5 years of experience in Vue.js and TypeScript, passionate about accessibility and testing.',
     links: ['linkedin.com/in/elena-petrova-demo'],
-    skills: [{ label: 'Skills', items: ['Vue.js', 'TypeScript', 'JavaScript', 'CSS', 'Accessibility', 'Cypress', 'React'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: ['Vue.js', 'TypeScript', 'JavaScript', 'CSS', 'Accessibility', 'Cypress', 'React'],
+      },
+    ],
     experience: [
       {
         title: 'UI Engineer',
@@ -469,7 +565,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Built product pages with JavaScript and CSS'],
       },
     ],
-    education: [{ degree: 'B.A. in Interaction Design', institution: 'Riverton Institute of Technology', start: '2015', end: '2019' }],
+    education: [
+      {
+        degree: 'B.A. in Interaction Design',
+        institution: 'Riverton Institute of Technology',
+        start: '2015',
+        end: '2019',
+      },
+    ],
     projects: [],
     certifications: ['IAAP Web Accessibility Specialist'],
     applications: [{ job: 'frontend', status: 'SHORTLISTED', daysAgo: 22 }],
@@ -481,10 +584,14 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0105',
     location: 'Austin, TX',
     headline: 'Senior Backend Engineer',
-    summary: 'Backend engineer with 6 years designing scalable Node.js services, event-driven systems and PostgreSQL data models on AWS.',
+    summary:
+      'Backend engineer with 6 years designing scalable Node.js services, event-driven systems and PostgreSQL data models on AWS.',
     links: ['github.com/kenji-watanabe-demo'],
     skills: [
-      { label: 'Backend', items: ['Node.js', 'TypeScript', 'Express', 'NestJS', 'Microservices', 'REST APIs'] },
+      {
+        label: 'Backend',
+        items: ['Node.js', 'TypeScript', 'Express', 'NestJS', 'Microservices', 'REST APIs'],
+      },
       { label: 'Data', items: ['PostgreSQL', 'Redis', 'Kafka'] },
       { label: 'Infrastructure', items: ['AWS', 'Docker', 'Terraform'] },
     ],
@@ -515,7 +622,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Maintained Express REST APIs and PostgreSQL schemas'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Engineering', institution: 'Lakeside State University', start: '2014', end: '2018' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Engineering',
+        institution: 'Lakeside State University',
+        start: '2014',
+        end: '2018',
+      },
+    ],
     projects: [],
     certifications: ['AWS Certified Developer – Associate'],
     applications: [{ job: 'backend', status: 'OFFER', daysAgo: 32 }],
@@ -527,16 +641,25 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0106',
     location: 'Houston, TX',
     headline: 'Software Engineer',
-    summary: 'Software engineer with 3 years of experience building Java and Spring Boot services on Kubernetes.',
+    summary:
+      'Software engineer with 3 years of experience building Java and Spring Boot services on Kubernetes.',
     links: ['linkedin.com/in/aisha-okafor-demo'],
-    skills: [{ label: 'Skills', items: ['Java', 'Spring Boot', 'MySQL', 'Docker', 'Kubernetes', 'REST APIs'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: ['Java', 'Spring Boot', 'MySQL', 'Docker', 'Kubernetes', 'REST APIs'],
+      },
+    ],
     experience: [
       {
         title: 'Software Engineer',
         company: 'Meridian Insurance Tech',
         start: 'Aug 2022',
         end: 'Present',
-        bullets: ['Develop claims processing services in Java and Spring Boot', 'Deploy services to Kubernetes with Docker'],
+        bullets: [
+          'Develop claims processing services in Java and Spring Boot',
+          'Deploy services to Kubernetes with Docker',
+        ],
       },
       {
         title: 'Software Engineering Intern',
@@ -546,7 +669,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Built internal tooling with MySQL and Java'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Southgate University', start: '2018', end: '2022' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Southgate University',
+        start: '2018',
+        end: '2022',
+      },
+    ],
     projects: [],
     certifications: [],
     applications: [{ job: 'backend', status: 'SCREENING', daysAgo: 12 }],
@@ -558,11 +688,23 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0107',
     location: 'Seattle, WA',
     headline: 'Staff Backend Engineer',
-    summary: 'Backend engineer with 8 years building distributed systems in Go and PostgreSQL on Kubernetes and AWS.',
+    summary:
+      'Backend engineer with 8 years building distributed systems in Go and PostgreSQL on Kubernetes and AWS.',
     links: ['github.com/daniel-kim-demo'],
     skills: [
       { label: 'Languages', items: ['Go', 'Python', 'SQL'] },
-      { label: 'Systems', items: ['PostgreSQL', 'gRPC', 'Kubernetes', 'AWS', 'Terraform', 'Distributed systems', 'Redis'] },
+      {
+        label: 'Systems',
+        items: [
+          'PostgreSQL',
+          'gRPC',
+          'Kubernetes',
+          'AWS',
+          'Terraform',
+          'Distributed systems',
+          'Redis',
+        ],
+      },
     ],
     experience: [
       {
@@ -584,7 +726,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Built billing services in Go and Python with Redis caching'],
       },
     ],
-    education: [{ degree: 'M.S. in Computer Science', institution: 'Northbridge University', start: '2015', end: '2017' }],
+    education: [
+      {
+        degree: 'M.S. in Computer Science',
+        institution: 'Northbridge University',
+        start: '2015',
+        end: '2017',
+      },
+    ],
     projects: [],
     certifications: ['Certified Kubernetes Administrator'],
     applications: [{ job: 'backend', status: 'INTERVIEW', daysAgo: 26 }],
@@ -596,9 +745,15 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0108',
     location: 'Miami, FL',
     headline: 'Backend Developer',
-    summary: 'Backend developer with 4 years building Python and Django APIs, recently exploring LLM features.',
+    summary:
+      'Backend developer with 4 years building Python and Django APIs, recently exploring LLM features.',
     links: ['linkedin.com/in/sofia-alvarez-demo'],
-    skills: [{ label: 'Skills', items: ['Python', 'Django', 'FastAPI', 'PostgreSQL', 'Redis', 'AWS', 'Docker', 'LLMs'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: ['Python', 'Django', 'FastAPI', 'PostgreSQL', 'Redis', 'AWS', 'Docker', 'LLMs'],
+      },
+    ],
     experience: [
       {
         title: 'Backend Developer',
@@ -618,7 +773,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Maintained Redis-backed background jobs and AWS Lambda functions'],
       },
     ],
-    education: [{ degree: 'B.S. in Information Systems', institution: 'Coastal State University', start: '2016', end: '2020' }],
+    education: [
+      {
+        degree: 'B.S. in Information Systems',
+        institution: 'Coastal State University',
+        start: '2016',
+        end: '2020',
+      },
+    ],
     projects: [],
     certifications: [],
     applications: [
@@ -633,7 +795,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0109',
     location: 'Boston, MA',
     headline: 'Full Stack Engineer',
-    summary: 'Full stack engineer with 5 years of experience building real-time collaborative applications with React, Node.js and WebSockets.',
+    summary:
+      'Full stack engineer with 5 years of experience building real-time collaborative applications with React, Node.js and WebSockets.',
     links: ['github.com/liam-oconnor-demo', 'liamoconnor.dev'],
     skills: [
       { label: 'Frontend', items: ['React', 'TypeScript', 'Redux'] },
@@ -660,8 +823,20 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Developed React dashboards and Node.js services'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Riverton Institute of Technology', start: '2015', end: '2019' }],
-    projects: [{ name: 'LiveCursor', description: 'Open-source library for multiplayer cursors built on WebSockets and React' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Riverton Institute of Technology',
+        start: '2015',
+        end: '2019',
+      },
+    ],
+    projects: [
+      {
+        name: 'LiveCursor',
+        description: 'Open-source library for multiplayer cursors built on WebSockets and React',
+      },
+    ],
     certifications: [],
     applications: [{ job: 'fullstack', status: 'SHORTLISTED', daysAgo: 18 }],
   },
@@ -672,16 +847,25 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0110',
     location: 'Phoenix, AZ',
     headline: 'Full Stack Developer',
-    summary: 'Full stack developer with 3 years building Angular and Node.js applications on MongoDB.',
+    summary:
+      'Full stack developer with 3 years building Angular and Node.js applications on MongoDB.',
     links: ['linkedin.com/in/fatima-zahra-demo'],
-    skills: [{ label: 'Skills', items: ['Angular', 'TypeScript', 'Node.js', 'Express', 'MongoDB', 'REST APIs'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: ['Angular', 'TypeScript', 'Node.js', 'Express', 'MongoDB', 'REST APIs'],
+      },
+    ],
     experience: [
       {
         title: 'Full Stack Developer',
         company: 'Canyon Health Partners',
         start: 'Sep 2022',
         end: 'Present',
-        bullets: ['Develop scheduling features in Angular and TypeScript', 'Build Express REST APIs on MongoDB'],
+        bullets: [
+          'Develop scheduling features in Angular and TypeScript',
+          'Build Express REST APIs on MongoDB',
+        ],
       },
       {
         title: 'Web Developer',
@@ -691,7 +875,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Built CMS integrations with Node.js'],
       },
     ],
-    education: [{ degree: 'B.S. in Software Engineering', institution: 'Southgate University', start: '2017', end: '2021' }],
+    education: [
+      {
+        degree: 'B.S. in Software Engineering',
+        institution: 'Southgate University',
+        start: '2017',
+        end: '2021',
+      },
+    ],
     projects: [],
     certifications: [],
     applications: [{ job: 'fullstack', status: 'SCREENING', daysAgo: 10 }],
@@ -703,7 +894,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0111',
     location: 'Portland, OR',
     headline: 'Junior Software Developer',
-    summary: 'Junior developer with one year of professional experience in JavaScript, React and Node.js.',
+    summary:
+      'Junior developer with one year of professional experience in JavaScript, React and Node.js.',
     links: ['github.com/noah-fischer-demo'],
     skills: [{ label: 'Skills', items: ['JavaScript', 'React', 'Node.js', 'HTML', 'CSS', 'Git'] }],
     experience: [
@@ -715,7 +907,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Fix bugs and build small features in React and Node.js'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Lakeside State University', start: '2021', end: '2025' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Lakeside State University',
+        start: '2021',
+        end: '2025',
+      },
+    ],
     projects: [{ name: 'StudyBuddy', description: 'Flashcard app built with React and Firebase' }],
     certifications: [],
     applications: [
@@ -730,10 +929,22 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0112',
     location: 'New York, NY',
     headline: 'Senior Full Stack Engineer',
-    summary: 'Senior full stack engineer with 9 years of experience leading teams that build React and Node.js products on AWS.',
+    summary:
+      'Senior full stack engineer with 9 years of experience leading teams that build React and Node.js products on AWS.',
     links: ['linkedin.com/in/grace-mensah-demo'],
     skills: [
-      { label: 'Engineering', items: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'GraphQL', 'REST APIs', 'System design'] },
+      {
+        label: 'Engineering',
+        items: [
+          'React',
+          'TypeScript',
+          'Node.js',
+          'PostgreSQL',
+          'GraphQL',
+          'REST APIs',
+          'System design',
+        ],
+      },
       { label: 'Cloud', items: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'] },
       { label: 'Leadership', items: ['Mentoring', 'Agile'] },
     ],
@@ -764,7 +975,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Developed web applications with JavaScript'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Northbridge University', start: '2012', end: '2016' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Northbridge University',
+        start: '2012',
+        end: '2016',
+      },
+    ],
     projects: [],
     certifications: ['AWS Certified Solutions Architect – Associate'],
     applications: [{ job: 'fullstack', status: 'OFFER', daysAgo: 27 }],
@@ -776,7 +994,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0113',
     location: 'San Jose, CA',
     headline: 'Machine Learning Engineer',
-    summary: 'ML engineer with 5 years of experience shipping NLP and LLM systems, including RAG pipelines over large document stores.',
+    summary:
+      'ML engineer with 5 years of experience shipping NLP and LLM systems, including RAG pipelines over large document stores.',
     links: ['github.com/arjun-mehta-demo'],
     skills: [
       { label: 'ML', items: ['Python', 'PyTorch', 'LLMs', 'RAG', 'NLP', 'MLOps'] },
@@ -802,8 +1021,20 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Trained NLP models in Python for ticket classification'],
       },
     ],
-    education: [{ degree: 'M.S. in Machine Learning', institution: 'Riverton Institute of Technology', start: '2018', end: '2020' }],
-    projects: [{ name: 'EvalBench', description: 'Open-source evaluation harness for LLM applications in Python' }],
+    education: [
+      {
+        degree: 'M.S. in Machine Learning',
+        institution: 'Riverton Institute of Technology',
+        start: '2018',
+        end: '2020',
+      },
+    ],
+    projects: [
+      {
+        name: 'EvalBench',
+        description: 'Open-source evaluation harness for LLM applications in Python',
+      },
+    ],
     certifications: [],
     applications: [{ job: 'ai', status: 'INTERVIEW', daysAgo: 16 }],
   },
@@ -814,16 +1045,25 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0114',
     location: 'Minneapolis, MN',
     headline: 'Data Scientist',
-    summary: 'Data scientist with 4 years of experience in forecasting and classification using Python, scikit-learn and TensorFlow.',
+    summary:
+      'Data scientist with 4 years of experience in forecasting and classification using Python, scikit-learn and TensorFlow.',
     links: ['linkedin.com/in/hannah-schmidt-demo'],
-    skills: [{ label: 'Skills', items: ['Python', 'pandas', 'scikit-learn', 'TensorFlow', 'SQL', 'Machine learning'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: ['Python', 'pandas', 'scikit-learn', 'TensorFlow', 'SQL', 'Machine learning'],
+      },
+    ],
     experience: [
       {
         title: 'Data Scientist',
         company: 'Prairie Energy',
         start: 'Mar 2022',
         end: 'Present',
-        bullets: ['Built demand forecasting models in Python with scikit-learn and TensorFlow', 'Automated reporting with SQL and pandas'],
+        bullets: [
+          'Built demand forecasting models in Python with scikit-learn and TensorFlow',
+          'Automated reporting with SQL and pandas',
+        ],
       },
       {
         title: 'Data Analyst',
@@ -833,7 +1073,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Created dashboards with SQL'],
       },
     ],
-    education: [{ degree: 'M.S. in Statistics', institution: 'Lakeside State University', start: '2019', end: '2021' }],
+    education: [
+      {
+        degree: 'M.S. in Statistics',
+        institution: 'Lakeside State University',
+        start: '2019',
+        end: '2021',
+      },
+    ],
     projects: [],
     certifications: [],
     applications: [{ job: 'ai', status: 'SCREENING', daysAgo: 11 }],
@@ -845,9 +1092,24 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0115',
     location: 'Oakland, CA',
     headline: 'AI Engineer',
-    summary: 'AI engineer with 3 years building LLM applications: retrieval-augmented generation, agents and evaluation.',
+    summary:
+      'AI engineer with 3 years building LLM applications: retrieval-augmented generation, agents and evaluation.',
     links: ['github.com/omar-haddad-demo'],
-    skills: [{ label: 'Skills', items: ['Python', 'LLMs', 'RAG', 'LangChain', 'Pinecone', 'FastAPI', 'Docker', 'TypeScript'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: [
+          'Python',
+          'LLMs',
+          'RAG',
+          'LangChain',
+          'Pinecone',
+          'FastAPI',
+          'Docker',
+          'TypeScript',
+        ],
+      },
+    ],
     experience: [
       {
         title: 'AI Engineer',
@@ -867,8 +1129,17 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Developed document processing services in Python'],
       },
     ],
-    education: [{ degree: 'B.S. in Computer Science', institution: 'Coastal State University', start: '2018', end: '2022' }],
-    projects: [{ name: 'DocChat', description: 'Chat with PDFs using RAG, Python and a vector database' }],
+    education: [
+      {
+        degree: 'B.S. in Computer Science',
+        institution: 'Coastal State University',
+        start: '2018',
+        end: '2022',
+      },
+    ],
+    projects: [
+      { name: 'DocChat', description: 'Chat with PDFs using RAG, Python and a vector database' },
+    ],
     certifications: [],
     applications: [{ job: 'ai', status: 'SHORTLISTED', daysAgo: 14 }],
   },
@@ -879,7 +1150,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0116',
     location: 'Remote',
     headline: 'Data Analyst',
-    summary: 'Data analyst with 3 years turning product data into decisions with SQL, Python and dbt.',
+    summary:
+      'Data analyst with 3 years turning product data into decisions with SQL, Python and dbt.',
     links: ['linkedin.com/in/chloe-dubois-demo'],
     skills: [{ label: 'Skills', items: ['SQL', 'Python', 'pandas', 'dbt', 'Snowflake'] }],
     experience: [
@@ -891,7 +1163,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Maintain dbt models in Snowflake', 'Analyze experiments with SQL and pandas'],
       },
     ],
-    education: [{ degree: 'B.S. in Economics', institution: 'Southgate University', start: '2017', end: '2021' }],
+    education: [
+      {
+        degree: 'B.S. in Economics',
+        institution: 'Southgate University',
+        start: '2017',
+        end: '2021',
+      },
+    ],
     projects: [],
     certifications: [],
     applications: [{ job: 'analyst', status: 'HIRED', daysAgo: 70 }],
@@ -903,16 +1182,34 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0117',
     location: 'Dallas, TX',
     headline: 'DevOps Engineer',
-    summary: 'DevOps engineer with 6 years automating AWS infrastructure with Terraform and Kubernetes.',
+    summary:
+      'DevOps engineer with 6 years automating AWS infrastructure with Terraform and Kubernetes.',
     links: ['github.com/mateo-rossi-demo'],
-    skills: [{ label: 'Skills', items: ['AWS', 'Terraform', 'Kubernetes', 'CI/CD', 'Linux', 'Observability', 'Python', 'Docker'] }],
+    skills: [
+      {
+        label: 'Skills',
+        items: [
+          'AWS',
+          'Terraform',
+          'Kubernetes',
+          'CI/CD',
+          'Linux',
+          'Observability',
+          'Python',
+          'Docker',
+        ],
+      },
+    ],
     experience: [
       {
         title: 'DevOps Engineer',
         company: 'Summit Freight',
         start: 'Jan 2020',
         end: 'Present',
-        bullets: ['Run Kubernetes clusters on AWS provisioned with Terraform', 'Built CI/CD pipelines with GitHub Actions'],
+        bullets: [
+          'Run Kubernetes clusters on AWS provisioned with Terraform',
+          'Built CI/CD pipelines with GitHub Actions',
+        ],
       },
       {
         title: 'Systems Administrator',
@@ -922,7 +1219,14 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Administered Linux servers and monitoring with Prometheus and Grafana'],
       },
     ],
-    education: [{ degree: 'B.S. in Information Technology', institution: 'Metro State University', start: '2014', end: '2018' }],
+    education: [
+      {
+        degree: 'B.S. in Information Technology',
+        institution: 'Metro State University',
+        start: '2014',
+        end: '2018',
+      },
+    ],
     projects: [],
     certifications: ['HashiCorp Certified: Terraform Associate'],
     applications: [{ job: 'backend', status: 'APPLIED', daysAgo: 3 }],
@@ -934,7 +1238,8 @@ export const CANDIDATES: CandidateFixture[] = [
     phone: '+1 555 010 0118',
     location: 'Sacramento, CA',
     headline: 'Junior Data Analyst',
-    summary: 'Analyst with 2 years of experience in SQL and Python, interested in machine learning.',
+    summary:
+      'Analyst with 2 years of experience in SQL and Python, interested in machine learning.',
     links: [],
     skills: [{ label: 'Skills', items: ['SQL', 'Python', 'pandas', 'Machine learning'] }],
     experience: [
@@ -946,8 +1251,17 @@ export const CANDIDATES: CandidateFixture[] = [
         bullets: ['Build weekly sales reports with SQL and pandas'],
       },
     ],
-    education: [{ degree: 'B.A. in Mathematics', institution: 'Coastal State University', start: '2020', end: '2024' }],
-    projects: [{ name: 'Churn Model', description: 'Customer churn prediction with scikit-learn in Python' }],
+    education: [
+      {
+        degree: 'B.A. in Mathematics',
+        institution: 'Coastal State University',
+        start: '2020',
+        end: '2024',
+      },
+    ],
+    projects: [
+      { name: 'Churn Model', description: 'Customer churn prediction with scikit-learn in Python' },
+    ],
     certifications: [],
     applications: [
       { job: 'analyst', status: 'REJECTED', daysAgo: 60 },

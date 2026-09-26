@@ -58,7 +58,8 @@ export function requireRole(...roles: UserRole[]): RequestHandler {
 export function requireOrganization(prisma: PrismaClient): RequestHandler {
   return async (req: Request, _res: Response, next: NextFunction) => {
     if (!req.auth) throw new UnauthorizedError();
-    if (!isStaffRole(req.auth.role)) throw new ForbiddenError('This area is only available to hiring teams');
+    if (!isStaffRole(req.auth.role))
+      throw new ForbiddenError('This area is only available to hiring teams');
 
     const requested = req.header(ORG_HEADER)?.trim();
     const membership = await prisma.organizationMember.findFirst({
@@ -68,7 +69,9 @@ export function requireOrganization(prisma: PrismaClient): RequestHandler {
     });
     if (!membership) {
       throw new ForbiddenError(
-        requested ? 'You are not a member of this organization' : 'Create or join an organization first',
+        requested
+          ? 'You are not a member of this organization'
+          : 'Create or join an organization first',
       );
     }
     const org: OrgContext = {

@@ -32,7 +32,10 @@ export function createAuthController({ services, config, ai }: Container) {
   };
 
   const setRefreshCookie = (res: Response, result: AuthResult) => {
-    res.cookie(REFRESH_COOKIE, result.refresh.token, { ...cookieBase, expires: result.refresh.expiresAt });
+    res.cookie(REFRESH_COOKIE, result.refresh.token, {
+      ...cookieBase,
+      expires: result.refresh.expiresAt,
+    });
   };
   const clearRefreshCookie = (res: Response) => res.clearCookie(REFRESH_COOKIE, cookieBase);
   const refreshTokenFrom = (req: Request): string | undefined => {
@@ -53,7 +56,11 @@ export function createAuthController({ services, config, ai }: Container) {
     register: handle({ body: registerSchema }, async ({ body, req, res }) => {
       const result = await auth.register(body, requestMeta(req));
       setRefreshCookie(res, result);
-      return { data: result.session, status: 201, message: 'Account created. Check your inbox to verify your email.' };
+      return {
+        data: result.session,
+        status: 201,
+        message: 'Account created. Check your inbox to verify your email.',
+      };
     }),
 
     login: handle({ body: loginSchema }, async ({ body, req, res }) => {
@@ -98,7 +105,9 @@ export function createAuthController({ services, config, ai }: Container) {
 
     forgotPassword: handle({ body: forgotPasswordSchema }, async ({ body }) => {
       await auth.forgotPassword(body.email);
-      return ok(null, { message: 'If an account exists for that email, a reset link is on its way.' });
+      return ok(null, {
+        message: 'If an account exists for that email, a reset link is on its way.',
+      });
     }),
 
     resetPassword: handle({ body: resetPasswordSchema }, async ({ body, res }) => {
@@ -117,25 +126,44 @@ export function createAuthController({ services, config, ai }: Container) {
       { query: z.object({ role: z.enum(['CANDIDATE', 'RECRUITER']).default('CANDIDATE') }) },
       async ({ query, res }) => {
         const state = randomToken(24);
-        res.cookie(OAUTH_STATE_COOKIE, `${state}.${query.role}`, { ...cookieBase, maxAge: 10 * 60_000 });
+        res.cookie(OAUTH_STATE_COOKIE, `${state}.${query.role}`, {
+          ...cookieBase,
+          maxAge: 10 * 60_000,
+        });
         res.redirect(auth.googleAuthorizationUrl(state));
         return undefined;
       },
     ),
 
     googleCallback: handle(
-      { query: z.object({ code: z.string().min(1).max(2000).optional(), state: z.string().max(200).optional(), error: z.string().optional() }) },
+      {
+        query: z.object({
+          code: z.string().min(1).max(2000).optional(),
+          state: z.string().max(200).optional(),
+          error: z.string().optional(),
+        }),
+      },
       async ({ query, req, res }) => {
         const stored: unknown = req.cookies?.[OAUTH_STATE_COOKIE];
         res.clearCookie(OAUTH_STATE_COOKIE, cookieBase);
         const [expectedState, role] = typeof stored === 'string' ? stored.split('.') : [];
         const fail = () => res.redirect(`${config.webUrl}/login?error=google`);
-        if (query.error || !query.code || !query.state || !expectedState || !safeEqual(query.state, expectedState)) {
+        if (
+          query.error ||
+          !query.code ||
+          !query.state ||
+          !expectedState ||
+          !safeEqual(query.state, expectedState)
+        ) {
           fail();
           return undefined;
         }
         try {
-          const result = await auth.googleSignIn(query.code, role === 'RECRUITER' ? 'RECRUITER' : 'CANDIDATE', requestMeta(req));
+          const result = await auth.googleSignIn(
+            query.code,
+            role === 'RECRUITER' ? 'RECRUITER' : 'CANDIDATE',
+            requestMeta(req),
+          );
           setRefreshCookie(res, result);
           res.redirect(`${config.webUrl}/auth/callback`);
         } catch {

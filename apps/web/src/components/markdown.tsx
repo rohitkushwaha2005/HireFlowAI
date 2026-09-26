@@ -42,7 +42,9 @@ export function Markdown({ content, className }: { content: string; className?: 
   const flushList = () => {
     if (list) {
       const key = `l-${blocks.length}`;
-      const items = list.items.map((item, i) => <li key={i}>{renderInline(item, `${key}-${i}`)}</li>);
+      const items = list.items.map((item, i) => (
+        <li key={i}>{renderInline(item, `${key}-${i}`)}</li>
+      ));
       blocks.push(list.ordered ? <ol key={key}>{items}</ol> : <ul key={key}>{items}</ul>);
       list = null;
     }

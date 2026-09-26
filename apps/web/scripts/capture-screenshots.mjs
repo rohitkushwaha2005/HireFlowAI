@@ -40,7 +40,10 @@ async function login(context, email) {
   await shot(page, '01-landing');
   await page.goto(`${BASE}/jobs`);
   await shot(page, '02-job-board');
-  await page.getByRole('link', { name: /Full Stack Engineer/ }).first().click();
+  await page
+    .getByRole('link', { name: /Full Stack Engineer/ })
+    .first()
+    .click();
   await shot(page, '03-job-detail');
   await context.close();
 }
@@ -54,9 +57,11 @@ async function login(context, email) {
   await shot(page, '11-jobs');
   await page.goto(`${BASE}/app/jobs/new`);
   await page.getByLabel('Job title').fill('Full Stack Developer');
-  await page.getByLabel('Job description').fill(
-    'We are hiring a Full Stack Developer to build real-time hiring tools.\n\nResponsibilities:\n- Build React and TypeScript interfaces\n- Design Node.js APIs backed by PostgreSQL\n\nRequirements:\n- 3+ years of professional experience\n- React, TypeScript, Node.js and Express\n- PostgreSQL\n\nNice to have:\n- AWS and Docker',
-  );
+  await page
+    .getByLabel('Job description')
+    .fill(
+      'We are hiring a Full Stack Developer to build real-time hiring tools.\n\nResponsibilities:\n- Build React and TypeScript interfaces\n- Design Node.js APIs backed by PostgreSQL\n\nRequirements:\n- 3+ years of professional experience\n- React, TypeScript, Node.js and Express\n- PostgreSQL\n\nNice to have:\n- AWS and Docker',
+    );
   await page.getByRole('button', { name: /Analyze with AI/ }).click();
   await page.getByText('AI analysis').waitFor();
   await shot(page, '12-job-editor-ai-analysis');
@@ -68,11 +73,18 @@ async function login(context, email) {
   await shot(page, '14-application-match');
   await page.getByRole('tab', { name: 'Interviews' }).click();
   await shot(page, '15-interview-questions');
-  await page.goto(`${BASE}/app/candidates?q=${encodeURIComponent('React developer with strong backend experience and real-time applications')}`);
+  await page.goto(
+    `${BASE}/app/candidates?q=${encodeURIComponent('React developer with strong backend experience and real-time applications')}`,
+  );
   await page.getByText('Ranked by semantic similarity').waitFor();
   await shot(page, '16-semantic-search');
   await page.goto(`${BASE}/app/copilot`);
-  await page.getByRole('button', { name: 'Which candidates have strong React and Node.js experience?', exact: true }).click();
+  await page
+    .getByRole('button', {
+      name: 'Which candidates have strong React and Node.js experience?',
+      exact: true,
+    })
+    .click();
   await page.getByText(/Grounded in/).waitFor({ timeout: 120_000 });
   await shot(page, '17-copilot');
   await page.goto(`${BASE}/app/analytics`);
@@ -88,7 +100,11 @@ async function login(context, email) {
   await page.goto(`${BASE}/portal/profile`);
   await shot(page, '21-candidate-profile');
   await context.close();
-  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const mobile = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
   const mpage = await login(mobile, 'candidate@demo.hireflow.local');
   await mpage.goto(`${BASE}/portal/applications`);
   await shot(mpage, '22-candidate-mobile-applications');

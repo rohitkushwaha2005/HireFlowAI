@@ -1,4 +1,14 @@
-import { AlertTriangle, ChevronLeft, ChevronRight, Funnel, Info, RefreshCw, Search, Sparkles, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  Funnel,
+  Info,
+  RefreshCw,
+  Search,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import * as React from 'react';
 import type { PaginationMeta } from '@hireflow/shared';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -32,7 +42,12 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn('mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between', className)}>
+    <div
+      className={cn(
+        'mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
+        className,
+      )}
+    >
       <div className="min-w-0 space-y-1">
         {breadcrumb && <div className="mb-2 text-sm text-muted-foreground">{breadcrumb}</div>}
         <h1 className="truncate text-2xl font-semibold tracking-tight">{title}</h1>
@@ -59,7 +74,12 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-12 text-center', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-12 text-center',
+        className,
+      )}
+    >
       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
         <Icon className="size-6" />
       </div>
@@ -70,10 +90,25 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ error, onRetry, className }: { error: unknown; onRetry?: () => void; className?: string }) {
-  const message = error instanceof Error ? error.message : 'Something went wrong while loading this page.';
+export function ErrorState({
+  error,
+  onRetry,
+  className,
+}: {
+  error: unknown;
+  onRetry?: () => void;
+  className?: string;
+}) {
+  const message =
+    error instanceof Error ? error.message : 'Something went wrong while loading this page.';
   return (
-    <div role="alert" className={cn('flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center', className)}>
+    <div
+      role="alert"
+      className={cn(
+        'flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center',
+        className,
+      )}
+    >
       <AlertTriangle className="mb-3 size-8 text-destructive" />
       <h3 className="font-semibold">Couldn’t load this</h3>
       <p className="mt-1 max-w-md text-sm text-muted-foreground">{message}</p>
@@ -115,7 +150,11 @@ export function CardsSkeleton({ count = 4, className }: { count?: number; classN
 
 export function PageLoader() {
   return (
-    <div className="flex min-h-[40vh] items-center justify-center" role="status" aria-label="Loading">
+    <div
+      className="flex min-h-[40vh] items-center justify-center"
+      role="status"
+      aria-label="Loading"
+    >
       <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   );
@@ -205,7 +244,9 @@ export function FilterPanel({
         <div className="space-y-4">
           {groups.map((group) => (
             <fieldset key={group.key} className="space-y-2">
-              <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.label}</legend>
+              <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {group.label}
+              </legend>
               {group.options.map((option) => {
                 const id = `filter-${group.key}-${option.value}`;
                 const checked = values[group.key]?.includes(option.value) ?? false;
@@ -216,7 +257,12 @@ export function FilterPanel({
                       checked={checked}
                       onCheckedChange={(state) => {
                         const current = values[group.key] ?? [];
-                        onChange(group.key, state ? [...current, option.value] : current.filter((v) => v !== option.value));
+                        onChange(
+                          group.key,
+                          state
+                            ? [...current, option.value]
+                            : current.filter((v) => v !== option.value),
+                        );
                       }}
                     />
                     <Label htmlFor={id} className="font-normal">
@@ -228,7 +274,12 @@ export function FilterPanel({
             </fieldset>
           ))}
           {active > 0 && (
-            <Button variant="ghost" size="sm" className="w-full" onClick={() => groups.forEach((g) => onChange(g.key, []))}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full"
+              onClick={() => groups.forEach((g) => onChange(g.key, []))}
+            >
               Clear all filters
             </Button>
           )}
@@ -238,24 +289,51 @@ export function FilterPanel({
   );
 }
 
-export function Pagination({ pagination, onPageChange, className }: { pagination: PaginationMeta | undefined; onPageChange: (page: number) => void; className?: string }) {
+export function Pagination({
+  pagination,
+  onPageChange,
+  className,
+}: {
+  pagination: PaginationMeta | undefined;
+  onPageChange: (page: number) => void;
+  className?: string;
+}) {
   if (!pagination || pagination.total === 0) return null;
   const { page, pageSize, total, totalPages } = pagination;
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
   return (
-    <nav aria-label="Pagination" className={cn('flex items-center justify-between gap-4 pt-4 text-sm', className)}>
+    <nav
+      aria-label="Pagination"
+      className={cn('flex items-center justify-between gap-4 pt-4 text-sm', className)}
+    >
       <p className="text-muted-foreground">
-        Showing <span className="font-medium text-foreground">{from}–{to}</span> of <span className="font-medium text-foreground">{total}</span>
+        Showing{' '}
+        <span className="font-medium text-foreground">
+          {from}–{to}
+        </span>{' '}
+        of <span className="font-medium text-foreground">{total}</span>
       </p>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          aria-label="Previous page"
+        >
           <ChevronLeft /> Prev
         </Button>
         <span className="text-muted-foreground">
           {page} / {totalPages}
         </span>
-        <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} aria-label="Next page">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          aria-label="Next page"
+        >
           Next <ChevronRight />
         </Button>
       </div>
@@ -296,9 +374,21 @@ export function StatCard({
 
 // ── AI transparency ─────────────────────────────────────────────────────────
 
-export function AIDisclaimer({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function AIDisclaimer({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   return (
-    <div className={cn('flex gap-2 rounded-lg border border-primary/20 bg-accent/50 p-3 text-xs text-accent-foreground', className)} role="note">
+    <div
+      className={cn(
+        'flex gap-2 rounded-lg border border-primary/20 bg-accent/50 p-3 text-xs text-accent-foreground',
+        className,
+      )}
+      role="note"
+    >
       <Info className="mt-0.5 size-4 shrink-0" />
       <p>
         {compact
@@ -309,12 +399,27 @@ export function AIDisclaimer({ className, compact = false }: { className?: strin
   );
 }
 
-export function AIBadge({ provider, className }: { provider: string | null | undefined; className?: string }) {
+export function AIBadge({
+  provider,
+  className,
+}: {
+  provider: string | null | undefined;
+  className?: string;
+}) {
   if (!provider) return null;
   const heuristic = provider === 'heuristic';
   return (
-    <Tooltip content={heuristic ? 'Generated by the offline heuristic provider (no LLM key configured).' : `Generated by ${provider}`}>
-      <Badge variant={heuristic ? 'warning' : 'default'} className={cn('cursor-default', className)}>
+    <Tooltip
+      content={
+        heuristic
+          ? 'Generated by the offline heuristic provider (no LLM key configured).'
+          : `Generated by ${provider}`
+      }
+    >
+      <Badge
+        variant={heuristic ? 'warning' : 'default'}
+        className={cn('cursor-default', className)}
+      >
         <Sparkles /> {heuristic ? 'Heuristic AI' : 'AI'}
       </Badge>
     </Tooltip>
@@ -323,7 +428,15 @@ export function AIBadge({ provider, className }: { provider: string | null | und
 
 // ── Detail list ─────────────────────────────────────────────────────────────
 
-export function DetailItem({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+export function DetailItem({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={className}>
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>

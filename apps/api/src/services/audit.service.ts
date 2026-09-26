@@ -9,7 +9,8 @@ type Db = PrismaClient | Prisma.TransactionClient;
 
 export interface AuditEntry {
   action: AuditAction;
-  entityType: 'Job' | 'Application' | 'Candidate' | 'Interview' | 'Organization' | 'Member' | 'Resume';
+  entityType:
+    'Job' | 'Application' | 'Candidate' | 'Interview' | 'Organization' | 'Member' | 'Resume';
   entityId: string;
   metadata?: Record<string, unknown>;
 }

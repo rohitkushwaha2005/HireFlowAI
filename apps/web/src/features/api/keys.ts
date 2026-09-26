@@ -5,7 +5,8 @@ export const keys = {
     all: ['jobs'] as const,
     list: (query: object) => ['jobs', 'list', query] as const,
     detail: (id: string) => ['jobs', 'detail', id] as const,
-    applications: (id: string, query: object) => ['jobs', 'detail', id, 'applications', query] as const,
+    applications: (id: string, query: object) =>
+      ['jobs', 'detail', id, 'applications', query] as const,
   },
   publicJobs: {
     all: ['public-jobs'] as const,

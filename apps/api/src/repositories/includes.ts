@@ -17,7 +17,11 @@ export const userPublicSelect = {
 } satisfies Prisma.UserSelect;
 export type UserPublic = Prisma.UserGetPayload<{ select: typeof userPublicSelect }>;
 
-export const userNameSelect = { id: true, firstName: true, lastName: true } satisfies Prisma.UserSelect;
+export const userNameSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+} satisfies Prisma.UserSelect;
 
 export const jobSummaryInclude = {
   createdBy: { select: userNameSelect },
@@ -63,7 +67,9 @@ export const candidateProfileInclude = {
   projects: { orderBy: { createdAt: 'asc' } },
   resumes: { select: resumeSelect, orderBy: { createdAt: 'desc' } },
 } satisfies Prisma.CandidateProfileInclude;
-export type CandidateProfileFull = Prisma.CandidateProfileGetPayload<{ include: typeof candidateProfileInclude }>;
+export type CandidateProfileFull = Prisma.CandidateProfileGetPayload<{
+  include: typeof candidateProfileInclude;
+}>;
 
 export const applicationListInclude = {
   job: { select: { id: true, title: true, slug: true, status: true, organizationId: true } },
@@ -80,14 +86,23 @@ export const applicationListInclude = {
   resume: { select: { parsingStatus: true } },
   _count: { select: { interviews: true } },
 } satisfies Prisma.ApplicationInclude;
-export type ApplicationListRow = Prisma.ApplicationGetPayload<{ include: typeof applicationListInclude }>;
+export type ApplicationListRow = Prisma.ApplicationGetPayload<{
+  include: typeof applicationListInclude;
+}>;
 
 export const interviewInclude = {
   interviewer: { select: { id: true, firstName: true, lastName: true, email: true } },
   application: {
     select: {
       id: true,
-      job: { select: { id: true, title: true, organizationId: true, organization: { select: { name: true } } } },
+      job: {
+        select: {
+          id: true,
+          title: true,
+          organizationId: true,
+          organization: { select: { name: true } },
+        },
+      },
       candidate: {
         select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
       },
@@ -101,11 +116,16 @@ export const applicationDetailInclude = {
   resume: { select: resumeSelect },
   match: true,
   notes: { include: { author: { select: userNameSelect } }, orderBy: { createdAt: 'desc' } },
-  statusEvents: { include: { changedBy: { select: userNameSelect } }, orderBy: { createdAt: 'desc' } },
+  statusEvents: {
+    include: { changedBy: { select: userNameSelect } },
+    orderBy: { createdAt: 'desc' },
+  },
   interviews: { include: interviewInclude, orderBy: { scheduledAt: 'asc' } },
   questions: { orderBy: { position: 'asc' } },
 } satisfies Prisma.ApplicationInclude;
-export type ApplicationDetailRow = Prisma.ApplicationGetPayload<{ include: typeof applicationDetailInclude }>;
+export type ApplicationDetailRow = Prisma.ApplicationGetPayload<{
+  include: typeof applicationDetailInclude;
+}>;
 
 export const candidateApplicationInclude = {
   job: {
@@ -127,7 +147,9 @@ export const candidateApplicationInclude = {
     orderBy: { scheduledAt: 'asc' },
   },
 } satisfies Prisma.ApplicationInclude;
-export type CandidateApplicationRow = Prisma.ApplicationGetPayload<{ include: typeof candidateApplicationInclude }>;
+export type CandidateApplicationRow = Prisma.ApplicationGetPayload<{
+  include: typeof candidateApplicationInclude;
+}>;
 
 export const auditInclude = { user: { select: userNameSelect } } satisfies Prisma.AuditLogInclude;
 export type AuditRow = Prisma.AuditLogGetPayload<{ include: typeof auditInclude }>;

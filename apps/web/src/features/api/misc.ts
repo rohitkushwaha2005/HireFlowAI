@@ -22,7 +22,12 @@ import { keys } from './keys';
 
 // ── Interviews ──────────────────────────────────────────────────────────────
 
-export function useInterviews(params: { page: number; status?: string[]; upcoming?: boolean; mine?: boolean }) {
+export function useInterviews(params: {
+  page: number;
+  status?: string[];
+  upcoming?: boolean;
+  mine?: boolean;
+}) {
   return useQuery({
     queryKey: keys.interviews.list(params),
     queryFn: () => getPage<InterviewDto>('/interviews', toQuery({ ...params, pageSize: 20 })),
@@ -54,7 +59,8 @@ export function useCreateInterview() {
 export function useUpdateInterview() {
   const invalidate = useInvalidateInterviews();
   return useMutation({
-    mutationFn: ({ id, ...input }: UpdateInterviewInput & { id: string }) => patch<InterviewDto>(`/interviews/${id}`, input),
+    mutationFn: ({ id, ...input }: UpdateInterviewInput & { id: string }) =>
+      patch<InterviewDto>(`/interviews/${id}`, input),
     onSuccess: () => {
       invalidate();
       toast.success('Interview updated');
@@ -63,19 +69,26 @@ export function useUpdateInterview() {
 }
 
 export function useMyInterviews() {
-  return useQuery({ queryKey: keys.me.interviews, queryFn: () => get<CandidateInterviewDto[]>('/interviews/mine') });
+  return useQuery({
+    queryKey: keys.me.interviews,
+    queryFn: () => get<CandidateInterviewDto[]>('/interviews/mine'),
+  });
 }
 
 // ── Organization / team ─────────────────────────────────────────────────────
 
 export function useOrganization() {
-  return useQuery({ queryKey: keys.org.current, queryFn: () => get<OrganizationDto>('/organizations/current') });
+  return useQuery({
+    queryKey: keys.org.current,
+    queryFn: () => get<OrganizationDto>('/organizations/current'),
+  });
 }
 
 export function useUpdateOrganization() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateOrganizationInput) => patch<OrganizationDto>('/organizations/current', input),
+    mutationFn: (input: UpdateOrganizationInput) =>
+      patch<OrganizationDto>('/organizations/current', input),
     onSuccess: (org) => {
       qc.setQueryData(keys.org.current, org);
       toast.success('Organization settings saved');
@@ -84,13 +97,17 @@ export function useUpdateOrganization() {
 }
 
 export function useMembers() {
-  return useQuery({ queryKey: keys.org.members, queryFn: () => get<MemberDto[]>('/organizations/current/members') });
+  return useQuery({
+    queryKey: keys.org.members,
+    queryFn: () => get<MemberDto[]>('/organizations/current/members'),
+  });
 }
 
 export function useInviteMember() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: InviteMemberInput) => post<MemberDto>('/organizations/current/members', input),
+    mutationFn: (input: InviteMemberInput) =>
+      post<MemberDto>('/organizations/current/members', input),
     meta: { silent: true },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.org.members });
@@ -102,7 +119,8 @@ export function useInviteMember() {
 export function useUpdateMemberRole() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...input }: UpdateMemberRoleInput & { id: string }) => patch(`/organizations/current/members/${id}`, input),
+    mutationFn: ({ id, ...input }: UpdateMemberRoleInput & { id: string }) =>
+      patch(`/organizations/current/members/${id}`, input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.org.members });
       toast.success('Role updated');
@@ -121,10 +139,14 @@ export function useRemoveMember() {
   });
 }
 
-export function useAuditLogs(params: { entityType?: string; entityId?: string; limit?: number }, enabled = true) {
+export function useAuditLogs(
+  params: { entityType?: string; entityId?: string; limit?: number },
+  enabled = true,
+) {
   return useQuery({
     queryKey: keys.org.audit(params),
-    queryFn: () => get<AuditLogDto[]>('/organizations/current/audit-logs', { params: toQuery(params) }),
+    queryFn: () =>
+      get<AuditLogDto[]>('/organizations/current/audit-logs', { params: toQuery(params) }),
     enabled,
   });
 }
@@ -132,7 +154,10 @@ export function useAuditLogs(params: { entityType?: string; entityId?: string; l
 // ── Copilot ─────────────────────────────────────────────────────────────────
 
 export function useConversations() {
-  return useQuery({ queryKey: keys.copilot.conversations, queryFn: () => get<CopilotConversationDto[]>('/copilot/conversations') });
+  return useQuery({
+    queryKey: keys.copilot.conversations,
+    queryFn: () => get<CopilotConversationDto[]>('/copilot/conversations'),
+  });
 }
 
 export function useConversationMessages(id: string | null) {
@@ -165,5 +190,8 @@ export function useDeleteConversation() {
 // ── Analytics ───────────────────────────────────────────────────────────────
 
 export function useDashboard() {
-  return useQuery({ queryKey: keys.analytics, queryFn: () => get<DashboardAnalyticsDto>('/analytics/dashboard') });
+  return useQuery({
+    queryKey: keys.analytics,
+    queryFn: () => get<DashboardAnalyticsDto>('/analytics/dashboard'),
+  });
 }

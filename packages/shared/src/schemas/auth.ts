@@ -67,8 +67,6 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export const updateAccountSchema = z.object({
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
-  avatarUrl: z
-    .preprocess((v) => (v === '' ? null : v), z.url().max(500).nullable())
-    .optional(),
+  avatarUrl: z.preprocess((v) => (v === '' ? null : v), z.url().max(500).nullable()).optional(),
 });
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;

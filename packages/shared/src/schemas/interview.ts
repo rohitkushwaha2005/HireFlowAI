@@ -5,7 +5,14 @@ import {
   QUESTION_CATEGORIES,
   QUESTION_DIFFICULTIES,
 } from '../enums';
-import { csvArray, idSchema, nullableText, nullableUrl, optionalText, paginationQuerySchema } from './common';
+import {
+  csvArray,
+  idSchema,
+  nullableText,
+  nullableUrl,
+  optionalText,
+  paginationQuerySchema,
+} from './common';
 
 export const createInterviewSchema = z.object({
   applicationId: idSchema,

@@ -1,14 +1,39 @@
-import { Copy, ExternalLink, MoreHorizontal, Pause, Pencil, Play, RotateCcw, Trash2, XCircle } from 'lucide-react';
+import {
+  Copy,
+  ExternalLink,
+  MoreHorizontal,
+  Pause,
+  Pencil,
+  Play,
+  RotateCcw,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 import * as React from 'react';
 import { useNavigate } from 'react-router';
 import type { JobSummaryDto, JobTransition } from '@hireflow/shared';
 import { ConfirmDialog } from '@/components/forms';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui';
 import { useDeleteJob, useDuplicateJob, useJobTransition } from '@/features/api/jobs';
 import { useAuth } from '@/features/auth/use-auth';
 
 /** Shared job actions menu (list rows and detail header). */
-export function JobActionsMenu({ job, onDeleted, trigger }: { job: JobSummaryDto; onDeleted?: () => void; trigger?: React.ReactNode }) {
+export function JobActionsMenu({
+  job,
+  onDeleted,
+  trigger,
+}: {
+  job: JobSummaryDto;
+  onDeleted?: () => void;
+  trigger?: React.ReactNode;
+}) {
   const navigate = useNavigate();
   const { can } = useAuth();
   const transition = useJobTransition();
@@ -35,7 +60,9 @@ export function JobActionsMenu({ job, onDeleted, trigger }: { job: JobSummaryDto
             </DropdownMenuItem>
           )}
           {job.status === 'PUBLISHED' && (
-            <DropdownMenuItem onSelect={() => window.open(`/jobs/${job.slug}`, '_blank', 'noopener')}>
+            <DropdownMenuItem
+              onSelect={() => window.open(`/jobs/${job.slug}`, '_blank', 'noopener')}
+            >
               <ExternalLink /> View public page
             </DropdownMenuItem>
           )}
@@ -55,7 +82,13 @@ export function JobActionsMenu({ job, onDeleted, trigger }: { job: JobSummaryDto
             </DropdownMenuItem>
           )}
           {can('jobs:write') && (
-            <DropdownMenuItem onSelect={() => duplicate.mutate(job.id, { onSuccess: (copy) => navigate(`/app/jobs/${copy.id}/edit`) })}>
+            <DropdownMenuItem
+              onSelect={() =>
+                duplicate.mutate(job.id, {
+                  onSuccess: (copy) => navigate(`/app/jobs/${copy.id}/edit`),
+                })
+              }
+            >
               <Copy /> Duplicate
             </DropdownMenuItem>
           )}
@@ -83,7 +116,9 @@ export function JobActionsMenu({ job, onDeleted, trigger }: { job: JobSummaryDto
         confirmLabel="Close job"
         destructive
         loading={transition.isPending}
-        onConfirm={() => transition.mutate({ id: job.id, action: 'close' }, { onSettled: () => setConfirm(null) })}
+        onConfirm={() =>
+          transition.mutate({ id: job.id, action: 'close' }, { onSettled: () => setConfirm(null) })
+        }
       />
       <ConfirmDialog
         open={confirm === 'delete'}

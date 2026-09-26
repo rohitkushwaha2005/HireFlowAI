@@ -7,3 +7,5 @@ playwright-report
 test-results
 .cache
 .storage
+docs/screenshots
+apps/web/e2e/fixtures

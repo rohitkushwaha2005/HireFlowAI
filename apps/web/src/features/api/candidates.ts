@@ -27,7 +27,8 @@ export interface CandidateSearchParams {
 export function useCandidateSearch(params: CandidateSearchParams) {
   return useQuery({
     queryKey: keys.candidates.search(params),
-    queryFn: () => getPage<CandidateListItemDto>('/candidates', toQuery({ ...params, pageSize: 15 })),
+    queryFn: () =>
+      getPage<CandidateListItemDto>('/candidates', toQuery({ ...params, pageSize: 15 })),
     placeholderData: keepPreviousData,
   });
 }
@@ -65,7 +66,10 @@ export function useCandidateDashboard() {
   });
 }
 
-function useProfileMutation<TInput>(fn: (input: TInput) => Promise<CandidateProfileDto>, message: string) {
+function useProfileMutation<TInput>(
+  fn: (input: TInput) => Promise<CandidateProfileDto>,
+  message: string,
+) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: fn,
@@ -79,13 +83,25 @@ function useProfileMutation<TInput>(fn: (input: TInput) => Promise<CandidateProf
 }
 
 export const useUpdateProfile = () =>
-  useProfileMutation((input: UpdateCandidateProfileInput) => patch<CandidateProfileDto>('/candidates/me', input), 'Profile saved');
+  useProfileMutation(
+    (input: UpdateCandidateProfileInput) => patch<CandidateProfileDto>('/candidates/me', input),
+    'Profile saved',
+  );
 export const useReplaceSkills = () =>
-  useProfileMutation((input: ReplaceSkillsInput) => put<CandidateProfileDto>('/candidates/me/skills', input), 'Skills saved');
+  useProfileMutation(
+    (input: ReplaceSkillsInput) => put<CandidateProfileDto>('/candidates/me/skills', input),
+    'Skills saved',
+  );
 export const useReplaceExperience = () =>
-  useProfileMutation((input: ReplaceExperienceInput) => put<CandidateProfileDto>('/candidates/me/experience', input), 'Experience saved');
+  useProfileMutation(
+    (input: ReplaceExperienceInput) => put<CandidateProfileDto>('/candidates/me/experience', input),
+    'Experience saved',
+  );
 export const useReplaceEducation = () =>
-  useProfileMutation((input: ReplaceEducationInput) => put<CandidateProfileDto>('/candidates/me/education', input), 'Education saved');
+  useProfileMutation(
+    (input: ReplaceEducationInput) => put<CandidateProfileDto>('/candidates/me/education', input),
+    'Education saved',
+  );
 
 // ── Resumes ─────────────────────────────────────────────────────────────────
 
@@ -109,7 +125,13 @@ function useInvalidateResumes() {
 export function useUploadResume() {
   const invalidate = useInvalidateResumes();
   return useMutation({
-    mutationFn: async ({ file, onProgress }: { file: File; onProgress?: (percent: number) => void }) => {
+    mutationFn: async ({
+      file,
+      onProgress,
+    }: {
+      file: File;
+      onProgress?: (percent: number) => void;
+    }) => {
       const form = new FormData();
       form.append('file', file);
       const res = await http.post<{ data: ResumeDto }>('/resumes/upload', form, {
@@ -127,7 +149,10 @@ export function useUploadResume() {
 
 export function useRetryResume() {
   const invalidate = useInvalidateResumes();
-  return useMutation({ mutationFn: (id: string) => post<ResumeDto>(`/resumes/${id}/retry`), onSuccess: invalidate });
+  return useMutation({
+    mutationFn: (id: string) => post<ResumeDto>(`/resumes/${id}/retry`),
+    onSuccess: invalidate,
+  });
 }
 
 export function useSetPrimaryResume() {

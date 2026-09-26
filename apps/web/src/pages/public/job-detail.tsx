@@ -1,4 +1,13 @@
-import { ArrowLeft, Briefcase, Building2, CheckCircle2, GraduationCap, MapPin, Timer, Upload } from 'lucide-react';
+import {
+  ArrowLeft,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  GraduationCap,
+  MapPin,
+  Timer,
+  Upload,
+} from 'lucide-react';
 import * as React from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import {
@@ -12,7 +21,16 @@ import { ErrorState, PageLoader } from '@/components/common';
 import { ApplicationStatusBadge, ParsingStatusBadge } from '@/components/domain';
 import { FormError } from '@/components/forms';
 import { Markdown } from '@/components/markdown';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Label, Textarea } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Label,
+  Textarea,
+} from '@/components/ui';
 import { useApply } from '@/features/api/applications';
 import { useMyResumes, useUploadResume } from '@/features/api/candidates';
 import { usePublicJob } from '@/features/api/jobs';
@@ -63,9 +81,18 @@ function ApplyPanel({ job }: { job: PublicJobDetailDto }) {
             list.map((resume) => (
               <label
                 key={resume.id}
-                className={cn('flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm', selected === resume.id && 'border-primary bg-accent/50')}
+                className={cn(
+                  'flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm',
+                  selected === resume.id && 'border-primary bg-accent/50',
+                )}
               >
-                <input type="radio" name="resume" className="accent-[var(--primary)]" checked={selected === resume.id} onChange={() => setResumeId(resume.id)} />
+                <input
+                  type="radio"
+                  name="resume"
+                  className="accent-[var(--primary)]"
+                  checked={selected === resume.id}
+                  onChange={() => setResumeId(resume.id)}
+                />
                 <span className="min-w-0 flex-1 truncate">{resume.fileName}</span>
                 <ParsingStatusBadge status={resume.parsingStatus} />
               </label>
@@ -83,26 +110,46 @@ function ApplyPanel({ job }: { job: PublicJobDetailDto }) {
               e.target.value = '';
             }}
           />
-          <Button type="button" variant="outline" size="sm" className="w-full" loading={upload.isPending} onClick={() => fileInput.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            loading={upload.isPending}
+            onClick={() => fileInput.current?.click()}
+          >
             <Upload /> Upload new resume (PDF)
           </Button>
           <FormError error={upload.error} />
         </fieldset>
         <div className="space-y-1.5">
           <Label htmlFor="coverLetter">Cover letter (optional)</Label>
-          <Textarea id="coverLetter" rows={4} maxLength={5000} value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} />
+          <Textarea
+            id="coverLetter"
+            rows={4}
+            maxLength={5000}
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+          />
         </div>
         <FormError error={apply.error} />
         <Button
           className="w-full"
           disabled={!selected}
           loading={apply.isPending}
-          onClick={() => selected && apply.mutate({ resumeId: selected, ...(coverLetter.trim() ? { coverLetter: coverLetter.trim() } : {}) })}
+          onClick={() =>
+            selected &&
+            apply.mutate({
+              resumeId: selected,
+              ...(coverLetter.trim() ? { coverLetter: coverLetter.trim() } : {}),
+            })
+          }
         >
           Submit application
         </Button>
         <p className="text-xs text-muted-foreground">
-          Your application is reviewed by the hiring team. AI tools help summarize profiles; they never make decisions on their own.
+          Your application is reviewed by the hiring team. AI tools help summarize profiles; they
+          never make decisions on their own.
         </p>
       </CardContent>
     </Card>
@@ -120,7 +167,11 @@ function ApplyCallToAction({ job }: { job: PublicJobDetailDto }) {
     );
   }
   if (status === 'authenticated') {
-    return <p className="rounded-lg border p-3 text-sm text-muted-foreground">Signed in as a hiring team member. Candidates apply from their own accounts.</p>;
+    return (
+      <p className="rounded-lg border p-3 text-sm text-muted-foreground">
+        Signed in as a hiring team member. Candidates apply from their own accounts.
+      </p>
+    );
   }
   return (
     <div className="space-y-2">
@@ -129,7 +180,10 @@ function ApplyCallToAction({ job }: { job: PublicJobDetailDto }) {
       </Button>
       <p className="text-center text-xs text-muted-foreground">
         Already have an account?{' '}
-        <Link to={`/login?next=${encodeURIComponent(target)}`} className="text-primary hover:underline">
+        <Link
+          to={`/login?next=${encodeURIComponent(target)}`}
+          className="text-primary hover:underline"
+        >
           Sign in
         </Link>
       </p>
@@ -145,7 +199,12 @@ export default function JobDetailPage() {
   useDocumentTitle(job?.title);
 
   if (isLoading) return <PageLoader />;
-  if (isError || !job) return <div className="mx-auto max-w-4xl p-6"><ErrorState error={error} onRetry={() => void refetch()} /></div>;
+  if (isError || !job)
+    return (
+      <div className="mx-auto max-w-4xl p-6">
+        <ErrorState error={error} onRetry={() => void refetch()} />
+      </div>
+    );
 
   const salary = formatSalary(job.salaryMin, job.salaryMax, job.currency);
   const required = job.requirements.filter((r) => r.required);
@@ -153,7 +212,10 @@ export default function JobDetailPage() {
 
   return (
     <div className={cn(!inPortal && 'mx-auto max-w-6xl px-4 py-10 sm:px-6')}>
-      <Link to={inPortal ? '/portal/jobs' : '/jobs'} className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to={inPortal ? '/portal/jobs' : '/jobs'}
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="size-4" /> All jobs
       </Link>
       <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
@@ -161,9 +223,17 @@ export default function JobDetailPage() {
           <header className="space-y-3">
             <h1 className="text-3xl font-semibold tracking-tight">{job.title}</h1>
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Building2 className="size-4" /> {job.organization.name}</span>
-              {job.location && <span className="flex items-center gap-1.5"><MapPin className="size-4" /> {job.location}</span>}
-              <span className="flex items-center gap-1.5"><Briefcase className="size-4" /> {EMPLOYMENT_TYPE_LABELS[job.employmentType]}</span>
+              <span className="flex items-center gap-1.5">
+                <Building2 className="size-4" /> {job.organization.name}
+              </span>
+              {job.location && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="size-4" /> {job.location}
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="size-4" /> {EMPLOYMENT_TYPE_LABELS[job.employmentType]}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{REMOTE_TYPE_LABELS[job.remoteType]}</Badge>
@@ -173,32 +243,53 @@ export default function JobDetailPage() {
           </header>
 
           <section aria-labelledby="about">
-            <h2 id="about" className="mb-3 text-lg font-semibold">About the role</h2>
+            <h2 id="about" className="mb-3 text-lg font-semibold">
+              About the role
+            </h2>
             <Markdown content={job.description} className="text-muted-foreground" />
           </section>
 
           {job.responsibilities.length > 0 && (
             <section aria-labelledby="responsibilities">
-              <h2 id="responsibilities" className="mb-3 text-lg font-semibold">Responsibilities</h2>
+              <h2 id="responsibilities" className="mb-3 text-lg font-semibold">
+                Responsibilities
+              </h2>
               <ul className="space-y-2">
                 {job.responsibilities.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" /> {item}</li>
+                  <li key={item} className="flex gap-2 text-sm">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" /> {item}
+                  </li>
                 ))}
               </ul>
             </section>
           )}
 
           <section aria-labelledby="requirements" className="space-y-4">
-            <h2 id="requirements" className="text-lg font-semibold">Requirements</h2>
+            <h2 id="requirements" className="text-lg font-semibold">
+              Requirements
+            </h2>
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {job.minYearsExperience !== null && <span className="flex items-center gap-1.5"><Timer className="size-4" /> {job.minYearsExperience}+ years of experience</span>}
-              {job.educationLevel && job.educationLevel !== 'NONE' && <span className="flex items-center gap-1.5"><GraduationCap className="size-4" /> {EDUCATION_LEVEL_LABELS[job.educationLevel]}</span>}
+              {job.minYearsExperience !== null && (
+                <span className="flex items-center gap-1.5">
+                  <Timer className="size-4" /> {job.minYearsExperience}+ years of experience
+                </span>
+              )}
+              {job.educationLevel && job.educationLevel !== 'NONE' && (
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap className="size-4" /> {EDUCATION_LEVEL_LABELS[job.educationLevel]}
+                </span>
+              )}
             </div>
             {required.length > 0 && (
               <div>
                 <p className="mb-2 text-sm font-medium">Required skills</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {required.map((r) => <Badge key={r.skill}>{r.skill}{r.minimumYears ? ` · ${r.minimumYears}+ yrs` : ''}</Badge>)}
+                  {required.map((r) => (
+                    <Badge key={r.skill}>
+                      {r.skill}
+                      {r.minimumYears ? ` · ${r.minimumYears}+ yrs` : ''}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
@@ -206,7 +297,11 @@ export default function JobDetailPage() {
               <div>
                 <p className="mb-2 text-sm font-medium">Nice to have</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {preferred.map((r) => <Badge key={r.skill} variant="outline">{r.skill}</Badge>)}
+                  {preferred.map((r) => (
+                    <Badge key={r.skill} variant="outline">
+                      {r.skill}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
@@ -214,10 +309,14 @@ export default function JobDetailPage() {
         </article>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          {inPortal ? <ApplyPanel job={job} /> : (
+          {inPortal ? (
+            <ApplyPanel job={job} />
+          ) : (
             <Card>
               <CardContent className="space-y-3 pt-5">
-                <p className="text-sm text-muted-foreground">Posted {formatDate(job.publishedAt)}</p>
+                <p className="text-sm text-muted-foreground">
+                  Posted {formatDate(job.publishedAt)}
+                </p>
                 <ApplyCallToAction job={job} />
               </CardContent>
             </Card>

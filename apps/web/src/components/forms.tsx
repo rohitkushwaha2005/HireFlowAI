@@ -27,16 +27,28 @@ export function FormField({
   hint?: React.ReactNode;
   required?: boolean;
   className?: string;
-  children: React.ReactElement<{ id?: string; 'aria-invalid'?: boolean; 'aria-describedby'?: string }>;
+  children: React.ReactElement<{
+    id?: string;
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
+  }>;
 }) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div className={cn('space-y-1.5', className)}>
       <Label htmlFor={id}>
         {label}
-        {required && <span className="ml-0.5 text-destructive" aria-hidden>*</span>}
+        {required && (
+          <span className="ml-0.5 text-destructive" aria-hidden>
+            *
+          </span>
+        )}
       </Label>
-      {React.cloneElement(children, { id, 'aria-invalid': error ? true : undefined, 'aria-describedby': describedBy })}
+      {React.cloneElement(children, {
+        id,
+        'aria-invalid': error ? true : undefined,
+        'aria-describedby': describedBy,
+      })}
       {error ? (
         <p id={`${id}-error`} className="text-xs text-destructive" role="alert">
           {error}
@@ -54,7 +66,10 @@ export function FormError({ error }: { error: unknown }) {
   if (!error) return null;
   const message = error instanceof Error ? error.message : 'Something went wrong';
   return (
-    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+    <div
+      role="alert"
+      className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+    >
       {message}
     </div>
   );

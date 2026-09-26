@@ -27,7 +27,8 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
   readonly name = 'local:bge-small-en-v1.5';
   readonly dimensions = EMBEDDING_DIMENSIONS;
   private static readonly MODEL = 'Xenova/bge-small-en-v1.5';
-  private static readonly QUERY_PREFIX = 'Represent this sentence for searching relevant passages: ';
+  private static readonly QUERY_PREFIX =
+    'Represent this sentence for searching relevant passages: ';
   private extractor: Promise<FeatureExtractionPipeline> | null = null;
 
   constructor(private readonly cacheDir: string) {}
@@ -60,7 +61,9 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
   }
 
   async embedQuery(text: string): Promise<number[]> {
-    const [vector] = await this.embedRaw([LocalEmbeddingProvider.QUERY_PREFIX + text.slice(0, 1000)]);
+    const [vector] = await this.embedRaw([
+      LocalEmbeddingProvider.QUERY_PREFIX + text.slice(0, 1000),
+    ]);
     if (!vector) throw new Error('Embedding model returned no vector');
     return vector;
   }
@@ -84,7 +87,7 @@ export function chunkText(text: string, size: number): string[] {
   const pieces = normalized
     .split(/\n{2,}/)
     .flatMap((p) => (p.length <= size ? [p] : p.split(/(?<=[.!?])\s+|\n/)))
-    .flatMap((p) => (p.length <= size ? [p] : p.match(new RegExp(`.{1,${size}}`, 'gs')) ?? []));
+    .flatMap((p) => (p.length <= size ? [p] : (p.match(new RegExp(`.{1,${size}}`, 'gs')) ?? [])));
 
   const chunks: string[] = [];
   let current = '';

@@ -13,8 +13,18 @@ import { cn } from '@/lib/utils';
 import { GoogleButton } from './login';
 
 const ROLES = [
-  { value: 'CANDIDATE', title: 'I’m looking for a job', description: 'Build your profile and apply', icon: UserRound },
-  { value: 'RECRUITER', title: 'I’m hiring', description: 'Create a workspace for your team', icon: Briefcase },
+  {
+    value: 'CANDIDATE',
+    title: 'I’m looking for a job',
+    description: 'Build your profile and apply',
+    icon: UserRound,
+  },
+  {
+    value: 'RECRUITER',
+    title: 'I’m hiring',
+    description: 'Create a workspace for your team',
+    icon: Briefcase,
+  },
 ] as const;
 
 export default function RegisterPage() {
@@ -26,7 +36,14 @@ export default function RegisterPage() {
 
   const form = useForm<z.input<typeof registerSchema>, unknown, RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', firstName: '', lastName: '', role: initialRole, organizationName: '' },
+    defaultValues: {
+      email: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      role: initialRole,
+      organizationName: '',
+    },
   });
   const { errors, isSubmitting } = form.formState;
   const role = form.watch('role');
@@ -37,7 +54,9 @@ export default function RegisterPage() {
       navigate(safeNextPath(params.get('next')) ?? homePathFor(session), { replace: true });
     } catch (error) {
       if (!applyServerErrors(error, form.setError)) {
-        form.setError('root', { message: error instanceof Error ? error.message : 'Registration failed' });
+        form.setError('root', {
+          message: error instanceof Error ? error.message : 'Registration failed',
+        });
       }
     }
   });
@@ -63,7 +82,9 @@ export default function RegisterPage() {
                   onClick={() => field.onChange(option.value)}
                   className={cn(
                     'rounded-lg border p-3 text-left transition-colors',
-                    field.value === option.value ? 'border-primary bg-accent ring-1 ring-primary' : 'hover:bg-muted',
+                    field.value === option.value
+                      ? 'border-primary bg-accent ring-1 ring-primary'
+                      : 'hover:bg-muted',
                   )}
                 >
                   <option.icon className="mb-2 size-5 text-primary" />
@@ -85,7 +106,11 @@ export default function RegisterPage() {
           </FormField>
         </div>
         {role === 'RECRUITER' && (
-          <FormField id="organizationName" label="Company name" error={errors.organizationName?.message}>
+          <FormField
+            id="organizationName"
+            label="Company name"
+            error={errors.organizationName?.message}
+          >
             <Input autoComplete="organization" {...form.register('organizationName')} />
           </FormField>
         )}

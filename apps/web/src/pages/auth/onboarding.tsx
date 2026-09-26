@@ -15,7 +15,10 @@ export default function OnboardingPage() {
   useDocumentTitle('Create your workspace');
   const { status, isStaff, membership, reload } = useAuth();
   const navigate = useNavigate();
-  const form = useForm<CreateOrganizationInput>({ resolver: zodResolver(createOrganizationSchema), defaultValues: { name: '' } });
+  const form = useForm<CreateOrganizationInput>({
+    resolver: zodResolver(createOrganizationSchema),
+    defaultValues: { name: '' },
+  });
   const { errors, isSubmitting } = form.formState;
 
   if (status === 'loading') return <PageLoader />;
@@ -29,7 +32,8 @@ export default function OnboardingPage() {
       await reload();
       navigate('/app', { replace: true });
     } catch (error) {
-      if (!applyServerErrors(error, form.setError)) form.setError('root', { message: error instanceof Error ? error.message : 'Failed' });
+      if (!applyServerErrors(error, form.setError))
+        form.setError('root', { message: error instanceof Error ? error.message : 'Failed' });
     }
   });
 
@@ -37,7 +41,9 @@ export default function OnboardingPage() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Create your workspace</h1>
-        <p className="text-sm text-muted-foreground">Your jobs, candidates and team live in an organization.</p>
+        <p className="text-sm text-muted-foreground">
+          Your jobs, candidates and team live in an organization.
+        </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <FormError error={errors.root?.message ? new Error(errors.root.message) : null} />

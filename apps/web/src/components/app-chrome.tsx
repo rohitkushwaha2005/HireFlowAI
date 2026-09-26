@@ -17,7 +17,11 @@ import {
 
 export function Logo({ className, to = '/' }: { className?: string; to?: string }) {
   return (
-    <Link to={to} className={cn('flex items-center gap-2 font-semibold tracking-tight', className)} aria-label="HireFlow AI home">
+    <Link
+      to={to}
+      className={cn('flex items-center gap-2 font-semibold tracking-tight', className)}
+      aria-label="HireFlow AI home"
+    >
       <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
         <svg viewBox="0 0 32 32" className="size-5" aria-hidden>
           <path d="M9 22V10h3v4.8h8V10h3v12h-3v-4.6h-8V22z" fill="currentColor" />
@@ -51,13 +55,24 @@ function useTheme() {
 export function ThemeToggle() {
   const { dark, toggle } = useTheme();
   return (
-    <Button variant="ghost" size="icon" onClick={toggle} aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggle}
+      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+    >
       {dark ? <Sun /> : <Moon />}
     </Button>
   );
 }
 
-export function UserMenu({ settingsPath, profilePath }: { settingsPath: string; profilePath?: string }) {
+export function UserMenu({
+  settingsPath,
+  profilePath,
+}: {
+  settingsPath: string;
+  profilePath?: string;
+}) {
   const { me, logout } = useAuth();
   const navigate = useNavigate();
   if (!me) return null;
@@ -65,8 +80,15 @@ export function UserMenu({ settingsPath, profilePath }: { settingsPath: string; 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-full p-0.5 hover:bg-muted" aria-label="Account menu">
-          <Avatar src={user.avatarUrl} fallback={initialsOf(user.firstName, user.lastName)} className="size-8" />
+        <button
+          className="flex items-center gap-2 rounded-full p-0.5 hover:bg-muted"
+          aria-label="Account menu"
+        >
+          <Avatar
+            src={user.avatarUrl}
+            fallback={initialsOf(user.firstName, user.lastName)}
+            className="size-8"
+          />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-60">

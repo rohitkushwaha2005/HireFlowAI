@@ -32,8 +32,18 @@ const NAV: NavItem[] = [
   { to: '/app', label: 'Overview', icon: LayoutDashboard, permission: 'analytics:read', end: true },
   { to: '/app/jobs', label: 'Jobs', icon: Briefcase, permission: 'jobs:read' },
   { to: '/app/candidates', label: 'Candidates', icon: UsersRound, permission: 'candidates:read' },
-  { to: '/app/applications', label: 'Applications', icon: SquareKanban, permission: 'applications:read' },
-  { to: '/app/interviews', label: 'Interviews', icon: CalendarClock, permission: 'interviews:read' },
+  {
+    to: '/app/applications',
+    label: 'Applications',
+    icon: SquareKanban,
+    permission: 'applications:read',
+  },
+  {
+    to: '/app/interviews',
+    label: 'Interviews',
+    icon: CalendarClock,
+    permission: 'interviews:read',
+  },
   { to: '/app/analytics', label: 'Analytics', icon: ChartColumn, permission: 'analytics:read' },
   { to: '/app/copilot', label: 'AI Copilot', icon: Bot, permission: 'copilot:use' },
   { to: '/app/team', label: 'Team', icon: Users, permission: 'team:read' },
@@ -64,7 +74,9 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                isActive
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )
             }
           >
@@ -78,7 +90,10 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           <p className="flex items-center gap-1.5 font-medium">
             <Sparkles className="size-3.5" /> Heuristic AI mode
           </p>
-          <p className="mt-1 text-muted-foreground">No LLM key configured. Parsing, analysis and copilot use offline rules. Embeddings and matching are fully active.</p>
+          <p className="mt-1 text-muted-foreground">
+            No LLM key configured. Parsing, analysis and copilot use offline rules. Embeddings and
+            matching are fully active.
+          </p>
         </div>
       )}
     </div>
@@ -97,7 +112,10 @@ export function RecruiterLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:shadow">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:shadow"
+      >
         Skip to content
       </a>
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r bg-sidebar lg:block">
@@ -113,14 +131,31 @@ export function RecruiterLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <VerifyEmailBanner />
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open navigation"
+          >
             <Menu />
           </Button>
-          <p className="truncate text-sm text-muted-foreground lg:hidden">{membership?.organizationName}</p>
+          <p className="truncate text-sm text-muted-foreground lg:hidden">
+            {membership?.organizationName}
+          </p>
           <div className="ml-auto flex items-center gap-2">
             {config && (
-              <Tooltip content={config.aiIsHeuristic ? 'Offline heuristic AI (no LLM key configured)' : `AI provider: ${config.aiProvider}`}>
-                <Badge variant={config.aiIsHeuristic ? 'warning' : 'default'} className="hidden cursor-default sm:inline-flex">
+              <Tooltip
+                content={
+                  config.aiIsHeuristic
+                    ? 'Offline heuristic AI (no LLM key configured)'
+                    : `AI provider: ${config.aiProvider}`
+                }
+              >
+                <Badge
+                  variant={config.aiIsHeuristic ? 'warning' : 'default'}
+                  className="hidden cursor-default sm:inline-flex"
+                >
                   <Sparkles /> {config.aiIsHeuristic ? 'Heuristic AI' : 'Claude AI'}
                 </Badge>
               </Tooltip>

@@ -9,7 +9,9 @@ export function createRedis(url: string, logger: Logger, name: string): Redis {
     lazyConnect: false,
     connectionName: `hireflow-${name}`,
   });
-  client.on('error', (error) => logger.warn({ err: error, connection: name }, 'Redis connection error'));
+  client.on('error', (error) =>
+    logger.warn({ err: error, connection: name }, 'Redis connection error'),
+  );
   return client;
 }
 

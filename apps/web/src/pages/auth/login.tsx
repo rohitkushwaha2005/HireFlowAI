@@ -9,7 +9,13 @@ import { homePathFor, safeNextPath, useAuth } from '@/features/auth/use-auth';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { apiBaseUrl } from '@/lib/api';
 
-export function GoogleButton({ role = 'CANDIDATE', label = 'Continue with Google' }: { role?: 'CANDIDATE' | 'RECRUITER'; label?: string }) {
+export function GoogleButton({
+  role = 'CANDIDATE',
+  label = 'Continue with Google',
+}: {
+  role?: 'CANDIDATE' | 'RECRUITER';
+  label?: string;
+}) {
   const { data: config } = useAuthConfig();
   if (!config?.googleEnabled) return null;
   return (
@@ -17,7 +23,10 @@ export function GoogleButton({ role = 'CANDIDATE', label = 'Continue with Google
       <Button variant="outline" className="w-full" asChild>
         <a href={`${apiBaseUrl}/auth/google?role=${role}`}>
           <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-            <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.2 6.6 2.2 12s4.4 9.8 9.8 9.8c5.7 0 9.4-4 9.4-9.6 0-.6-.1-1.1-.2-1.6H12z" />
+            <path
+              fill="#EA4335"
+              d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.2 6.6 2.2 12s4.4 9.8 9.8 9.8c5.7 0 9.4-4 9.4-9.6 0-.6-.1-1.1-.2-1.6H12z"
+            />
           </svg>
           {label}
         </a>
@@ -34,7 +43,10 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const form = useForm<LoginInput>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
   const { errors, isSubmitting } = form.formState;
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -52,7 +64,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">Sign in to your HireFlow AI account.</p>
       </div>
-      {params.get('error') === 'google' && <FormError error={new Error('Google sign-in failed. Please try again.')} />}
+      {params.get('error') === 'google' && (
+        <FormError error={new Error('Google sign-in failed. Please try again.')} />
+      )}
       <GoogleButton />
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <FormError error={errors.root?.message ? new Error(errors.root.message) : null} />

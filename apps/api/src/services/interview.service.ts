@@ -46,7 +46,12 @@ export class InterviewService {
     const app = await this.prisma.application.findFirst({
       where: { id: applicationId, job: { organizationId } },
       include: {
-        job: { include: { requirements: { orderBy: { position: 'asc' } }, organization: { select: { name: true } } } },
+        job: {
+          include: {
+            requirements: { orderBy: { position: 'asc' } },
+            organization: { select: { name: true } },
+          },
+        },
         candidate: {
           include: {
             user: { select: { email: true, firstName: true } },
@@ -66,12 +71,15 @@ export class InterviewService {
     const input = createInterviewSchema.parse(raw);
     const app = await this.applicationInOrg(actor.organizationId, input.applicationId);
     if (['REJECTED', 'WITHDRAWN', 'HIRED'].includes(app.status)) {
-      throw new InvalidStateError(`Cannot schedule an interview for a ${app.status.toLowerCase()} application`);
+      throw new InvalidStateError(
+        `Cannot schedule an interview for a ${app.status.toLowerCase()} application`,
+      );
     }
     const interviewer = await this.prisma.organizationMember.findFirst({
       where: { organizationId: actor.organizationId, userId: input.interviewerId },
     });
-    if (!interviewer) throw new ValidationError('The interviewer must be a member of your organization');
+    if (!interviewer)
+      throw new ValidationError('The interviewer must be a member of your organization');
 
     const interview = await this.prisma.$transaction(async (tx) => {
       const created = await tx.interview.create({
@@ -90,11 +98,22 @@ export class InterviewService {
       if ((PRE_INTERVIEW as readonly string[]).includes(app.status)) {
         await tx.application.update({ where: { id: app.id }, data: { status: 'INTERVIEW' } });
         await tx.applicationStatusEvent.create({
-          data: { applicationId: app.id, fromStatus: app.status, toStatus: 'INTERVIEW', note: 'Interview scheduled', changedById: actor.userId },
+          data: {
+            applicationId: app.id,
+            fromStatus: app.status,
+            toStatus: 'INTERVIEW',
+            note: 'Interview scheduled',
+            changedById: actor.userId,
+          },
         });
         await this.audit.record(
           actor,
-          { action: 'APPLICATION_STATUS_CHANGED', entityType: 'Application', entityId: app.id, metadata: { from: app.status, to: 'INTERVIEW' } },
+          {
+            action: 'APPLICATION_STATUS_CHANGED',
+            entityType: 'Application',
+            entityId: app.id,
+            metadata: { from: app.status, to: 'INTERVIEW' },
+          },
           tx,
         );
       }
@@ -104,7 +123,11 @@ export class InterviewService {
           action: 'INTERVIEW_CREATED',
           entityType: 'Interview',
           entityId: created.id,
-          metadata: { applicationId: app.id, scheduledAt: input.scheduledAt.toISOString(), type: input.type },
+          metadata: {
+            applicationId: app.id,
+            scheduledAt: input.scheduledAt.toISOString(),
+            type: input.type,
+          },
         },
         tx,
       );
@@ -138,18 +161,25 @@ export class InterviewService {
       const member = await this.prisma.organizationMember.findFirst({
         where: { organizationId: actor.organizationId, userId: input.interviewerId },
       });
-      if (!member) throw new ValidationError('The interviewer must be a member of your organization');
+      if (!member)
+        throw new ValidationError('The interviewer must be a member of your organization');
     }
     const data: Prisma.InterviewUncheckedUpdateInput = Object.fromEntries(
       Object.entries(input).filter(([, v]) => v !== undefined),
     );
-    if (input.scheduledAt && input.scheduledAt.getTime() !== existing.scheduledAt.getTime()) data.reminderSentAt = null;
+    if (input.scheduledAt && input.scheduledAt.getTime() !== existing.scheduledAt.getTime())
+      data.reminderSentAt = null;
 
     const interview = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.interview.update({ where: { id }, data, include: interviewInclude });
       await this.audit.record(
         actor,
-        { action: 'INTERVIEW_UPDATED', entityType: 'Interview', entityId: id, metadata: { fields: Object.keys(data) } },
+        {
+          action: 'INTERVIEW_UPDATED',
+          entityType: 'Interview',
+          entityId: id,
+          metadata: { fields: Object.keys(data) },
+        },
         tx,
       );
       return updated;
@@ -157,7 +187,11 @@ export class InterviewService {
     return toInterviewDto(interview);
   }
 
-  async list(organizationId: string, userId: string, query: InterviewListQuery): Promise<Paginated<InterviewDto>> {
+  async list(
+    organizationId: string,
+    userId: string,
+    query: InterviewListQuery,
+  ): Promise<Paginated<InterviewDto>> {
     const where: Prisma.InterviewWhereInput = {
       application: { job: { organizationId } },
       ...(query.status?.length ? { status: { in: query.status } } : {}),
@@ -175,7 +209,10 @@ export class InterviewService {
         take: query.pageSize,
       }),
     ]);
-    return { items: rows.map(toInterviewDto), pagination: buildPagination(query.page, query.pageSize, total) };
+    return {
+      items: rows.map(toInterviewDto),
+      pagination: buildPagination(query.page, query.pageSize, total),
+    };
   }
 
   async listForCandidate(userId: string): Promise<CandidateInterviewDto[]> {
@@ -189,7 +226,10 @@ export class InterviewService {
 
   // ── AI interview questions ────────────────────────────────────────────────
 
-  async listQuestions(organizationId: string, applicationId: string): Promise<InterviewQuestionDto[]> {
+  async listQuestions(
+    organizationId: string,
+    applicationId: string,
+  ): Promise<InterviewQuestionDto[]> {
     await this.applicationInOrg(organizationId, applicationId);
     const questions = await this.prisma.interviewQuestion.findMany({
       where: { applicationId },
@@ -202,26 +242,48 @@ export class InterviewService {
    * Generates candidate-specific questions from job-relevant data only (skills, experience,
    * projects, requirements, match gaps). Personal attributes are never sent to the model.
    */
-  async generateQuestions(actor: Actor, applicationId: string, raw: GenerateQuestionsInput): Promise<InterviewQuestionDto[]> {
+  async generateQuestions(
+    actor: Actor,
+    applicationId: string,
+    raw: GenerateQuestionsInput,
+  ): Promise<InterviewQuestionDto[]> {
     const input = generateQuestionsSchema.parse(raw);
     const app = await this.applicationInOrg(actor.organizationId, applicationId);
     const questions = await this.ai.generateInterviewQuestions({
       job: {
         title: app.job.title,
         description: app.job.description.slice(0, 6000),
-        requirements: app.job.requirements.map((r) => ({ skill: r.skill, required: r.required, minimumYears: r.minimumYears })),
+        requirements: app.job.requirements.map((r) => ({
+          skill: r.skill,
+          required: r.required,
+          minimumYears: r.minimumYears,
+        })),
       },
       candidate: {
         headline: app.candidate.headline,
         summary: app.candidate.summary,
         totalExperience: app.candidate.totalExperience,
         highestEducation: app.candidate.highestEducation,
-        skills: app.candidate.skills.slice(0, 40).map((s) => ({ skill: s.skill, yearsExperience: s.yearsExperience })),
-        experiences: app.candidate.experiences.slice(0, 8).map((e) => ({ title: e.title, company: e.company, description: e.description?.slice(0, 1200) ?? null })),
-        projects: app.candidate.projects.slice(0, 6).map((p) => ({ name: p.name, description: p.description?.slice(0, 800) ?? null, technologies: p.technologies })),
+        skills: app.candidate.skills
+          .slice(0, 40)
+          .map((s) => ({ skill: s.skill, yearsExperience: s.yearsExperience })),
+        experiences: app.candidate.experiences.slice(0, 8).map((e) => ({
+          title: e.title,
+          company: e.company,
+          description: e.description?.slice(0, 1200) ?? null,
+        })),
+        projects: app.candidate.projects.slice(0, 6).map((p) => ({
+          name: p.name,
+          description: p.description?.slice(0, 800) ?? null,
+          technologies: p.technologies,
+        })),
       },
       match: app.match
-        ? { matchedSkills: app.match.matchedSkills, missingSkills: app.match.missingSkills, concerns: app.match.concerns }
+        ? {
+            matchedSkills: app.match.matchedSkills,
+            missingSkills: app.match.missingSkills,
+            concerns: app.match.concerns,
+          }
         : null,
       count: input.count,
       categories: input.categories ?? [...QUESTION_CATEGORIES],
@@ -229,7 +291,9 @@ export class InterviewService {
     });
 
     await this.prisma.$transaction(async (tx) => {
-      const offset = input.replace ? 0 : await tx.interviewQuestion.count({ where: { applicationId } });
+      const offset = input.replace
+        ? 0
+        : await tx.interviewQuestion.count({ where: { applicationId } });
       if (input.replace) await tx.interviewQuestion.deleteMany({ where: { applicationId } });
       await tx.interviewQuestion.createMany({
         data: questions.map((q, i) => ({
@@ -280,7 +344,10 @@ export class InterviewService {
           url: `${this.config.webUrl}/portal/interviews`,
         }),
       );
-      await this.prisma.interview.update({ where: { id: interview.id }, data: { reminderSentAt: new Date() } });
+      await this.prisma.interview.update({
+        where: { id: interview.id },
+        data: { reminderSentAt: new Date() },
+      });
     }
     if (due.length) this.logger.info({ count: due.length }, 'Interview reminders queued');
     return due.length;

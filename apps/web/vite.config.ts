@@ -28,8 +28,14 @@ export default defineConfig(({ mode }) => {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
             // Vite module ids always use forward slashes, on every OS.
-            if (/\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(id)) return 'react';
-            if (/\/node_modules\/(recharts|d3-[^/]+|victory-vendor|es-toolkit|immer|@reduxjs|react-redux|reselect)\//.test(id)) return 'charts';
+            if (/\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(id))
+              return 'react';
+            if (
+              /\/node_modules\/(recharts|d3-[^/]+|victory-vendor|es-toolkit|immer|@reduxjs|react-redux|reselect)\//.test(
+                id,
+              )
+            )
+              return 'charts';
             if (id.includes('@dnd-kit')) return 'dnd';
             if (/@radix-ui|radix-ui|@floating-ui/.test(id)) return 'radix';
             return 'vendor';

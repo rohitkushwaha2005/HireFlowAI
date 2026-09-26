@@ -7,7 +7,11 @@ import type { CandidateFixture } from '@hireflow/database/seed';
  */
 
 const PAGE = { width: 612, height: 792, margin: 54 };
-const COLORS = { text: rgb(0.1, 0.1, 0.12), muted: rgb(0.35, 0.35, 0.4), accent: rgb(0.31, 0.27, 0.9) };
+const COLORS = {
+  text: rgb(0.1, 0.1, 0.12),
+  muted: rgb(0.35, 0.35, 0.4),
+  accent: rgb(0.31, 0.27, 0.9),
+};
 
 class Writer {
   private page: PDFPage;
@@ -46,14 +50,29 @@ class Writer {
     return lines;
   }
 
-  line(text: string, options: { size?: number; bold?: boolean; color?: ReturnType<typeof rgb>; indent?: number; gap?: number } = {}): void {
+  line(
+    text: string,
+    options: {
+      size?: number;
+      bold?: boolean;
+      color?: ReturnType<typeof rgb>;
+      indent?: number;
+      gap?: number;
+    } = {},
+  ): void {
     const size = options.size ?? 10;
     const font = options.bold ? this.bold : this.regular;
     const indent = options.indent ?? 0;
     const width = PAGE.width - PAGE.margin * 2 - indent;
     for (const part of this.wrap(text, font, size, width)) {
       this.ensure(size + 4);
-      this.page.drawText(part, { x: PAGE.margin + indent, y: this.y - size, size, font, color: options.color ?? COLORS.text });
+      this.page.drawText(part, {
+        x: PAGE.margin + indent,
+        y: this.y - size,
+        size,
+        font,
+        color: options.color ?? COLORS.text,
+      });
       this.y -= size + 4;
     }
     this.y -= options.gap ?? 0;
@@ -83,7 +102,10 @@ export async function renderResumePdf(candidate: CandidateFixture): Promise<Buff
 
   w.line(`${candidate.firstName} ${candidate.lastName}`, { size: 20, bold: true, gap: 2 });
   w.line(candidate.headline, { size: 12, color: COLORS.muted });
-  w.line([candidate.email, candidate.phone, candidate.location].join(' | '), { size: 9, color: COLORS.muted });
+  w.line([candidate.email, candidate.phone, candidate.location].join(' | '), {
+    size: 9,
+    color: COLORS.muted,
+  });
   if (candidate.links.length) w.line(candidate.links.join(' | '), { size: 9, color: COLORS.muted });
 
   w.heading('Summary');

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { chunkText, cosineSimilarity, l2Normalize, meanPool, toVectorLiteral } from '../ai/embeddings';
+import {
+  chunkText,
+  cosineSimilarity,
+  l2Normalize,
+  meanPool,
+  toVectorLiteral,
+} from '../ai/embeddings';
 import { sanitizeJobAnalysis, sanitizeResumeAnalysis } from '../ai/ai-service';
 import { parseToolInput } from '../ai/copilot/toolbox';
 import { verifyReferences } from '../services/copilot.service';
@@ -23,7 +29,9 @@ describe('config', () => {
   it('fails fast on invalid configuration', () => {
     expect(() => loadConfig({ ...base, JWT_SECRET: 'short' })).toThrow(/JWT_SECRET/);
     expect(() => loadConfig({ ...base, AI_PROVIDER: 'anthropic' })).toThrow(/AI_API_KEY/);
-    expect(() => loadConfig({ ...base, NODE_ENV: 'production', JWT_SECRET: `change-me-${'x'.repeat(30)}` })).toThrow(/placeholder/);
+    expect(() =>
+      loadConfig({ ...base, NODE_ENV: 'production', JWT_SECRET: `change-me-${'x'.repeat(30)}` }),
+    ).toThrow(/placeholder/);
   });
 
   it('parses durations', () => {
@@ -43,7 +51,10 @@ describe('embeddings helpers', () => {
 
   it('normalizes and pools vectors', () => {
     expect(l2Normalize([3, 4])).toEqual([0.6, 0.8]);
-    const pooled = meanPool([[1, 0], [0, 1]]);
+    const pooled = meanPool([
+      [1, 0],
+      [0, 1],
+    ]);
     expect(cosineSimilarity(pooled, [1, 1])).toBeCloseTo(1);
   });
 
@@ -87,7 +98,9 @@ describe('AI output sanitization', () => {
     const result = sanitizeJobAnalysis({
       summary: 's',
       requiredSkills: [{ skill: 'React', category: 'FRAMEWORK', weight: 9, minimumYears: null }],
-      preferredSkills: [{ skill: 'React.js', category: 'FRAMEWORK', weight: 0, minimumYears: null }],
+      preferredSkills: [
+        { skill: 'React.js', category: 'FRAMEWORK', weight: 0, minimumYears: null },
+      ],
       minYearsExperience: null,
       educationLevel: null,
       responsibilities: [],
@@ -114,7 +127,10 @@ describe('copilot grounding', () => {
       { candidateId: '1', name: 'Maya Chen', applicationId: 'a', jobTitle: 'FE', score: 80 },
       { candidateId: '2', name: 'Leo Park', applicationId: 'b', jobTitle: 'FE', score: 60 },
     ];
-    const refs = verifyReferences('**Maya Chen** is the strongest. Also consider Sam Invented.', retrieved);
+    const refs = verifyReferences(
+      '**Maya Chen** is the strongest. Also consider Sam Invented.',
+      retrieved,
+    );
     expect(refs.map((r) => r.name)).toEqual(['Maya Chen']);
   });
 });

@@ -32,7 +32,17 @@ export interface ChartDatum {
   detail?: string;
 }
 
-function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payload?: Array<{ value?: number; payload?: ChartDatum }>; label?: string; unit: string }) {
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  unit,
+}: {
+  active?: boolean;
+  payload?: Array<{ value?: number; payload?: ChartDatum }>;
+  label?: string;
+  unit: string;
+}) {
   if (!active || !payload?.length) return null;
   const item = payload[0]!;
   return (
@@ -46,7 +56,15 @@ function ChartTooltip({ active, payload, label, unit }: { active?: boolean; payl
   );
 }
 
-function DataTable({ data, unit, labelHeader }: { data: ChartDatum[]; unit: string; labelHeader: string }) {
+function DataTable({
+  data,
+  unit,
+  labelHeader,
+}: {
+  data: ChartDatum[];
+  unit: string;
+  labelHeader: string;
+}) {
   const hasDetail = data.some((d) => d.detail);
   return (
     <div className="max-h-64 overflow-auto">
@@ -63,7 +81,9 @@ function DataTable({ data, unit, labelHeader }: { data: ChartDatum[]; unit: stri
             <tr key={d.label} className="border-b last:border-0">
               <td className="py-1.5">{d.label}</td>
               <td className="py-1.5 text-right tabular-nums">{d.value}</td>
-              {hasDetail && <td className="py-1.5 text-right text-muted-foreground">{d.detail ?? '—'}</td>}
+              {hasDetail && (
+                <td className="py-1.5 text-right text-muted-foreground">{d.detail ?? '—'}</td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -114,11 +134,17 @@ export function ChartCard({
       </CardHeader>
       <CardContent className="flex-1">
         {!hasData ? (
-          <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">{empty}</div>
+          <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
+            {empty}
+          </div>
         ) : asTable ? (
           <DataTable data={data} unit={unit} labelHeader={labelHeader} />
         ) : (
-          <div className="h-56" role="img" aria-label={`${title} chart. Use the table toggle for exact values.`}>
+          <div
+            className="h-56"
+            role="img"
+            aria-label={`${title} chart. Use the table toggle for exact values.`}
+          >
             {children}
           </div>
         )}
@@ -142,24 +168,52 @@ export function TrendChart({ data, unit }: { data: ChartDatum[]; unit: string })
         <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} minTickGap={24} />
         <YAxis tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
-        <RechartsTooltip cursor={{ stroke: 'var(--muted-foreground)', strokeDasharray: '3 3' }} content={<ChartTooltip unit={unit} />} />
-        <Area type="monotone" dataKey="value" stroke={SERIES} strokeWidth={2} fill={`url(#${gradientId})`} activeDot={{ r: 5, strokeWidth: 2, stroke: 'var(--card)' }} />
+        <RechartsTooltip
+          cursor={{ stroke: 'var(--muted-foreground)', strokeDasharray: '3 3' }}
+          content={<ChartTooltip unit={unit} />}
+        />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={SERIES}
+          strokeWidth={2}
+          fill={`url(#${gradientId})`}
+          activeDot={{ r: 5, strokeWidth: 2, stroke: 'var(--card)' }}
+        />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
 /** Vertical bars, one hue; optional per-bar lightness ramp for ordered magnitude buckets. */
-export function ColumnChart({ data, unit, ramp = false }: { data: ChartDatum[]; unit: string; ramp?: boolean }) {
+export function ColumnChart({
+  data,
+  unit,
+  ramp = false,
+}: {
+  data: ChartDatum[];
+  unit: string;
+  ramp?: boolean;
+}) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="28%">
+      <BarChart
+        data={data}
+        margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+        barCategoryGap="28%"
+      >
         <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={false} interval={0} />
         <YAxis tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
-        <RechartsTooltip cursor={{ fill: 'var(--muted)', opacity: 0.6 }} content={<ChartTooltip unit={unit} />} />
+        <RechartsTooltip
+          cursor={{ fill: 'var(--muted)', opacity: 0.6 }}
+          content={<ChartTooltip unit={unit} />}
+        />
         <Bar dataKey="value" fill={SERIES} radius={[4, 4, 0, 0]} maxBarSize={48}>
-          {ramp && data.map((d, i) => <Cell key={d.label} fillOpacity={0.35 + (0.65 * (i + 1)) / data.length} />)}
+          {ramp &&
+            data.map((d, i) => (
+              <Cell key={d.label} fillOpacity={0.35 + (0.65 * (i + 1)) / data.length} />
+            ))}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -170,11 +224,26 @@ export function ColumnChart({ data, unit, ramp = false }: { data: ChartDatum[]; 
 export function RankedBarChart({ data, unit }: { data: ChartDatum[]; unit: string }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }} barCategoryGap="24%">
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
+        barCategoryGap="24%"
+      >
         <CartesianGrid horizontal={false} stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis type="number" tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
-        <YAxis type="category" dataKey="label" tick={AXIS} tickLine={false} axisLine={false} width={130} />
-        <RechartsTooltip cursor={{ fill: 'var(--muted)', opacity: 0.6 }} content={<ChartTooltip unit={unit} />} />
+        <YAxis
+          type="category"
+          dataKey="label"
+          tick={AXIS}
+          tickLine={false}
+          axisLine={false}
+          width={130}
+        />
+        <RechartsTooltip
+          cursor={{ fill: 'var(--muted)', opacity: 0.6 }}
+          content={<ChartTooltip unit={unit} />}
+        />
         <Bar dataKey="value" fill={SERIES} radius={[0, 4, 4, 0]} maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>
@@ -182,7 +251,11 @@ export function RankedBarChart({ data, unit }: { data: ChartDatum[]; unit: strin
 }
 
 /** Hiring funnel as proportional bars with stage-to-stage conversion (HTML, not a chart lib). */
-export function FunnelBars({ stages }: { stages: Array<{ stage: string; count: number; conversion: number | null }> }) {
+export function FunnelBars({
+  stages,
+}: {
+  stages: Array<{ stage: string; count: number; conversion: number | null }>;
+}) {
   const max = Math.max(1, ...stages.map((s) => s.count));
   return (
     <ol className="space-y-2.5" aria-label="Hiring funnel">
@@ -190,11 +263,16 @@ export function FunnelBars({ stages }: { stages: Array<{ stage: string; count: n
         <li key={s.stage} className="grid grid-cols-[88px_1fr_auto] items-center gap-3 text-sm">
           <span className="text-muted-foreground">{s.stage}</span>
           <div className="h-6 overflow-hidden rounded-md bg-muted">
-            <div className="h-full rounded-md" style={{ width: `${Math.max(2, (s.count / max) * 100)}%`, background: SERIES }} />
+            <div
+              className="h-full rounded-md"
+              style={{ width: `${Math.max(2, (s.count / max) * 100)}%`, background: SERIES }}
+            />
           </div>
           <span className="w-24 text-right tabular-nums">
             <span className="font-semibold">{s.count}</span>
-            {s.conversion !== null && <span className="ml-1.5 text-xs text-muted-foreground">({s.conversion}%)</span>}
+            {s.conversion !== null && (
+              <span className="ml-1.5 text-xs text-muted-foreground">({s.conversion}%)</span>
+            )}
           </span>
         </li>
       ))}

@@ -3,8 +3,21 @@ import { Briefcase, CalendarClock, FileText, Plus, Trophy, Users } from 'lucide-
 import { Link } from 'react-router';
 import { APPLICATION_STATUS_LABELS } from '@hireflow/shared';
 import { describeAudit } from '@/lib/audit';
-import { ChartCard, ColumnChart, FunnelBars, RankedBarChart, TrendChart } from '@/components/charts';
-import { AIDisclaimer, CardsSkeleton, EmptyState, ErrorState, PageHeader, StatCard } from '@/components/common';
+import {
+  ChartCard,
+  ColumnChart,
+  FunnelBars,
+  RankedBarChart,
+  TrendChart,
+} from '@/components/charts';
+import {
+  AIDisclaimer,
+  CardsSkeleton,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  StatCard,
+} from '@/components/common';
 import { InterviewStatusBadge } from '@/components/domain';
 import { Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui';
 import { useDashboard, useInterviews } from '@/features/api/misc';
@@ -42,11 +55,44 @@ export default function OverviewPage() {
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <StatCard label="Active jobs" value={data.totals.activeJobs} icon={Briefcase} hint="Published and accepting applications" />
-            <StatCard label="Candidates" value={data.totals.totalCandidates} icon={Users} hint="Unique applicants" />
-            <StatCard label="Applications" value={data.totals.applications} icon={FileText} hint={data.totals.averageMatchScore !== null ? `Avg. match score ${data.totals.averageMatchScore}` : undefined} />
-            <StatCard label="Interviews" value={data.totals.interviews} icon={CalendarClock} hint={`${data.totals.upcomingInterviews} upcoming`} />
-            <StatCard label="Hires" value={data.totals.hires} icon={Trophy} hint={data.conversion.applicationToHire !== null ? `${data.conversion.applicationToHire}% of applications` : undefined} />
+            <StatCard
+              label="Active jobs"
+              value={data.totals.activeJobs}
+              icon={Briefcase}
+              hint="Published and accepting applications"
+            />
+            <StatCard
+              label="Candidates"
+              value={data.totals.totalCandidates}
+              icon={Users}
+              hint="Unique applicants"
+            />
+            <StatCard
+              label="Applications"
+              value={data.totals.applications}
+              icon={FileText}
+              hint={
+                data.totals.averageMatchScore !== null
+                  ? `Avg. match score ${data.totals.averageMatchScore}`
+                  : undefined
+              }
+            />
+            <StatCard
+              label="Interviews"
+              value={data.totals.interviews}
+              icon={CalendarClock}
+              hint={`${data.totals.upcomingInterviews} upcoming`}
+            />
+            <StatCard
+              label="Hires"
+              value={data.totals.hires}
+              icon={Trophy}
+              hint={
+                data.conversion.applicationToHire !== null
+                  ? `${data.conversion.applicationToHire}% of applications`
+                  : undefined
+              }
+            />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
@@ -56,9 +102,18 @@ export default function OverviewPage() {
               description="Daily applications, last 30 days"
               unit="applications"
               labelHeader="Date"
-              data={data.applicationsOverTime.map((d) => ({ label: format(parseISO(d.date), 'MMM d'), value: d.count }))}
+              data={data.applicationsOverTime.map((d) => ({
+                label: format(parseISO(d.date), 'MMM d'),
+                value: d.count,
+              }))}
             >
-              <TrendChart unit="applications" data={data.applicationsOverTime.map((d) => ({ label: format(parseISO(d.date), 'MMM d'), value: d.count }))} />
+              <TrendChart
+                unit="applications"
+                data={data.applicationsOverTime.map((d) => ({
+                  label: format(parseISO(d.date), 'MMM d'),
+                  value: d.count,
+                }))}
+              />
             </ChartCard>
             <Card>
               <CardHeader>
@@ -66,7 +121,10 @@ export default function OverviewPage() {
               </CardHeader>
               <CardContent>
                 <FunnelBars stages={data.funnel} />
-                <p className="mt-4 text-xs text-muted-foreground">Furthest stage each application reached. Percentages are stage-to-stage conversion.</p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Furthest stage each application reached. Percentages are stage-to-stage
+                  conversion.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -77,17 +135,35 @@ export default function OverviewPage() {
               description="Applications currently in each stage"
               unit="applications"
               labelHeader="Stage"
-              data={data.pipeline.filter((p) => p.status !== 'WITHDRAWN').map((p) => ({ label: APPLICATION_STATUS_LABELS[p.status], value: p.count }))}
+              data={data.pipeline
+                .filter((p) => p.status !== 'WITHDRAWN')
+                .map((p) => ({ label: APPLICATION_STATUS_LABELS[p.status], value: p.count }))}
             >
-              <ColumnChart unit="applications" data={data.pipeline.filter((p) => p.status !== 'WITHDRAWN').map((p) => ({ label: APPLICATION_STATUS_LABELS[p.status], value: p.count }))} />
+              <ColumnChart
+                unit="applications"
+                data={data.pipeline
+                  .filter((p) => p.status !== 'WITHDRAWN')
+                  .map((p) => ({ label: APPLICATION_STATUS_LABELS[p.status], value: p.count }))}
+              />
             </ChartCard>
             <ChartCard
               title="Applications per job"
               unit="applications"
               labelHeader="Job"
-              data={data.applicationsPerJob.map((j) => ({ label: j.title, value: j.count, ...(j.averageScore !== null ? { detail: `Avg. score ${j.averageScore}` } : {}) }))}
+              data={data.applicationsPerJob.map((j) => ({
+                label: j.title,
+                value: j.count,
+                ...(j.averageScore !== null ? { detail: `Avg. score ${j.averageScore}` } : {}),
+              }))}
             >
-              <RankedBarChart unit="applications" data={data.applicationsPerJob.map((j) => ({ label: j.title, value: j.count, ...(j.averageScore !== null ? { detail: `Avg. score ${j.averageScore}` } : {}) }))} />
+              <RankedBarChart
+                unit="applications"
+                data={data.applicationsPerJob.map((j) => ({
+                  label: j.title,
+                  value: j.count,
+                  ...(j.averageScore !== null ? { detail: `Avg. score ${j.averageScore}` } : {}),
+                }))}
+              />
             </ChartCard>
           </div>
 
@@ -103,13 +179,21 @@ export default function OverviewPage() {
                 {upcoming.isLoading ? (
                   <Skeleton className="h-24" />
                 ) : !upcoming.data?.items.length ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">No upcoming interviews.</p>
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    No upcoming interviews.
+                  </p>
                 ) : (
                   <ul className="divide-y">
                     {upcoming.data.items.slice(0, 5).map((interview) => (
-                      <li key={interview.id} className="flex items-center justify-between gap-3 py-2.5">
+                      <li
+                        key={interview.id}
+                        className="flex items-center justify-between gap-3 py-2.5"
+                      >
                         <div className="min-w-0">
-                          <Link to={`/app/applications/${interview.applicationId}`} className="truncate text-sm font-medium hover:text-primary">
+                          <Link
+                            to={`/app/applications/${interview.applicationId}`}
+                            className="truncate text-sm font-medium hover:text-primary"
+                          >
                             {interview.candidate.firstName} {interview.candidate.lastName}
                           </Link>
                           <p className="truncate text-xs text-muted-foreground">
@@ -134,10 +218,16 @@ export default function OverviewPage() {
                   <ul className="space-y-3">
                     {data.recentActivity.slice(0, 6).map((entry) => (
                       <li key={entry.id} className="flex gap-3 text-sm">
-                        <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden />
+                        <span
+                          className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
+                          aria-hidden
+                        />
                         <p className="min-w-0 flex-1">
-                          <span className="font-medium">{entry.user?.name ?? 'System'}</span> {describeAudit(entry)}
-                          <span className="block text-xs text-muted-foreground">{timeAgo(entry.createdAt)}</span>
+                          <span className="font-medium">{entry.user?.name ?? 'System'}</span>{' '}
+                          {describeAudit(entry)}
+                          <span className="block text-xs text-muted-foreground">
+                            {timeAgo(entry.createdAt)}
+                          </span>
                         </p>
                       </li>
                     ))}

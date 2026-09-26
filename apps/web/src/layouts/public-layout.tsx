@@ -63,13 +63,21 @@ export function AuthLayout() {
         </main>
       </div>
       <aside className="relative hidden overflow-hidden bg-primary p-12 text-primary-foreground lg:flex lg:flex-col lg:justify-center">
-        <div className="absolute -right-24 -top-24 size-96 rounded-full bg-white/10 blur-3xl" aria-hidden />
-        <div className="absolute -bottom-32 -left-16 size-96 rounded-full bg-white/10 blur-3xl" aria-hidden />
+        <div
+          className="absolute -right-24 -top-24 size-96 rounded-full bg-white/10 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -bottom-32 -left-16 size-96 rounded-full bg-white/10 blur-3xl"
+          aria-hidden
+        />
         <div className="relative max-w-md space-y-6">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm">
             <Sparkles className="size-4" /> AI-assisted hiring, human decisions
           </p>
-          <h2 className="text-3xl font-semibold leading-tight">Find the right people faster — and know exactly why they match.</h2>
+          <h2 className="text-3xl font-semibold leading-tight">
+            Find the right people faster — and know exactly why they match.
+          </h2>
           <ul className="space-y-3 text-primary-foreground/90">
             {[
               'Resumes parsed into structured profiles automatically',

@@ -40,7 +40,13 @@ import type { Actor } from '../types/context';
 import type { AuditService } from './audit.service';
 
 /** Statuses the candidate is notified about. */
-const NOTIFY_CANDIDATE: ReadonlySet<ApplicationStatus> = new Set(['SHORTLISTED', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED']);
+const NOTIFY_CANDIDATE: ReadonlySet<ApplicationStatus> = new Set([
+  'SHORTLISTED',
+  'INTERVIEW',
+  'OFFER',
+  'HIRED',
+  'REJECTED',
+]);
 const CLOSED_STATUSES: ReadonlySet<ApplicationStatus> = new Set(['HIRED', 'REJECTED', 'WITHDRAWN']);
 const PIPELINE_CARD_LIMIT = 100;
 
@@ -60,7 +66,11 @@ export class ApplicationService {
 
   // ── Candidate side ────────────────────────────────────────────────────────
 
-  async apply(userId: string, jobId: string, input: CreateApplicationInput): Promise<CandidateApplicationDto> {
+  async apply(
+    userId: string,
+    jobId: string,
+    input: CreateApplicationInput,
+  ): Promise<CandidateApplicationDto> {
     const profile = await this.prisma.candidateProfile.findUnique({
       where: { userId },
       include: { user: { select: { firstName: true, lastName: true, email: true } } },
@@ -83,19 +93,27 @@ export class ApplicationService {
     });
     if (!job || job.status !== 'PUBLISHED') throw new NotFoundError('Job');
 
-    const resume = await this.prisma.resume.findFirst({ where: { id: input.resumeId, candidateId: profile.id } });
+    const resume = await this.prisma.resume.findFirst({
+      where: { id: input.resumeId, candidateId: profile.id },
+    });
     if (!resume) throw new ValidationError('Select one of your uploaded resumes');
 
     const existing = await this.prisma.application.findUnique({
       where: { jobId_candidateId: { jobId, candidateId: profile.id } },
     });
-    if (existing && existing.status !== 'WITHDRAWN') throw new ConflictError('You have already applied to this job');
+    if (existing && existing.status !== 'WITHDRAWN')
+      throw new ConflictError('You have already applied to this job');
 
     const application = await this.prisma.$transaction(async (tx) => {
       const app = existing
         ? await tx.application.update({
             where: { id: existing.id },
-            data: { status: 'APPLIED', resumeId: resume.id, coverLetter: input.coverLetter ?? null, appliedAt: new Date() },
+            data: {
+              status: 'APPLIED',
+              resumeId: resume.id,
+              coverLetter: input.coverLetter ?? null,
+              appliedAt: new Date(),
+            },
           })
         : await tx.application.create({
             data: {
@@ -107,13 +125,22 @@ export class ApplicationService {
             },
           });
       await tx.applicationStatusEvent.create({
-        data: { applicationId: app.id, fromStatus: existing?.status ?? null, toStatus: 'APPLIED', changedById: userId },
+        data: {
+          applicationId: app.id,
+          fromStatus: existing?.status ?? null,
+          toStatus: 'APPLIED',
+          changedById: userId,
+        },
       });
       return app;
     });
 
     // Matching runs now if the resume is already parsed; otherwise it runs after parsing.
-    await this.dispatcher.dispatch('matching.application', { applicationId: application.id }, { jobId: `match-app-${application.id}-${Date.now()}` });
+    await this.dispatcher.dispatch(
+      'matching.application',
+      { applicationId: application.id },
+      { jobId: `match-app-${application.id}-${Date.now()}` },
+    );
     await this.dispatcher.dispatch(
       'email.send',
       emailJob(profile.user.email, 'applicationReceived', {
@@ -156,13 +183,21 @@ export class ApplicationService {
   }
 
   async withdraw(userId: string, applicationId: string): Promise<CandidateApplicationDto> {
-    const app = await this.prisma.application.findFirst({ where: { id: applicationId, candidate: { userId } } });
+    const app = await this.prisma.application.findFirst({
+      where: { id: applicationId, candidate: { userId } },
+    });
     if (!app) throw new NotFoundError('Application');
-    if (CLOSED_STATUSES.has(app.status)) throw new InvalidStateError('This application can no longer be withdrawn');
+    if (CLOSED_STATUSES.has(app.status))
+      throw new InvalidStateError('This application can no longer be withdrawn');
     await this.prisma.$transaction([
       this.prisma.application.update({ where: { id: app.id }, data: { status: 'WITHDRAWN' } }),
       this.prisma.applicationStatusEvent.create({
-        data: { applicationId: app.id, fromStatus: app.status, toStatus: 'WITHDRAWN', changedById: userId },
+        data: {
+          applicationId: app.id,
+          fromStatus: app.status,
+          toStatus: 'WITHDRAWN',
+          changedById: userId,
+        },
       }),
       this.prisma.interview.updateMany({
         where: { applicationId: app.id, status: 'SCHEDULED' },
@@ -174,7 +209,10 @@ export class ApplicationService {
 
   // ── Recruiter side ────────────────────────────────────────────────────────
 
-  async list(organizationId: string, query: ApplicationListQuery): Promise<Paginated<ApplicationListItemDto>> {
+  async list(
+    organizationId: string,
+    query: ApplicationListQuery,
+  ): Promise<Paginated<ApplicationListItemDto>> {
     const where: Prisma.ApplicationWhereInput = {
       job: { organizationId },
       ...(query.jobId ? { jobId: query.jobId } : {}),
@@ -183,8 +221,12 @@ export class ApplicationService {
       ...(query.search
         ? {
             OR: [
-              { candidate: { user: { firstName: { contains: query.search, mode: 'insensitive' } } } },
-              { candidate: { user: { lastName: { contains: query.search, mode: 'insensitive' } } } },
+              {
+                candidate: { user: { firstName: { contains: query.search, mode: 'insensitive' } } },
+              },
+              {
+                candidate: { user: { lastName: { contains: query.search, mode: 'insensitive' } } },
+              },
               { candidate: { user: { email: { contains: query.search, mode: 'insensitive' } } } },
               { candidate: { headline: { contains: query.search, mode: 'insensitive' } } },
             ],
@@ -206,7 +248,10 @@ export class ApplicationService {
         take: query.pageSize,
       }),
     ]);
-    return { items: rows.map(toApplicationListItemDto), pagination: buildPagination(query.page, query.pageSize, total) };
+    return {
+      items: rows.map(toApplicationListItemDto),
+      pagination: buildPagination(query.page, query.pageSize, total),
+    };
   }
 
   async get(organizationId: string, applicationId: string): Promise<ApplicationDetailDto> {
@@ -219,7 +264,10 @@ export class ApplicationService {
   }
 
   async pipeline(organizationId: string, query: PipelineQuery): Promise<PipelineDto> {
-    const base: Prisma.ApplicationWhereInput = { job: { organizationId }, ...(query.jobId ? { jobId: query.jobId } : {}) };
+    const base: Prisma.ApplicationWhereInput = {
+      job: { organizationId },
+      ...(query.jobId ? { jobId: query.jobId } : {}),
+    };
     const columns = await Promise.all(
       PIPELINE_STAGES.map(async (status) => {
         const where = { ...base, status };
@@ -228,7 +276,13 @@ export class ApplicationService {
           this.prisma.application.findMany({
             where,
             include: {
-              candidate: { select: { id: true, headline: true, user: { select: { firstName: true, lastName: true } } } },
+              candidate: {
+                select: {
+                  id: true,
+                  headline: true,
+                  user: { select: { firstName: true, lastName: true } },
+                },
+              },
               job: { select: { id: true, title: true } },
               match: { select: { overallScore: true, matchedSkills: true } },
               _count: { select: { interviews: true } },
@@ -267,7 +321,11 @@ export class ApplicationService {
    * audit entry commit atomically. `fromStatus` provides optimistic concurrency for the Kanban.
    * AI scores never trigger transitions — every move is a human action.
    */
-  async updateStatus(actor: Actor, applicationId: string, input: UpdateApplicationStatusInput): Promise<ApplicationDetailDto> {
+  async updateStatus(
+    actor: Actor,
+    applicationId: string,
+    input: UpdateApplicationStatusInput,
+  ): Promise<ApplicationDetailDto> {
     const app = await this.prisma.application.findFirst({
       where: { id: applicationId, job: { organizationId: actor.organizationId } },
       include: {
@@ -276,11 +334,15 @@ export class ApplicationService {
       },
     });
     if (!app) throw new NotFoundError('Application');
-    if (app.status === 'WITHDRAWN') throw new InvalidStateError('The candidate withdrew this application');
+    if (app.status === 'WITHDRAWN')
+      throw new InvalidStateError('The candidate withdrew this application');
     if (input.fromStatus && input.fromStatus !== app.status) {
-      throw new ConflictError('This application was moved by someone else. Refresh to see the latest state.', {
-        currentStatus: app.status,
-      });
+      throw new ConflictError(
+        'This application was moved by someone else. Refresh to see the latest state.',
+        {
+          currentStatus: app.status,
+        },
+      );
     }
     if (app.status === input.status) return this.get(actor.organizationId, applicationId);
 
@@ -289,7 +351,8 @@ export class ApplicationService {
         where: { id: app.id, status: app.status },
         data: { status: input.status },
       });
-      if (updated.count !== 1) throw new ConflictError('This application was just updated. Refresh and try again.');
+      if (updated.count !== 1)
+        throw new ConflictError('This application was just updated. Refresh and try again.');
       await tx.applicationStatusEvent.create({
         data: {
           applicationId: app.id,
@@ -325,15 +388,28 @@ export class ApplicationService {
           onlyIfStatus: { applicationId: app.id, status: input.status },
         },
         // Delay so an accidental drag that is immediately undone never reaches the candidate.
-        { jobId: `status-email-${app.id}-${input.status}-${Date.now()}`, delayMs: this.config.isTest ? 0 : 60_000 },
+        {
+          jobId: `status-email-${app.id}-${input.status}-${Date.now()}`,
+          delayMs: this.config.isTest ? 0 : 60_000,
+        },
       );
     }
-    await this.dispatcher.dispatch('analytics.refresh', { organizationId: actor.organizationId }, { jobId: `analytics-${actor.organizationId}` });
+    await this.dispatcher.dispatch(
+      'analytics.refresh',
+      { organizationId: actor.organizationId },
+      { jobId: `analytics-${actor.organizationId}` },
+    );
     return this.get(actor.organizationId, applicationId);
   }
 
-  async addNote(actor: Actor, applicationId: string, input: AddApplicationNoteInput): Promise<ApplicationNoteDto> {
-    const exists = await this.prisma.application.count({ where: { id: applicationId, job: { organizationId: actor.organizationId } } });
+  async addNote(
+    actor: Actor,
+    applicationId: string,
+    input: AddApplicationNoteInput,
+  ): Promise<ApplicationNoteDto> {
+    const exists = await this.prisma.application.count({
+      where: { id: applicationId, job: { organizationId: actor.organizationId } },
+    });
     if (!exists) throw new NotFoundError('Application');
     const note = await this.prisma.applicationNote.create({
       data: { applicationId, authorId: actor.userId, body: input.body },

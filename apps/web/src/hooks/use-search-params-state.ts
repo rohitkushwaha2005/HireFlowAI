@@ -5,7 +5,9 @@ import { useSearchParams } from 'react-router';
  * Stores list state (filters, search, page) in the URL so views are shareable and survive reloads.
  * Arrays are stored comma-separated. Changing any filter resets the page to 1.
  */
-export function useSearchParamsState<T extends Record<string, string | string[] | number | undefined>>(defaults: T) {
+export function useSearchParamsState<
+  T extends Record<string, string | string[] | number | undefined>,
+>(defaults: T) {
   const [params, setParams] = useSearchParams();
 
   const state = useMemo(() => {
@@ -27,7 +29,8 @@ export function useSearchParamsState<T extends Record<string, string | string[] 
         (prev) => {
           const next = new URLSearchParams(prev);
           for (const [key, value] of Object.entries(patch)) {
-            const empty = value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
+            const empty =
+              value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
             if (empty || value === defaults[key]) next.delete(key);
             else next.set(key, Array.isArray(value) ? value.join(',') : String(value));
           }

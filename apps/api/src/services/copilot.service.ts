@@ -133,7 +133,11 @@ class OrganizationToolbox implements CopilotToolbox {
 
   private async bestApplications(candidateIds: string[], jobId?: string) {
     const apps = await this.prisma.application.findMany({
-      where: { candidateId: { in: candidateIds }, ...this.orgApplications, ...(jobId ? { jobId } : {}) },
+      where: {
+        candidateId: { in: candidateIds },
+        ...this.orgApplications,
+        ...(jobId ? { jobId } : {}),
+      },
       select: {
         id: true,
         candidateId: true,
@@ -144,16 +148,25 @@ class OrganizationToolbox implements CopilotToolbox {
       orderBy: [{ match: { overallScore: 'desc' } }, { appliedAt: 'desc' }],
     });
     const byCandidate = new Map<string, typeof apps>();
-    for (const app of apps) byCandidate.set(app.candidateId, [...(byCandidate.get(app.candidateId) ?? []), app]);
+    for (const app of apps)
+      byCandidate.set(app.candidateId, [...(byCandidate.get(app.candidateId) ?? []), app]);
     return byCandidate;
   }
 
-  private async searchCandidates(input: CopilotToolInput<'search_candidates'>): Promise<CandidateSearchHit[]> {
+  private async searchCandidates(
+    input: CopilotToolInput<'search_candidates'>,
+  ): Promise<CandidateSearchHit[]> {
     const vector = await this.ai.embedQuery(input.query);
-    const skills = (input.skills ?? []).map((s) => normalizeSkill(s)?.key).filter((k): k is string => !!k);
+    const skills = (input.skills ?? [])
+      .map((s) => normalizeSkill(s)?.key)
+      .filter((k): k is string => !!k);
     const { hits } = await this.vectors.searchCandidates(
       vector,
-      { organizationId: this.actor.organizationId, skills, ...(input.jobId ? { jobId: input.jobId } : {}) },
+      {
+        organizationId: this.actor.organizationId,
+        skills,
+        ...(input.jobId ? { jobId: input.jobId } : {}),
+      },
       input.limit ?? 8,
     );
     const ids = hits.map((h) => h.candidateId);
@@ -165,7 +178,10 @@ class OrganizationToolbox implements CopilotToolbox {
           headline: true,
           totalExperience: true,
           user: { select: { firstName: true, lastName: true } },
-          skills: { select: { skill: true, normalizedSkill: true, yearsExperience: true }, orderBy: { yearsExperience: { sort: 'desc', nulls: 'last' } } },
+          skills: {
+            select: { skill: true, normalizedSkill: true, yearsExperience: true },
+            orderBy: { yearsExperience: { sort: 'desc', nulls: 'last' } },
+          },
           experiences: { select: { title: true, company: true, description: true }, take: 5 },
         },
       }),
@@ -178,7 +194,13 @@ class OrganizationToolbox implements CopilotToolbox {
       const candidateApps = apps.get(p.id) ?? [];
       const name = fullName(p.user);
       const best = candidateApps[0];
-      this.remember({ candidateId: p.id, name, applicationId: best?.id ?? null, jobTitle: best?.job.title ?? null, score: best?.match?.overallScore ?? null });
+      this.remember({
+        candidateId: p.id,
+        name,
+        applicationId: best?.id ?? null,
+        jobTitle: best?.job.title ?? null,
+        score: best?.match?.overallScore ?? null,
+      });
       return [
         {
           candidateId: p.id,
@@ -188,14 +210,23 @@ class OrganizationToolbox implements CopilotToolbox {
           topSkills: p.skills.slice(0, 8).map((s) => s.skill),
           similarity: Math.round(hit.similarity * 1000) / 1000,
           reasons: explainSearchHit(input.query, p),
-          applications: candidateApps.map((a) => ({ applicationId: a.id, jobTitle: a.job.title, status: a.status, score: a.match?.overallScore ?? null })),
+          applications: candidateApps.map((a) => ({
+            applicationId: a.id,
+            jobTitle: a.job.title,
+            status: a.status,
+            score: a.match?.overallScore ?? null,
+          })),
         },
       ];
     });
   }
 
-  private async findBySkills(input: CopilotToolInput<'find_candidates_by_skills'>): Promise<SkillCandidateHit[]> {
-    const keys = [...new Set(input.skills.map((s) => normalizeSkill(s)?.key).filter((k): k is string => !!k))];
+  private async findBySkills(
+    input: CopilotToolInput<'find_candidates_by_skills'>,
+  ): Promise<SkillCandidateHit[]> {
+    const keys = [
+      ...new Set(input.skills.map((s) => normalizeSkill(s)?.key).filter((k): k is string => !!k)),
+    ];
     if (keys.length === 0) return [];
     const mode = input.mode ?? 'all';
     const skillFilter = (key: string): Prisma.CandidateProfileWhereInput => ({
@@ -208,7 +239,9 @@ class OrganizationToolbox implements CopilotToolbox {
     });
     const profiles = await this.prisma.candidateProfile.findMany({
       where: {
-        applications: { some: { ...this.orgApplications, ...(input.jobId ? { jobId: input.jobId } : {}) } },
+        applications: {
+          some: { ...this.orgApplications, ...(input.jobId ? { jobId: input.jobId } : {}) },
+        },
         ...(mode === 'all' ? { AND: keys.map(skillFilter) } : { OR: keys.map(skillFilter) }),
       },
       select: {
@@ -216,11 +249,17 @@ class OrganizationToolbox implements CopilotToolbox {
         headline: true,
         totalExperience: true,
         user: { select: { firstName: true, lastName: true } },
-        skills: { where: { normalizedSkill: { in: keys } }, select: { skill: true, yearsExperience: true } },
+        skills: {
+          where: { normalizedSkill: { in: keys } },
+          select: { skill: true, yearsExperience: true },
+        },
       },
       take: 50,
     });
-    const apps = await this.bestApplications(profiles.map((p) => p.id), input.jobId);
+    const apps = await this.bestApplications(
+      profiles.map((p) => p.id),
+      input.jobId,
+    );
     const ranked = profiles
       .map((p) => ({ p, years: p.skills.reduce((sum, s) => sum + (s.yearsExperience ?? 0), 0) }))
       .sort((a, b) => b.years - a.years || (b.p.totalExperience ?? 0) - (a.p.totalExperience ?? 0))
@@ -228,7 +267,13 @@ class OrganizationToolbox implements CopilotToolbox {
     return ranked.map(({ p }) => {
       const best = apps.get(p.id)?.[0];
       const name = fullName(p.user);
-      this.remember({ candidateId: p.id, name, applicationId: best?.id ?? null, jobTitle: best?.job.title ?? null, score: best?.match?.overallScore ?? null });
+      this.remember({
+        candidateId: p.id,
+        name,
+        applicationId: best?.id ?? null,
+        jobTitle: best?.job.title ?? null,
+        score: best?.match?.overallScore ?? null,
+      });
       return {
         candidateId: p.id,
         name,
@@ -236,7 +281,12 @@ class OrganizationToolbox implements CopilotToolbox {
         totalExperience: p.totalExperience,
         matchingSkills: p.skills,
         bestApplication: best
-          ? { applicationId: best.id, jobTitle: best.job.title, status: best.status, score: best.match?.overallScore ?? null }
+          ? {
+              applicationId: best.id,
+              jobTitle: best.job.title,
+              status: best.status,
+              score: best.match?.overallScore ?? null,
+            }
           : null,
       };
     });
@@ -267,13 +317,28 @@ class OrganizationToolbox implements CopilotToolbox {
       skill: normalized.name,
       candidates: apps.map((a) => {
         const name = fullName(a.candidate.user);
-        this.remember({ candidateId: a.candidateId, name, applicationId: a.id, jobTitle: a.job.title, score: a.match?.overallScore ?? null });
-        return { candidateId: a.candidateId, name, applicationId: a.id, jobTitle: a.job.title, status: a.status, score: a.match?.overallScore ?? null };
+        this.remember({
+          candidateId: a.candidateId,
+          name,
+          applicationId: a.id,
+          jobTitle: a.job.title,
+          score: a.match?.overallScore ?? null,
+        });
+        return {
+          candidateId: a.candidateId,
+          name,
+          applicationId: a.id,
+          jobTitle: a.job.title,
+          status: a.status,
+          score: a.match?.overallScore ?? null,
+        };
       }),
     };
   }
 
-  private async getProfile(input: CopilotToolInput<'get_candidate_profile'>): Promise<CandidateProfileSummary | { error: string }> {
+  private async getProfile(
+    input: CopilotToolInput<'get_candidate_profile'>,
+  ): Promise<CandidateProfileSummary | { error: string }> {
     if (!input.candidateId && !input.name) return { error: 'Provide candidateId or name' };
     const nameParts = input.name?.trim().split(/\s+/).filter(Boolean) ?? [];
     const profile = await this.prisma.candidateProfile.findFirst({
@@ -306,10 +371,19 @@ class OrganizationToolbox implements CopilotToolbox {
         },
       },
     });
-    if (!profile) return { error: 'No candidate with that id or name has applied to this organization' };
+    if (!profile)
+      return { error: 'No candidate with that id or name has applied to this organization' };
     const name = fullName(profile.user);
-    const best = [...profile.applications].sort((a, b) => (b.match?.overallScore ?? -1) - (a.match?.overallScore ?? -1))[0];
-    this.remember({ candidateId: profile.id, name, applicationId: best?.id ?? null, jobTitle: best?.job.title ?? null, score: best?.match?.overallScore ?? null });
+    const best = [...profile.applications].sort(
+      (a, b) => (b.match?.overallScore ?? -1) - (a.match?.overallScore ?? -1),
+    )[0];
+    this.remember({
+      candidateId: profile.id,
+      name,
+      applicationId: best?.id ?? null,
+      jobTitle: best?.job.title ?? null,
+      score: best?.match?.overallScore ?? null,
+    });
     return {
       candidateId: profile.id,
       name,
@@ -325,8 +399,16 @@ class OrganizationToolbox implements CopilotToolbox {
         period: period(e.startDate, e.endDate, e.current),
         description: e.description?.slice(0, 600) ?? null,
       })),
-      education: profile.education.map((e) => ({ degree: e.degree, field: e.field, institution: e.institution })),
-      projects: profile.projects.map((p) => ({ name: p.name, description: p.description?.slice(0, 400) ?? null, technologies: p.technologies })),
+      education: profile.education.map((e) => ({
+        degree: e.degree,
+        field: e.field,
+        institution: e.institution,
+      })),
+      projects: profile.projects.map((p) => ({
+        name: p.name,
+        description: p.description?.slice(0, 400) ?? null,
+        technologies: p.technologies,
+      })),
       certifications: profile.certifications,
       applications: profile.applications.map((a) => ({
         applicationId: a.id,
@@ -339,9 +421,14 @@ class OrganizationToolbox implements CopilotToolbox {
     };
   }
 
-  private async compare(input: CopilotToolInput<'compare_candidates'>): Promise<CandidateComparison> {
+  private async compare(
+    input: CopilotToolInput<'compare_candidates'>,
+  ): Promise<CandidateComparison> {
     const job = input.jobId
-      ? await this.prisma.job.findFirst({ where: { id: input.jobId, organizationId: this.actor.organizationId }, select: { id: true, title: true } })
+      ? await this.prisma.job.findFirst({
+          where: { id: input.jobId, organizationId: this.actor.organizationId },
+          select: { id: true, title: true },
+        })
       : null;
     const profiles = await this.prisma.candidateProfile.findMany({
       where: { id: { in: input.candidateIds }, applications: { some: this.orgApplications } },
@@ -356,14 +443,22 @@ class OrganizationToolbox implements CopilotToolbox {
       },
     });
     const skillSets = profiles.map((p) => new Set(p.skills.map((s) => s.skill)));
-    const shared = profiles[0] ? [...skillSets[0]!].filter((s) => skillSets.every((set) => set.has(s))) : [];
+    const shared = profiles[0]
+      ? [...skillSets[0]!].filter((s) => skillSets.every((set) => set.has(s)))
+      : [];
     return {
       job,
       sharedSkills: shared,
       candidates: profiles.map((p, i) => {
         const name = fullName(p.user);
         const best = p.applications[0];
-        this.remember({ candidateId: p.id, name, applicationId: best?.id ?? null, jobTitle: best?.job.title ?? null, score: best?.match?.overallScore ?? null });
+        this.remember({
+          candidateId: p.id,
+          name,
+          applicationId: best?.id ?? null,
+          jobTitle: best?.job.title ?? null,
+          score: best?.match?.overallScore ?? null,
+        });
         const others = skillSets.filter((_, j) => j !== i);
         return {
           candidateId: p.id,
@@ -371,21 +466,32 @@ class OrganizationToolbox implements CopilotToolbox {
           headline: p.headline,
           totalExperience: p.totalExperience,
           highestEducation: p.highestEducation,
-          topSkills: p.skills.slice(0, 10).map((s) => (s.yearsExperience ? `${s.skill} (${s.yearsExperience}y)` : s.skill)),
-          uniqueSkills: p.skills.map((s) => s.skill).filter((s) => others.every((set) => !set.has(s))).slice(0, 8),
-          match: best?.match ? { ...matchSummary(best.match)!, jobTitle: best.job.title, applicationId: best.id } : null,
+          topSkills: p.skills
+            .slice(0, 10)
+            .map((s) => (s.yearsExperience ? `${s.skill} (${s.yearsExperience}y)` : s.skill)),
+          uniqueSkills: p.skills
+            .map((s) => s.skill)
+            .filter((s) => others.every((set) => !set.has(s)))
+            .slice(0, 8),
+          match: best?.match
+            ? { ...matchSummary(best.match)!, jobTitle: best.job.title, applicationId: best.id }
+            : null,
         };
       }),
     };
   }
 
-  private async listApplications(input: CopilotToolInput<'list_applications'>): Promise<ApplicationSummary[]> {
+  private async listApplications(
+    input: CopilotToolInput<'list_applications'>,
+  ): Promise<ApplicationSummary[]> {
     const apps = await this.prisma.application.findMany({
       where: {
         ...this.orgApplications,
         ...(input.jobId ? { jobId: input.jobId } : {}),
         ...(input.status?.length ? { status: { in: input.status } } : {}),
-        ...(input.minScore !== undefined ? { match: { overallScore: { gte: input.minScore } } } : {}),
+        ...(input.minScore !== undefined
+          ? { match: { overallScore: { gte: input.minScore } } }
+          : {}),
       },
       include: {
         job: { select: { id: true, title: true } },
@@ -397,7 +503,13 @@ class OrganizationToolbox implements CopilotToolbox {
     });
     return apps.map((a) => {
       const name = fullName(a.candidate.user);
-      this.remember({ candidateId: a.candidate.id, name, applicationId: a.id, jobTitle: a.job.title, score: a.match?.overallScore ?? null });
+      this.remember({
+        candidateId: a.candidate.id,
+        name,
+        applicationId: a.id,
+        jobTitle: a.job.title,
+        score: a.match?.overallScore ?? null,
+      });
       return {
         applicationId: a.id,
         candidateId: a.candidate.id,
@@ -415,8 +527,14 @@ class OrganizationToolbox implements CopilotToolbox {
 
   private async listJobs(input: CopilotToolInput<'list_jobs'>): Promise<JobSummary[]> {
     const jobs = await this.prisma.job.findMany({
-      where: { organizationId: this.actor.organizationId, ...(input.status?.length ? { status: { in: input.status } } : {}) },
-      include: { _count: { select: { applications: true } }, requirements: { where: { required: true }, select: { skill: true } } },
+      where: {
+        organizationId: this.actor.organizationId,
+        ...(input.status?.length ? { status: { in: input.status } } : {}),
+      },
+      include: {
+        _count: { select: { applications: true } },
+        requirements: { where: { required: true }, select: { skill: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 30,
     });
@@ -429,9 +547,14 @@ class OrganizationToolbox implements CopilotToolbox {
     }));
   }
 
-  private async pipelineSummary(input: CopilotToolInput<'get_pipeline_summary'>): Promise<PipelineSummary> {
+  private async pipelineSummary(
+    input: CopilotToolInput<'get_pipeline_summary'>,
+  ): Promise<PipelineSummary> {
     const job = input.jobId
-      ? await this.prisma.job.findFirst({ where: { id: input.jobId, organizationId: this.actor.organizationId }, select: { title: true } })
+      ? await this.prisma.job.findFirst({
+          where: { id: input.jobId, organizationId: this.actor.organizationId },
+          select: { title: true },
+        })
       : null;
     const groups = await this.prisma.application.groupBy({
       by: ['status'],
@@ -442,21 +565,36 @@ class OrganizationToolbox implements CopilotToolbox {
     return {
       jobTitle: job?.title ?? null,
       total: groups.reduce((sum, g) => sum + g._count._all, 0),
-      stages: [...PIPELINE_STAGES, 'WITHDRAWN' as const].map((status) => ({ status, count: counts.get(status) ?? 0 })),
+      stages: [...PIPELINE_STAGES, 'WITHDRAWN' as const].map((status) => ({
+        status,
+        count: counts.get(status) ?? 0,
+      })),
     };
   }
 
-  private async interviewQuestions(input: CopilotToolInput<'get_interview_questions'>): Promise<InterviewQuestionsResult> {
-    let questions = await this.interviews.listQuestions(this.actor.organizationId, input.applicationId);
+  private async interviewQuestions(
+    input: CopilotToolInput<'get_interview_questions'>,
+  ): Promise<InterviewQuestionsResult> {
+    let questions = await this.interviews.listQuestions(
+      this.actor.organizationId,
+      input.applicationId,
+    );
     let generated = false;
     if (questions.length === 0 && input.generateIfMissing) {
-      questions = await this.interviews.generateQuestions(this.actor, input.applicationId, { count: 8 });
+      questions = await this.interviews.generateQuestions(this.actor, input.applicationId, {
+        count: 8,
+      });
       generated = true;
     }
     return {
       applicationId: input.applicationId,
       generated,
-      questions: questions.map((q) => ({ category: q.category, difficulty: q.difficulty, question: q.question, expectedSignals: q.expectedSignals })),
+      questions: questions.map((q) => ({
+        category: q.category,
+        difficulty: q.difficulty,
+        question: q.question,
+        expectedSignals: q.expectedSignals,
+      })),
     };
   }
 }
@@ -465,11 +603,20 @@ class OrganizationToolbox implements CopilotToolbox {
  * Keeps only references to candidates that were (a) retrieved by a tool this turn and (b) actually
  * named in the answer. This is the final guard against the answer citing anyone not in the data.
  */
-export function verifyReferences(answer: string, retrieved: RetrievedCandidate[]): CopilotCandidateReference[] {
+export function verifyReferences(
+  answer: string,
+  retrieved: RetrievedCandidate[],
+): CopilotCandidateReference[] {
   const text = answer.toLowerCase();
   return retrieved
     .filter((c) => text.includes(c.name.toLowerCase()))
-    .map((c) => ({ candidateId: c.candidateId, name: c.name, applicationId: c.applicationId, jobTitle: c.jobTitle, score: c.score }));
+    .map((c) => ({
+      candidateId: c.candidateId,
+      name: c.name,
+      applicationId: c.applicationId,
+      jobTitle: c.jobTitle,
+      score: c.score,
+    }));
 }
 
 export class CopilotService {
@@ -484,15 +631,26 @@ export class CopilotService {
   async chat(actor: Actor, input: CopilotChatInput): Promise<CopilotAnswer> {
     const conversation = input.conversationId
       ? await this.prisma.copilotConversation.findFirst({
-          where: { id: input.conversationId, organizationId: actor.organizationId, userId: actor.userId },
+          where: {
+            id: input.conversationId,
+            organizationId: actor.organizationId,
+            userId: actor.userId,
+          },
         })
       : await this.prisma.copilotConversation.create({
-          data: { organizationId: actor.organizationId, userId: actor.userId, title: input.message.slice(0, 80) },
+          data: {
+            organizationId: actor.organizationId,
+            userId: actor.userId,
+            title: input.message.slice(0, 80),
+          },
         });
     if (!conversation) throw new NotFoundError('Conversation');
 
     const focusJob = input.jobId
-      ? await this.prisma.job.findFirst({ where: { id: input.jobId, organizationId: actor.organizationId }, select: { id: true, title: true } })
+      ? await this.prisma.job.findFirst({
+          where: { id: input.jobId, organizationId: actor.organizationId },
+          select: { id: true, title: true },
+        })
       : null;
 
     const previous = await this.prisma.copilotMessage.findMany({
@@ -506,7 +664,13 @@ export class CopilotService {
       data: { conversationId: conversation.id, role: 'USER', content: input.message },
     });
 
-    const toolbox = new OrganizationToolbox(this.prisma, this.ai, this.vectors, this.interviews, actor);
+    const toolbox = new OrganizationToolbox(
+      this.prisma,
+      this.ai,
+      this.vectors,
+      this.interviews,
+      actor,
+    );
     const started = Date.now();
     const result = await this.ai.answerHiringQuestion({
       question: input.message,
@@ -526,9 +690,17 @@ export class CopilotService {
         provider: this.ai.providerName,
       },
     });
-    await this.prisma.copilotConversation.update({ where: { id: conversation.id }, data: { updatedAt: new Date() } });
+    await this.prisma.copilotConversation.update({
+      where: { id: conversation.id },
+      data: { updatedAt: new Date() },
+    });
     this.logger.info(
-      { conversationId: conversation.id, tools: result.toolsUsed, references: references.length, durationMs: Date.now() - started },
+      {
+        conversationId: conversation.id,
+        tools: result.toolsUsed,
+        references: references.length,
+        durationMs: Date.now() - started,
+      },
       'Copilot answered',
     );
 
@@ -548,7 +720,12 @@ export class CopilotService {
       orderBy: { updatedAt: 'desc' },
       take: 50,
     });
-    return rows.map((r) => ({ id: r.id, title: r.title, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() }));
+    return rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+    }));
   }
 
   async messages(actor: Actor, conversationId: string): Promise<CopilotMessageDto[]> {

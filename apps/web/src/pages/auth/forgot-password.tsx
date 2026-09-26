@@ -12,7 +12,10 @@ import { post } from '@/lib/api';
 export default function ForgotPasswordPage() {
   useDocumentTitle('Forgot password');
   const [sentTo, setSentTo] = React.useState<string | null>(null);
-  const form = useForm<ForgotPasswordInput>({ resolver: zodResolver(forgotPasswordSchema), defaultValues: { email: '' } });
+  const form = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  });
   const { errors, isSubmitting } = form.formState;
 
   const onSubmit = form.handleSubmit(async ({ email }) => {
@@ -30,7 +33,8 @@ export default function ForgotPasswordPage() {
         <MailCheck className="mx-auto size-10 text-primary" />
         <h1 className="text-2xl font-semibold">Check your inbox</h1>
         <p className="text-sm text-muted-foreground">
-          If an account exists for <strong>{sentTo}</strong>, we sent a link to reset your password. It expires in one hour.
+          If an account exists for <strong>{sentTo}</strong>, we sent a link to reset your password.
+          It expires in one hour.
         </p>
         <Button variant="outline" asChild>
           <Link to="/login">Back to sign in</Link>
@@ -43,7 +47,9 @@ export default function ForgotPasswordPage() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
-        <p className="text-sm text-muted-foreground">Enter your email and we’ll send you a reset link.</p>
+        <p className="text-sm text-muted-foreground">
+          Enter your email and we’ll send you a reset link.
+        </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <FormError error={errors.root?.message ? new Error(errors.root.message) : null} />

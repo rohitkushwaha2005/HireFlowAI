@@ -22,7 +22,9 @@ export class AnalyticsService {
   ) {}
 
   dashboard(organizationId: string): Promise<DashboardAnalyticsDto> {
-    return this.cache.wrap(cacheKey(organizationId), CACHE_TTL_SECONDS, () => this.compute(organizationId));
+    return this.cache.wrap(cacheKey(organizationId), CACHE_TTL_SECONDS, () =>
+      this.compute(organizationId),
+    );
   }
 
   async refresh(organizationId: string): Promise<void> {
@@ -31,16 +33,17 @@ export class AnalyticsService {
   }
 
   private async compute(organizationId: string): Promise<DashboardAnalyticsDto> {
-    const [totals, overTime, pipeline, perJob, topSkills, funnel, scores, recentActivity] = await Promise.all([
-      this.repository.totals(organizationId),
-      this.repository.applicationsOverTime(organizationId, 30),
-      this.repository.pipeline(organizationId),
-      this.repository.applicationsPerJob(organizationId, 8),
-      this.repository.topSkills(organizationId, 10),
-      this.repository.funnel(organizationId),
-      this.repository.scoreDistribution(organizationId),
-      this.audit.list(organizationId, { limit: 10 }),
-    ]);
+    const [totals, overTime, pipeline, perJob, topSkills, funnel, scores, recentActivity] =
+      await Promise.all([
+        this.repository.totals(organizationId),
+        this.repository.applicationsOverTime(organizationId, 30),
+        this.repository.pipeline(organizationId),
+        this.repository.applicationsPerJob(organizationId, 8),
+        this.repository.topSkills(organizationId, 10),
+        this.repository.funnel(organizationId),
+        this.repository.scoreDistribution(organizationId),
+        this.audit.list(organizationId, { limit: 10 }),
+      ]);
 
     const stages = [
       { stage: 'Applied', count: funnel.applied },
@@ -54,10 +57,16 @@ export class AnalyticsService {
     return {
       totals,
       applicationsOverTime: overTime,
-      pipeline: [...PIPELINE_STAGES, 'WITHDRAWN' as const].map((status) => ({ status, count: pipeline.get(status) ?? 0 })),
+      pipeline: [...PIPELINE_STAGES, 'WITHDRAWN' as const].map((status) => ({
+        status,
+        count: pipeline.get(status) ?? 0,
+      })),
       applicationsPerJob: perJob,
       topSkills,
-      funnel: stages.map((s, i) => ({ ...s, conversion: i === 0 ? null : rate(s.count, stages[i - 1]!.count) })),
+      funnel: stages.map((s, i) => ({
+        ...s,
+        conversion: i === 0 ? null : rate(s.count, stages[i - 1]!.count),
+      })),
       conversion: {
         applicationToInterview: rate(funnel.interview, funnel.applied),
         interviewToOffer: rate(funnel.offer, funnel.interview),

@@ -33,7 +33,12 @@ export class S3StorageProvider implements StorageProvider {
       ...(options.endpoint ? { endpoint: options.endpoint } : {}),
       forcePathStyle: options.forcePathStyle,
       ...(options.accessKeyId && options.secretAccessKey
-        ? { credentials: { accessKeyId: options.accessKeyId, secretAccessKey: options.secretAccessKey } }
+        ? {
+            credentials: {
+              accessKeyId: options.accessKeyId,
+              secretAccessKey: options.secretAccessKey,
+            },
+          }
         : {}),
     });
   }
@@ -66,7 +71,9 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async get(key: string): Promise<Buffer> {
-    const result = await this.client.send(new GetObjectCommand({ Bucket: this.options.bucket, Key: key }));
+    const result = await this.client.send(
+      new GetObjectCommand({ Bucket: this.options.bucket, Key: key }),
+    );
     if (!result.Body) throw new Error(`Object ${key} has no body`);
     return Buffer.from(await result.Body.transformToByteArray());
   }

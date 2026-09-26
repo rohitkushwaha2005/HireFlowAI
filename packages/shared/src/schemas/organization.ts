@@ -31,9 +31,7 @@ export const matchingWeightsSchema = z
 
 export const updateOrganizationSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
-  logoUrl: z
-    .preprocess((v) => (v === '' ? null : v), z.url().max(500).nullable())
-    .optional(),
+  logoUrl: z.preprocess((v) => (v === '' ? null : v), z.url().max(500).nullable()).optional(),
   matchingWeights: matchingWeightsSchema.optional(),
 });
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationSchema>;

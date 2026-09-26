@@ -55,7 +55,8 @@ export class AnalyticsRepository {
       interviews: Number(row?.interviews ?? 0),
       upcomingInterviews: Number(row?.upcoming_interviews ?? 0),
       hires: Number(row?.hires ?? 0),
-      averageMatchScore: row?.avg_score === null || row?.avg_score === undefined ? null : Math.round(row.avg_score),
+      averageMatchScore:
+        row?.avg_score === null || row?.avg_score === undefined ? null : Math.round(row.avg_score),
     };
   }
 
@@ -84,7 +85,9 @@ export class AnalyticsRepository {
   }
 
   async applicationsPerJob(organizationId: string, limit: number) {
-    const rows = await this.prisma.$queryRaw<Array<{ id: string; title: string; count: bigint; avg_score: number | null }>>`
+    const rows = await this.prisma.$queryRaw<
+      Array<{ id: string; title: string; count: bigint; avg_score: number | null }>
+    >`
       SELECT j.id, j.title, COUNT(a.id) AS count, AVG(m."overallScore")::float8 AS avg_score
       FROM jobs j
       LEFT JOIN applications a ON a."jobId" = j.id
@@ -160,6 +163,9 @@ export class AnalyticsRepository {
       WHERE j."organizationId" = ${organizationId}
       GROUP BY bucket`;
     const counts = new Map(rows.map((r) => [r.bucket, Number(r.count)]));
-    return ['0–39', '40–59', '60–79', '80–100'].map((bucket) => ({ bucket, count: counts.get(bucket) ?? 0 }));
+    return ['0–39', '40–59', '60–79', '80–100'].map((bucket) => ({
+      bucket,
+      count: counts.get(bucket) ?? 0,
+    }));
   }
 }

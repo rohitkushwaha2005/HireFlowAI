@@ -11,7 +11,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Badge, Tooltip } from './ui';
 
-type BadgeVariant = 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'muted';
+type BadgeVariant =
+  'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'muted';
 
 const APPLICATION_STATUS_VARIANT: Record<ApplicationStatus, BadgeVariant> = {
   APPLIED: 'secondary',
@@ -24,7 +25,13 @@ const APPLICATION_STATUS_VARIANT: Record<ApplicationStatus, BadgeVariant> = {
   WITHDRAWN: 'muted',
 };
 
-export function ApplicationStatusBadge({ status, className }: { status: ApplicationStatus; className?: string }) {
+export function ApplicationStatusBadge({
+  status,
+  className,
+}: {
+  status: ApplicationStatus;
+  className?: string;
+}) {
   return (
     <Badge variant={APPLICATION_STATUS_VARIANT[status]} className={className}>
       {APPLICATION_STATUS_LABELS[status]}
@@ -86,10 +93,23 @@ const SCORE_BG = {
 } as const;
 
 /** Compact pill with the overall match score. */
-export function ScoreBadge({ score, pending, className }: { score: number | null; pending?: boolean; className?: string }) {
+export function ScoreBadge({
+  score,
+  pending,
+  className,
+}: {
+  score: number | null;
+  pending?: boolean;
+  className?: string;
+}) {
   if (score === null) {
     return (
-      <span className={cn('inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground', className)}>
+      <span
+        className={cn(
+          'inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground',
+          className,
+        )}
+      >
         {pending ? <LoaderCircle className="size-3 animate-spin" /> : null}
         {pending ? 'Scoring' : 'No score'}
       </span>
@@ -97,8 +117,16 @@ export function ScoreBadge({ score, pending, className }: { score: number | null
   }
   const band = scoreBand(score);
   return (
-    <Tooltip content={`AI match score: ${score}/100 (${band.toLowerCase()}). Decision support only.`}>
-      <span className={cn('inline-flex min-w-11 cursor-default items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums', SCORE_BG[band], className)}>
+    <Tooltip
+      content={`AI match score: ${score}/100 (${band.toLowerCase()}). Decision support only.`}
+    >
+      <span
+        className={cn(
+          'inline-flex min-w-11 cursor-default items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
+          SCORE_BG[band],
+          className,
+        )}
+      >
         {score}
       </span>
     </Tooltip>
@@ -106,15 +134,34 @@ export function ScoreBadge({ score, pending, className }: { score: number | null
 }
 
 /** Circular gauge for the headline match score. */
-export function ScoreRing({ score, size = 96, label = 'Match' }: { score: number; size?: number; label?: string }) {
+export function ScoreRing({
+  score,
+  size = 96,
+  label = 'Match',
+}: {
+  score: number;
+  size?: number;
+  label?: string;
+}) {
   const band = scoreBand(score);
   const stroke = 8;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }} role="img" aria-label={`${label} score ${score} out of 100`}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label} score ${score} out of 100`}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} strokeWidth={stroke} className="fill-none stroke-muted" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          strokeWidth={stroke}
+          className="fill-none stroke-muted"
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -135,18 +182,36 @@ export function ScoreRing({ score, size = 96, label = 'Match' }: { score: number
 }
 
 /** Horizontal bar for one score component. */
-export function ScoreBar({ label, value, weight }: { label: string; value: number | null; weight?: number }) {
+export function ScoreBar({
+  label,
+  value,
+  weight,
+}: {
+  label: string;
+  value: number | null;
+  weight?: number;
+}) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{label}</span>
         <span className="tabular-nums text-muted-foreground">
           {value === null ? 'n/a' : `${value}/100`}
-          {weight !== undefined && value !== null && <span className="ml-2 text-xs">× {Math.round(weight * 100)}%</span>}
+          {weight !== undefined && value !== null && (
+            <span className="ml-2 text-xs">× {Math.round(weight * 100)}%</span>
+          )}
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-muted">
-        {value !== null && <div className={cn('h-full rounded-full', value >= 65 ? 'bg-success' : value >= 45 ? 'bg-primary' : 'bg-warning')} style={{ width: `${value}%` }} />}
+        {value !== null && (
+          <div
+            className={cn(
+              'h-full rounded-full',
+              value >= 65 ? 'bg-success' : value >= 45 ? 'bg-primary' : 'bg-warning',
+            )}
+            style={{ width: `${value}%` }}
+          />
+        )}
       </div>
     </div>
   );
@@ -165,7 +230,17 @@ export function RequirementStatusIcon({ status }: { status: RequirementMatchStat
   }
 }
 
-export function SkillChips({ skills, variant = 'secondary', max, className }: { skills: string[]; variant?: BadgeVariant; max?: number; className?: string }) {
+export function SkillChips({
+  skills,
+  variant = 'secondary',
+  max,
+  className,
+}: {
+  skills: string[];
+  variant?: BadgeVariant;
+  max?: number;
+  className?: string;
+}) {
   const shown = max ? skills.slice(0, max) : skills;
   const rest = skills.length - shown.length;
   return (

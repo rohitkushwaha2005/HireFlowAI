@@ -11,7 +11,10 @@ export default function VerifyEmailPage() {
   const [params] = useSearchParams();
   const token = params.get('token');
   const { status, me, reload } = useAuth();
-  const [state, setState] = React.useState<{ kind: 'loading' | 'done' | 'error'; message?: string }>({ kind: 'loading' });
+  const [state, setState] = React.useState<{
+    kind: 'loading' | 'done' | 'error';
+    message?: string;
+  }>({ kind: 'loading' });
   const started = React.useRef(false);
 
   React.useEffect(() => {

@@ -16,7 +16,12 @@ export function RequireAuth({ role }: { role: 'staff' | 'candidate' }) {
 
   if (status === 'loading') return <PageLoader />;
   if (status === 'anonymous') {
-    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    return (
+      <Navigate
+        to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
+        replace
+      />
+    );
   }
   if (role === 'staff' && !isStaff) return <Navigate to={homePathFor(me)} replace />;
   if (role === 'candidate' && !isCandidate) return <Navigate to={homePathFor(me)} replace />;
@@ -32,12 +37,19 @@ export function GuestOnly() {
   const { status, me } = useAuth();
   const [params] = useSearchParams();
   if (status === 'loading') return <PageLoader />;
-  if (status === 'authenticated') return <Navigate to={safeNextPath(params.get('next')) ?? homePathFor(me)} replace />;
+  if (status === 'authenticated')
+    return <Navigate to={safeNextPath(params.get('next')) ?? homePathFor(me)} replace />;
   return <Outlet />;
 }
 
 /** Hides a screen (or shows a friendly notice) when the org role lacks a permission. */
-export function RequirePermission({ permission, children }: { permission: Permission; children: React.ReactNode }) {
+export function RequirePermission({
+  permission,
+  children,
+}: {
+  permission: Permission;
+  children: React.ReactNode;
+}) {
   const { can } = useAuth();
   if (!can(permission)) {
     return (
@@ -51,7 +63,13 @@ export function RequirePermission({ permission, children }: { permission: Permis
   return <>{children}</>;
 }
 
-export function Can({ permission, children }: { permission: Permission; children: React.ReactNode }) {
+export function Can({
+  permission,
+  children,
+}: {
+  permission: Permission;
+  children: React.ReactNode;
+}) {
   const { can } = useAuth();
   return can(permission) ? <>{children}</> : null;
 }

@@ -12,7 +12,9 @@ async function main(): Promise<void> {
 
   if (config.runMigrations) {
     logger.info('Applying database migrations');
-    execFileSync('npx', ['prisma', 'migrate', 'deploy', '--schema', 'prisma/schema.prisma'], { stdio: 'inherit' });
+    execFileSync('npx', ['prisma', 'migrate', 'deploy', '--schema', 'prisma/schema.prisma'], {
+      stdio: 'inherit',
+    });
   }
 
   const container = buildContainer(config, logger);
@@ -22,11 +24,18 @@ async function main(): Promise<void> {
   const app = createApp(container);
   const server = app.listen(config.port, () => {
     logger.info(
-      { port: config.port, ai: container.ai.providerName, storage: container.storage.name, queue: config.queue.driver },
+      {
+        port: config.port,
+        ai: container.ai.providerName,
+        storage: container.storage.name,
+        queue: config.queue.driver,
+      },
       `HireFlow API listening on http://localhost:${config.port} (docs at /api/docs)`,
     );
     if (container.ai.isHeuristic) {
-      logger.warn('AI provider is HEURISTIC (no AI_API_KEY). Set AI_API_KEY for LLM-powered parsing, analysis and copilot.');
+      logger.warn(
+        'AI provider is HEURISTIC (no AI_API_KEY). Set AI_API_KEY for LLM-powered parsing, analysis and copilot.',
+      );
     }
   });
 
@@ -46,6 +55,8 @@ async function main(): Promise<void> {
 
 main().catch((error: unknown) => {
   // Logger may not exist yet (e.g. invalid configuration).
-  process.stderr.write(`Failed to start API: ${error instanceof Error ? error.message : String(error)}\n`);
+  process.stderr.write(
+    `Failed to start API: ${error instanceof Error ? error.message : String(error)}\n`,
+  );
   process.exit(1);
 });

@@ -18,7 +18,9 @@ const optionalString = z
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+    LOG_LEVEL: z
+      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+      .default('info'),
     API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     WEB_URL: z.url().default('http://localhost:5173'),
     API_URL: z.url().default('http://localhost:4000'),
@@ -28,7 +30,10 @@ const envSchema = z
 
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
-    ACCESS_TOKEN_TTL: z.string().regex(/^\d+[smhd]$/).default('15m'),
+    ACCESS_TOKEN_TTL: z
+      .string()
+      .regex(/^\d+[smhd]$/)
+      .default('15m'),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(14),
     COOKIE_SECURE: bool,
 
@@ -78,7 +83,10 @@ const envSchema = z
         message: 'EMAIL_API_KEY is required when EMAIL_PROVIDER=resend',
       });
     }
-    if (env.NODE_ENV === 'production' && /change-me/.test(env.JWT_SECRET + env.JWT_REFRESH_SECRET)) {
+    if (
+      env.NODE_ENV === 'production' &&
+      /change-me/.test(env.JWT_SECRET + env.JWT_REFRESH_SECRET)
+    ) {
       ctx.addIssue({
         code: 'custom',
         path: ['JWT_SECRET'],

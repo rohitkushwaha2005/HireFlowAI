@@ -1,5 +1,16 @@
-import axios, { type AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
-import type { ApiErrorBody, ApiSuccess, ErrorCode, Paginated, PaginationMeta, SessionDto } from '@hireflow/shared';
+import axios, {
+  type AxiosError,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+import type {
+  ApiErrorBody,
+  ApiSuccess,
+  ErrorCode,
+  Paginated,
+  PaginationMeta,
+  SessionDto,
+} from '@hireflow/shared';
 
 /**
  * HTTP client. The access token lives only in memory (never localStorage) to limit XSS exposure;
@@ -62,7 +73,9 @@ export class ApiError extends Error {
 
   /** Field-level validation messages keyed by dotted path. */
   get fieldErrors(): Record<string, string> {
-    const issues = (this.details as { issues?: Array<{ path: string; message: string }> } | undefined)?.issues ?? [];
+    const issues =
+      (this.details as { issues?: Array<{ path: string; message: string }> } | undefined)?.issues ??
+      [];
     return Object.fromEntries(issues.filter((i) => i.path).map((i) => [i.path, i.message]));
   }
 }
@@ -99,9 +112,15 @@ const NO_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/log
 http.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorBody>) => {
-    const original = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
+    const original = error.config as
+      (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
     const status = error.response?.status;
-    if (status === 401 && original && !original._retried && !NO_REFRESH.some((p) => original.url?.startsWith(p))) {
+    if (
+      status === 401 &&
+      original &&
+      !original._retried &&
+      !NO_REFRESH.some((p) => original.url?.startsWith(p))
+    ) {
       original._retried = true;
       const refreshed = await refreshSession();
       if (refreshed) return http(original);
@@ -116,13 +135,25 @@ export function toApiError(error: unknown): ApiError {
   if (axios.isAxiosError(error)) {
     const body = error.response?.data as ApiErrorBody | undefined;
     if (body && body.success === false && body.error) {
-      return new ApiError(error.response!.status, body.error.code, body.error.message, body.error.details, body.error.requestId);
+      return new ApiError(
+        error.response!.status,
+        body.error.code,
+        body.error.message,
+        body.error.details,
+        body.error.requestId,
+      );
     }
-    if (error.code === 'ECONNABORTED') return new ApiError(0, 'INTERNAL_ERROR', 'The request timed out. Please try again.');
-    if (!error.response) return new ApiError(0, 'INTERNAL_ERROR', 'Cannot reach the server. Check your connection.');
+    if (error.code === 'ECONNABORTED')
+      return new ApiError(0, 'INTERNAL_ERROR', 'The request timed out. Please try again.');
+    if (!error.response)
+      return new ApiError(0, 'INTERNAL_ERROR', 'Cannot reach the server. Check your connection.');
     return new ApiError(error.response.status, 'INTERNAL_ERROR', 'Unexpected server response');
   }
-  return new ApiError(0, 'INTERNAL_ERROR', error instanceof Error ? error.message : 'Unexpected error');
+  return new ApiError(
+    0,
+    'INTERNAL_ERROR',
+    error instanceof Error ? error.message : 'Unexpected error',
+  );
 }
 
 export function errorMessage(error: unknown): string {
@@ -142,7 +173,11 @@ export async function getPage<T>(url: string, params?: object): Promise<Paginate
   return { items: res.data.data, pagination };
 }
 
-export async function post<T>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> {
+export async function post<T>(
+  url: string,
+  body?: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
   const res = await http.post<ApiSuccess<T>>(url, body, config);
   return res.data.data;
 }
@@ -163,13 +198,19 @@ export async function del<T = null>(url: string): Promise<T> {
 }
 
 /** Serializes arrays as comma-separated values, matching the API's csv query parsing. */
-export function toQuery(params: Record<string, unknown>): Record<string, string | number | boolean> {
+export function toQuery(
+  params: Record<string, unknown>,
+): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null || value === '') continue;
     if (Array.isArray(value)) {
       if (value.length) out[key] = value.join(',');
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       out[key] = value;
     }
   }

@@ -62,21 +62,24 @@ describe('scoreSkills', () => {
   });
 
   it('awards half credit for a related skill and records which skill earned it', () => {
-    const { breakdown } = scoreSkills([req('PostgreSQL', 'postgresql')], [
-      { normalizedSkill: 'mysql', yearsExperience: 3 },
-    ]);
+    const { breakdown } = scoreSkills(
+      [req('PostgreSQL', 'postgresql')],
+      [{ normalizedSkill: 'mysql', yearsExperience: 3 }],
+    );
     expect(breakdown[0]).toMatchObject({ status: 'RELATED', credit: 0.5, viaSkill: 'MySQL' });
   });
 
   it('gives proportional (min 0.5) credit when years are below the requirement', () => {
-    const { breakdown } = scoreSkills([req('React', 'react', { minimumYears: 4 })], [
-      { normalizedSkill: 'react', yearsExperience: 3 },
-    ]);
+    const { breakdown } = scoreSkills(
+      [req('React', 'react', { minimumYears: 4 })],
+      [{ normalizedSkill: 'react', yearsExperience: 3 }],
+    );
     expect(breakdown[0]).toMatchObject({ status: 'PARTIAL', credit: 0.75 });
 
-    const low = scoreSkills([req('React', 'react', { minimumYears: 10 })], [
-      { normalizedSkill: 'react', yearsExperience: 1 },
-    ]);
+    const low = scoreSkills(
+      [req('React', 'react', { minimumYears: 10 })],
+      [{ normalizedSkill: 'react', yearsExperience: 1 }],
+    );
     expect(low.breakdown[0]?.credit).toBe(0.5);
   });
 
@@ -139,9 +142,9 @@ describe('normalizeWeights', () => {
     expect(w.semantic).toBe(0);
   });
   it('falls back to defaults when all weights are zero or invalid', () => {
-    expect(normalizeWeights({ skills: 0, experience: -1, education: Number.NaN, semantic: 0 })).toEqual(
-      DEFAULT_MATCHING_WEIGHTS,
-    );
+    expect(
+      normalizeWeights({ skills: 0, experience: -1, education: Number.NaN, semantic: 0 }),
+    ).toEqual(DEFAULT_MATCHING_WEIGHTS);
   });
 });
 

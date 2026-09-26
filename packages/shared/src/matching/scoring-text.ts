@@ -13,9 +13,17 @@ export interface CandidateEmbeddingSource {
   summary?: string | null;
   currentRole?: string | null;
   skills: readonly string[];
-  experiences: ReadonlyArray<{ title: string; company?: string | null; description?: string | null }>;
+  experiences: ReadonlyArray<{
+    title: string;
+    company?: string | null;
+    description?: string | null;
+  }>;
   education: ReadonlyArray<{ degree?: string | null; field?: string | null }>;
-  projects: ReadonlyArray<{ name: string; description?: string | null; technologies?: readonly string[] }>;
+  projects: ReadonlyArray<{
+    name: string;
+    description?: string | null;
+    technologies?: readonly string[];
+  }>;
   certifications: readonly string[];
 }
 
@@ -32,13 +40,16 @@ export function buildCandidateEmbeddingText(source: CandidateEmbeddingSource): s
   }
   for (const project of source.projects) {
     const tech = project.technologies?.length ? ` (${project.technologies.join(', ')})` : '';
-    lines.push(`Project ${project.name}${tech}${project.description ? `: ${project.description}` : ''}`);
+    lines.push(
+      `Project ${project.name}${tech}${project.description ? `: ${project.description}` : ''}`,
+    );
   }
   for (const edu of source.education) {
     const text = [edu.degree, edu.field].filter(Boolean).join(' in ');
     if (text) lines.push(`Education: ${text}`);
   }
-  if (source.certifications.length) lines.push(`Certifications: ${source.certifications.join(', ')}`);
+  if (source.certifications.length)
+    lines.push(`Certifications: ${source.certifications.join(', ')}`);
   return lines.join('\n').trim();
 }
 

@@ -23,9 +23,22 @@ interface SelectProps<T extends string> {
 }
 
 /** Accessible single-select built on Radix Select. */
-export function Select<T extends string>({ value, onValueChange, options, placeholder = 'Select…', id, disabled, className, ...aria }: SelectProps<T>) {
+export function Select<T extends string>({
+  value,
+  onValueChange,
+  options,
+  placeholder = 'Select…',
+  id,
+  disabled,
+  className,
+  ...aria
+}: SelectProps<T>) {
   return (
-    <SelectPrimitive.Root value={value ?? ''} onValueChange={(v) => onValueChange(v as T)} disabled={disabled}>
+    <SelectPrimitive.Root
+      value={value ?? ''}
+      onValueChange={(v) => onValueChange(v as T)}
+      disabled={disabled}
+    >
       <SelectPrimitive.Trigger
         id={id}
         aria-label={aria['aria-label']}
@@ -41,7 +54,11 @@ export function Select<T extends string>({ value, onValueChange, options, placeh
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
-        <SelectPrimitive.Content position="popper" sideOffset={4} className="z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border bg-popover shadow-lg">
+        <SelectPrimitive.Content
+          position="popper"
+          sideOffset={4}
+          className="z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border bg-popover shadow-lg"
+        >
           <SelectPrimitive.Viewport className="p-1">
             {options.map((option) => (
               <SelectPrimitive.Item
@@ -66,16 +83,25 @@ export function Select<T extends string>({ value, onValueChange, options, placeh
 
 export const Tabs = TabsPrimitive.Root;
 
-export function TabsList({ className, ...props }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
+export function TabsList({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      className={cn('inline-flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-muted p-1 text-muted-foreground', className)}
+      className={cn(
+        'inline-flex h-9 max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-muted p-1 text-muted-foreground',
+        className,
+      )}
       {...props}
     />
   );
 }
 
-export function TabsTrigger({ className, ...props }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>) {
+export function TabsTrigger({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
       className={cn(
@@ -87,6 +113,14 @@ export function TabsTrigger({ className, ...props }: React.ComponentPropsWithout
   );
 }
 
-export function TabsContent({ className, ...props }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>) {
-  return <TabsPrimitive.Content className={cn('mt-4 focus-visible:outline-none', className)} {...props} />;
+export function TabsContent({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>) {
+  return (
+    <TabsPrimitive.Content
+      className={cn('mt-4 focus-visible:outline-none', className)}
+      {...props}
+    />
+  );
 }

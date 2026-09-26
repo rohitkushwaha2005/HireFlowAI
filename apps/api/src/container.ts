@@ -68,16 +68,26 @@ export interface ContainerOverrides {
  * Composition root: the single place where concrete implementations are chosen and wired.
  * Tests pass overrides (local storage, console email, inline queue) to build an isolated graph.
  */
-export function buildContainer(config: AppConfig, logger: Logger, overrides: ContainerOverrides = {}): Container {
+export function buildContainer(
+  config: AppConfig,
+  logger: Logger,
+  overrides: ContainerOverrides = {},
+): Container {
   const prisma = overrides.prisma ?? createPrismaClient({ url: config.databaseUrl });
   const redis =
-    overrides.redis !== undefined ? overrides.redis : config.queue.driver === 'bullmq' ? createRedis(config.redisUrl, logger, 'api') : null;
+    overrides.redis !== undefined
+      ? overrides.redis
+      : config.queue.driver === 'bullmq'
+        ? createRedis(config.redisUrl, logger, 'api')
+        : null;
   const storage = overrides.storage ?? createStorageProvider(config.storage);
   const email = overrides.email ?? createEmailProvider(config.email, logger);
   const ai = overrides.ai ?? createAIService(config.ai, logger);
 
   const dispatcher: JobDispatcher =
-    config.queue.driver === 'bullmq' && redis ? new BullMqDispatcher(redis, logger) : new InlineDispatcher(logger);
+    config.queue.driver === 'bullmq' && redis
+      ? new BullMqDispatcher(redis, logger)
+      : new InlineDispatcher(logger);
 
   const cache = new Cache(redis);
   const vectors = new VectorRepository(prisma);

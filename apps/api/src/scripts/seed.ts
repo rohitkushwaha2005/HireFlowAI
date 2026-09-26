@@ -42,10 +42,18 @@ function pathTo(status: ApplicationStatus): Array<(typeof PIPELINE_STAGES)[numbe
 
 async function main(): Promise<void> {
   configureHttp();
-  const config = loadConfig({ ...process.env, QUEUE_DRIVER: 'inline', EMAIL_PROVIDER: 'console', LOG_LEVEL: process.env.SEED_LOG_LEVEL ?? 'warn' });
+  const config = loadConfig({
+    ...process.env,
+    QUEUE_DRIVER: 'inline',
+    EMAIL_PROVIDER: 'console',
+    LOG_LEVEL: process.env.SEED_LOG_LEVEL ?? 'warn',
+  });
   if (config.isProduction) throw new Error('Refusing to seed demo data in production');
   const logger = createLogger(config);
-  const container = buildContainer(config, logger, { email: new ConsoleEmailProvider(logger), redis: null });
+  const container = buildContainer(config, logger, {
+    email: new ConsoleEmailProvider(logger),
+    redis: null,
+  });
   const { prisma, services } = container;
   const password = process.env.DEMO_PASSWORD ?? DEFAULT_DEMO_PASSWORD;
   const log = (message: string) => process.stdout.write(`${message}\n`);
@@ -73,13 +81,20 @@ async function main(): Promise<void> {
         role: member.globalRole,
         emailVerified: true,
         createdAt: daysAgo(90),
-        memberships: { create: { organizationId: organization.id, role: member.orgRole, createdAt: daysAgo(90) } },
+        memberships: {
+          create: { organizationId: organization.id, role: member.orgRole, createdAt: daysAgo(90) },
+        },
       },
     });
     staff.set(member.key, { id: user.id, role: member.orgRole });
   }
   const owner = staff.get('owner')!;
-  const actor: Actor = { userId: owner.id, organizationId: organization.id, orgRole: 'OWNER', ipAddress: null };
+  const actor: Actor = {
+    userId: owner.id,
+    organizationId: organization.id,
+    orgRole: 'OWNER',
+    ipAddress: null,
+  };
   log(`✓ Organization "${organization.name}" with ${STAFF.length} team members`);
 
   // ── Jobs ──────────────────────────────────────────────────────────────────
@@ -113,7 +128,11 @@ async function main(): Promise<void> {
         requirements: {
           createMany: {
             data: prepareRequirements(
-              job.requirements.map((r) => ({ ...r, minimumYears: r.minimumYears ?? null, aiGenerated: true })),
+              job.requirements.map((r) => ({
+                ...r,
+                minimumYears: r.minimumYears ?? null,
+                aiGenerated: true,
+              })),
             ),
           },
         },
@@ -121,14 +140,26 @@ async function main(): Promise<void> {
     });
     jobIds.set(job.key, created.id);
     await prisma.auditLog.create({
-      data: { organizationId: organization.id, userId: owner.id, action: 'JOB_CREATED', entityType: 'Job', entityId: created.id, metadata: { title: job.title }, createdAt: created.createdAt },
+      data: {
+        organizationId: organization.id,
+        userId: owner.id,
+        action: 'JOB_CREATED',
+        entityType: 'Job',
+        entityId: created.id,
+        metadata: { title: job.title },
+        createdAt: created.createdAt,
+      },
     });
     await services.embeddings.embedJob(created.id);
   }
   log(`✓ ${JOBS.length} jobs with requirements and embeddings`);
 
   // ── Candidates: real upload → parse → embed pipeline ──────────────────────
-  const applicationIds: Array<{ id: string; fixture: (typeof CANDIDATES)[number]['applications'][number]; candidate: string }> = [];
+  const applicationIds: Array<{
+    id: string;
+    fixture: (typeof CANDIDATES)[number]['applications'][number];
+    candidate: string;
+  }> = [];
   for (const [index, fixture] of CANDIDATES.entries()) {
     const user = await prisma.user.create({
       data: {
@@ -144,31 +175,59 @@ async function main(): Promise<void> {
     });
     const pdf = await renderResumePdf(fixture);
     const fileName = `${fixture.firstName}-${fixture.lastName}-resume.pdf`.replace(/[^\w.-]/g, '');
-    const resume = await services.resumes.upload(user.id, { originalname: fileName, mimetype: 'application/pdf', buffer: pdf, size: pdf.length });
+    const resume = await services.resumes.upload(user.id, {
+      originalname: fileName,
+      mimetype: 'application/pdf',
+      buffer: pdf,
+      size: pdf.length,
+    });
 
     for (const application of fixture.applications) {
       const jobId = jobIds.get(application.job)!;
-      const created = await services.applications.apply(user.id, jobId, { resumeId: resume.id, ...(application.coverLetter ? { coverLetter: application.coverLetter } : {}) });
-      applicationIds.push({ id: created.id, fixture: application, candidate: `${fixture.firstName} ${fixture.lastName}` });
+      const created = await services.applications.apply(user.id, jobId, {
+        resumeId: resume.id,
+        ...(application.coverLetter ? { coverLetter: application.coverLetter } : {}),
+      });
+      applicationIds.push({
+        id: created.id,
+        fixture: application,
+        candidate: `${fixture.firstName} ${fixture.lastName}`,
+      });
     }
-    log(`  • ${index + 1}/${CANDIDATES.length} ${fixture.firstName} ${fixture.lastName} (${resume.parsingStatus.toLowerCase()} → parsed)`);
+    log(
+      `  • ${index + 1}/${CANDIDATES.length} ${fixture.firstName} ${fixture.lastName} (${resume.parsingStatus.toLowerCase()} → parsed)`,
+    );
   }
-  log(`✓ ${CANDIDATES.length} candidates with parsed resumes and ${applicationIds.length} applications`);
+  log(
+    `✓ ${CANDIDATES.length} candidates with parsed resumes and ${applicationIds.length} applications`,
+  );
 
   // ── Pipeline history (recruiter actions, then backdated for analytics) ─────
   for (const app of applicationIds) {
     const appliedAt = daysAgo(app.fixture.daysAgo, 9 + (app.fixture.daysAgo % 8));
     await prisma.application.update({ where: { id: app.id }, data: { appliedAt } });
-    await prisma.applicationStatusEvent.updateMany({ where: { applicationId: app.id }, data: { createdAt: appliedAt } });
+    await prisma.applicationStatusEvent.updateMany({
+      where: { applicationId: app.id },
+      data: { createdAt: appliedAt },
+    });
 
     const steps = pathTo(app.fixture.status);
     for (const [i, status] of steps.entries()) {
       const stepActor = { ...actor, userId: i % 2 === 0 ? owner.id : staff.get('recruiter2')!.id };
       await services.applications.updateStatus(stepActor, app.id, { status });
-      const when = new Date(appliedAt.getTime() + ((i + 1) / (steps.length + 1)) * (Date.now() - appliedAt.getTime()));
-      await prisma.applicationStatusEvent.updateMany({ where: { applicationId: app.id, toStatus: status }, data: { createdAt: when } });
+      const when = new Date(
+        appliedAt.getTime() + ((i + 1) / (steps.length + 1)) * (Date.now() - appliedAt.getTime()),
+      );
+      await prisma.applicationStatusEvent.updateMany({
+        where: { applicationId: app.id, toStatus: status },
+        data: { createdAt: when },
+      });
       await prisma.auditLog.updateMany({
-        where: { entityId: app.id, entityType: 'Application', createdAt: { gte: new Date(Date.now() - 60_000) } },
+        where: {
+          entityId: app.id,
+          entityType: 'Application',
+          createdAt: { gte: new Date(Date.now() - 60_000) },
+        },
         data: { createdAt: when },
       });
     }
@@ -180,13 +239,64 @@ async function main(): Promise<void> {
   const byName = (name: string, job: JobKey) =>
     applicationIds.find((a) => a.candidate === name && a.fixture.job === job)!.id;
   const interviews = [
-    { app: byName('Priya Raman', 'frontend'), at: daysFromNow(2, 17), type: 'TECHNICAL' as const, interviewer: owner.id, status: 'SCHEDULED' as const },
-    { app: byName('Daniel Kim', 'backend'), at: daysAgo(3, 18), type: 'VIDEO' as const, interviewer: manager.id, status: 'COMPLETED' as const, feedback: 'Deep distributed-systems experience; strong Go and PostgreSQL. Less hands-on Node.js — worth probing in the system design round.', rating: 4 },
-    { app: byName('Daniel Kim', 'backend'), at: daysFromNow(4, 18), type: 'TECHNICAL' as const, interviewer: owner.id, status: 'SCHEDULED' as const },
-    { app: byName('Arjun Mehta', 'ai'), at: daysFromNow(1, 19), type: 'VIDEO' as const, interviewer: manager.id, status: 'SCHEDULED' as const },
-    { app: byName('Kenji Watanabe', 'backend'), at: daysAgo(12, 17), type: 'PANEL' as const, interviewer: manager.id, status: 'COMPLETED' as const, feedback: 'Excellent API design and ownership of reliability. Recommended for offer.', rating: 5 },
-    { app: byName('Grace Mensah', 'fullstack'), at: daysAgo(9, 16), type: 'ONSITE' as const, interviewer: owner.id, status: 'COMPLETED' as const, feedback: 'Strong leadership and architecture skills across the stack.', rating: 5 },
-    { app: byName('Chloe Dubois', 'analyst'), at: daysAgo(62, 15), type: 'VIDEO' as const, interviewer: manager.id, status: 'COMPLETED' as const, feedback: 'Clear communicator, strong SQL.', rating: 4 },
+    {
+      app: byName('Priya Raman', 'frontend'),
+      at: daysFromNow(2, 17),
+      type: 'TECHNICAL' as const,
+      interviewer: owner.id,
+      status: 'SCHEDULED' as const,
+    },
+    {
+      app: byName('Daniel Kim', 'backend'),
+      at: daysAgo(3, 18),
+      type: 'VIDEO' as const,
+      interviewer: manager.id,
+      status: 'COMPLETED' as const,
+      feedback:
+        'Deep distributed-systems experience; strong Go and PostgreSQL. Less hands-on Node.js — worth probing in the system design round.',
+      rating: 4,
+    },
+    {
+      app: byName('Daniel Kim', 'backend'),
+      at: daysFromNow(4, 18),
+      type: 'TECHNICAL' as const,
+      interviewer: owner.id,
+      status: 'SCHEDULED' as const,
+    },
+    {
+      app: byName('Arjun Mehta', 'ai'),
+      at: daysFromNow(1, 19),
+      type: 'VIDEO' as const,
+      interviewer: manager.id,
+      status: 'SCHEDULED' as const,
+    },
+    {
+      app: byName('Kenji Watanabe', 'backend'),
+      at: daysAgo(12, 17),
+      type: 'PANEL' as const,
+      interviewer: manager.id,
+      status: 'COMPLETED' as const,
+      feedback: 'Excellent API design and ownership of reliability. Recommended for offer.',
+      rating: 5,
+    },
+    {
+      app: byName('Grace Mensah', 'fullstack'),
+      at: daysAgo(9, 16),
+      type: 'ONSITE' as const,
+      interviewer: owner.id,
+      status: 'COMPLETED' as const,
+      feedback: 'Strong leadership and architecture skills across the stack.',
+      rating: 5,
+    },
+    {
+      app: byName('Chloe Dubois', 'analyst'),
+      at: daysAgo(62, 15),
+      type: 'VIDEO' as const,
+      interviewer: manager.id,
+      status: 'COMPLETED' as const,
+      feedback: 'Clear communicator, strong SQL.',
+      rating: 4,
+    },
   ];
   for (const interview of interviews) {
     const created = await prisma.interview.create({
@@ -197,7 +307,8 @@ async function main(): Promise<void> {
         duration: interview.type === 'ONSITE' || interview.type === 'PANEL' ? 120 : 60,
         type: interview.type,
         status: interview.status,
-        meetingUrl: interview.type === 'ONSITE' ? null : 'https://meet.example.com/technova-interview',
+        meetingUrl:
+          interview.type === 'ONSITE' ? null : 'https://meet.example.com/technova-interview',
         location: interview.type === 'ONSITE' ? 'TechNova HQ, Austin' : null,
         feedback: interview.feedback ?? null,
         rating: interview.rating ?? null,
@@ -205,7 +316,15 @@ async function main(): Promise<void> {
       },
     });
     await prisma.auditLog.create({
-      data: { organizationId: organization.id, userId: interview.interviewer, action: 'INTERVIEW_CREATED', entityType: 'Interview', entityId: created.id, metadata: { applicationId: interview.app }, createdAt: created.createdAt },
+      data: {
+        organizationId: organization.id,
+        userId: interview.interviewer,
+        action: 'INTERVIEW_CREATED',
+        entityType: 'Interview',
+        entityId: created.id,
+        metadata: { applicationId: interview.app },
+        createdAt: created.createdAt,
+      },
     });
   }
   log(`✓ ${interviews.length} interviews`);
@@ -220,12 +339,20 @@ async function main(): Promise<void> {
   for (const job of JOBS.filter((j) => j.status !== 'PUBLISHED')) {
     await prisma.job.update({
       where: { id: jobIds.get(job.key)! },
-      data: job.status === 'CLOSED' ? { status: 'CLOSED', closedAt: daysAgo(55) } : { status: 'DRAFT', publishedAt: null },
+      data:
+        job.status === 'CLOSED'
+          ? { status: 'CLOSED', closedAt: daysAgo(55) }
+          : { status: 'DRAFT', publishedAt: null },
     });
   }
 
-  const matches = await prisma.candidateMatch.findMany({ select: { overallScore: true }, where: { application: { job: { organizationId: organization.id } } } });
-  log(`✓ ${matches.length} match scores (average ${Math.round(matches.reduce((s, m) => s + m.overallScore, 0) / Math.max(1, matches.length))})`);
+  const matches = await prisma.candidateMatch.findMany({
+    select: { overallScore: true },
+    where: { application: { job: { organizationId: organization.id } } },
+  });
+  log(
+    `✓ ${matches.length} match scores (average ${Math.round(matches.reduce((s, m) => s + m.overallScore, 0) / Math.max(1, matches.length))})`,
+  );
   log('');
   log('Demo accounts (development only):');
   log(`  Recruiter:       ${STAFF[0]!.email}`);

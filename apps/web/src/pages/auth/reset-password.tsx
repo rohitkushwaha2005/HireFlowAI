@@ -23,7 +23,10 @@ export default function ResetPasswordPage() {
   const invite = params.get('invite') === '1';
   useDocumentTitle(invite ? 'Accept invitation' : 'Choose a new password');
   const [done, setDone] = React.useState(false);
-  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { password: '', confirm: '' } });
+  const form = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { password: '', confirm: '' },
+  });
   const { errors, isSubmitting } = form.formState;
 
   const onSubmit = form.handleSubmit(async ({ password }) => {
@@ -31,12 +34,24 @@ export default function ResetPasswordPage() {
       await post('/auth/reset-password', { token, password });
       setDone(true);
     } catch (error) {
-      form.setError('root', { message: error instanceof Error ? error.message : 'Could not reset password' });
+      form.setError('root', {
+        message: error instanceof Error ? error.message : 'Could not reset password',
+      });
     }
   });
 
   if (!token) {
-    return <EmptyState title="Invalid link" description="This link is missing its token. Request a new one." action={<Button asChild><Link to="/forgot-password">Request a new link</Link></Button>} />;
+    return (
+      <EmptyState
+        title="Invalid link"
+        description="This link is missing its token. Request a new one."
+        action={
+          <Button asChild>
+            <Link to="/forgot-password">Request a new link</Link>
+          </Button>
+        }
+      />
+    );
   }
 
   if (done) {
@@ -55,13 +70,29 @@ export default function ResetPasswordPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{invite ? 'Join your team' : 'Choose a new password'}</h1>
-        <p className="text-sm text-muted-foreground">{invite ? 'Set a password to activate your account.' : 'Signing in elsewhere will require the new password.'}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {invite ? 'Join your team' : 'Choose a new password'}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {invite
+            ? 'Set a password to activate your account.'
+            : 'Signing in elsewhere will require the new password.'}
+        </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <FormError error={errors.root?.message ? new Error(errors.root.message) : null} />
-        <FormField id="password" label="New password" error={errors.password?.message} hint={`At least ${PASSWORD_MIN_LENGTH} characters, mixed case and a number.`}>
-          <Input type="password" autoComplete="new-password" autoFocus {...form.register('password')} />
+        <FormField
+          id="password"
+          label="New password"
+          error={errors.password?.message}
+          hint={`At least ${PASSWORD_MIN_LENGTH} characters, mixed case and a number.`}
+        >
+          <Input
+            type="password"
+            autoComplete="new-password"
+            autoFocus
+            {...form.register('password')}
+          />
         </FormField>
         <FormField id="confirm" label="Confirm password" error={errors.confirm?.message}>
           <Input type="password" autoComplete="new-password" {...form.register('confirm')} />

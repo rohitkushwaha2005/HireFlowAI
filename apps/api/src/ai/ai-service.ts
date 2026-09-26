@@ -55,7 +55,10 @@ export class AIService {
         ...q,
         question: q.question.trim().slice(0, 1000),
         rationale: q.rationale.trim().slice(0, 500),
-        expectedSignals: q.expectedSignals.map((s) => s.trim().slice(0, 200)).filter(Boolean).slice(0, 6),
+        expectedSignals: q.expectedSignals
+          .map((s) => s.trim().slice(0, 200))
+          .filter(Boolean)
+          .slice(0, 6),
       }))
       .slice(0, input.count);
   }
@@ -82,7 +85,9 @@ const cap = (value: string | null, max: number): string | null => {
 };
 
 const finiteOrNull = (value: number | null, min: number, max: number): number | null =>
-  value !== null && Number.isFinite(value) && value >= min && value <= max ? Math.round(value * 10) / 10 : null;
+  value !== null && Number.isFinite(value) && value >= min && value <= max
+    ? Math.round(value * 10) / 10
+    : null;
 
 export function sanitizeResumeAnalysis(analysis: ResumeAnalysis): ResumeAnalysis {
   const seen = new Set<string>();
@@ -137,7 +142,10 @@ export function sanitizeResumeAnalysis(analysis: ResumeAnalysis): ResumeAnalysis
       portfolio: cap(analysis.links.portfolio, 500),
       linkedin: cap(analysis.links.linkedin, 500),
       github: cap(analysis.links.github, 500),
-      other: analysis.links.other.map((l) => l.trim().slice(0, 500)).filter(Boolean).slice(0, 10),
+      other: analysis.links.other
+        .map((l) => l.trim().slice(0, 500))
+        .filter(Boolean)
+        .slice(0, 10),
     },
   };
 }
@@ -167,7 +175,10 @@ export function sanitizeJobAnalysis(analysis: JobAnalysis): JobAnalysis {
     requiredSkills,
     preferredSkills,
     minYearsExperience: finiteOrNull(analysis.minYearsExperience, 0, 40),
-    responsibilities: analysis.responsibilities.map((r) => r.trim().slice(0, 300)).filter(Boolean).slice(0, 20),
+    responsibilities: analysis.responsibilities
+      .map((r) => r.trim().slice(0, 300))
+      .filter(Boolean)
+      .slice(0, 20),
     keywords: [...new Set(analysis.keywords.map((k) => k.trim()).filter(Boolean))].slice(0, 15),
     location: cap(analysis.location, 120),
   };

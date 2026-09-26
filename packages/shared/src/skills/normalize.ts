@@ -152,7 +152,18 @@ const NEVER_IN_FREE_TEXT = new Set([
 ]);
 
 /** Common English words that are also technologies; matched only with canonical capitalization. */
-const AMBIGUOUS_TERMS = new Set(['node', 'express', 'spring', 'swift', 'rails', 'flask', 'figma', 'redux', 'vite', 'jest']);
+const AMBIGUOUS_TERMS = new Set([
+  'node',
+  'express',
+  'spring',
+  'swift',
+  'rails',
+  'flask',
+  'figma',
+  'redux',
+  'vite',
+  'jest',
+]);
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

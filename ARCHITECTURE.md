@@ -140,13 +140,13 @@ location, photo or other personal attributes.
 
 ## Background processing
 
-| Queue | Producer | Work |
-| --- | --- | --- |
-| `resume-processing` | resume upload, retry | download file → extract PDF text → AI parse → normalize → persist → enqueue embedding |
-| `embeddings` | resume parsed, job saved, profile edited | compute + store vectors → enqueue matching for affected applications |
-| `matching` | application created, embeddings updated, job requirements edited | compute `CandidateMatch` |
-| `email` | domain events | render template → send through `EmailProvider` |
-| `analytics` | scheduled | refresh cached dashboard aggregates in Redis |
+| Queue               | Producer                                                         | Work                                                                                  |
+| ------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `resume-processing` | resume upload, retry                                             | download file → extract PDF text → AI parse → normalize → persist → enqueue embedding |
+| `embeddings`        | resume parsed, job saved, profile edited                         | compute + store vectors → enqueue matching for affected applications                  |
+| `matching`          | application created, embeddings updated, job requirements edited | compute `CandidateMatch`                                                              |
+| `email`             | domain events                                                    | render template → send through `EmailProvider`                                        |
+| `analytics`         | scheduled                                                        | refresh cached dashboard aggregates in Redis                                          |
 
 A `JobDispatcher` interface hides BullMQ; tests use an inline dispatcher so flows are deterministic.
 

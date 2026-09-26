@@ -3,10 +3,17 @@ import type { RouteDef } from '../routes/route-table';
 
 type JsonSchema = Record<string, unknown>;
 
-function toSchema(schema: z.ZodType | undefined, io: 'input' | 'output' = 'input'): JsonSchema | null {
+function toSchema(
+  schema: z.ZodType | undefined,
+  io: 'input' | 'output' = 'input',
+): JsonSchema | null {
   if (!schema) return null;
   try {
-    const json = z.toJSONSchema(schema, { io, unrepresentable: 'any', target: 'openapi-3.0' }) as JsonSchema;
+    const json = z.toJSONSchema(schema, {
+      io,
+      unrepresentable: 'any',
+      target: 'openapi-3.0',
+    }) as JsonSchema;
     delete json.$schema;
     return json;
   } catch {
@@ -14,7 +21,11 @@ function toSchema(schema: z.ZodType | undefined, io: 'input' | 'output' = 'input
   }
 }
 
-function parametersFrom(schema: z.ZodType | undefined, location: 'query' | 'path', required: boolean): unknown[] {
+function parametersFrom(
+  schema: z.ZodType | undefined,
+  location: 'query' | 'path',
+  required: boolean,
+): unknown[] {
   const json = toSchema(schema);
   const properties = (json?.properties ?? {}) as Record<string, JsonSchema>;
   const requiredList = new Set((json?.required as string[] | undefined) ?? []);
@@ -62,7 +73,10 @@ const ACCESS_NOTES: Record<RouteDef['access'], string> = {
  * Builds the OpenAPI 3.0 document from the route table and the Zod schemas attached to each
  * handler, so documentation cannot drift from validation.
  */
-export function buildOpenApiDocument(routes: RouteDef[], serverUrl: string): Record<string, unknown> {
+export function buildOpenApiDocument(
+  routes: RouteDef[],
+  serverUrl: string,
+): Record<string, unknown> {
   const paths: Record<string, Record<string, unknown>> = {};
   for (const route of routes) {
     const path = `/api${route.path}`.replace(/:(\w+)/g, '{$1}');
@@ -70,7 +84,12 @@ export function buildOpenApiDocument(routes: RouteDef[], serverUrl: string): Rec
     const pathParamNames = [...route.path.matchAll(/:(\w+)/g)].map((m) => m[1]!);
     const pathParams = params
       ? parametersFrom(params, 'path', true)
-      : pathParamNames.map((name) => ({ name, in: 'path', required: true, schema: { type: 'string' } }));
+      : pathParamNames.map((name) => ({
+          name,
+          in: 'path',
+          required: true,
+          schema: { type: 'string' },
+        }));
 
     const status = String(route.status ?? 200);
     const responses: Record<string, unknown> = {
@@ -78,27 +97,41 @@ export function buildOpenApiDocument(routes: RouteDef[], serverUrl: string): Rec
         route.produces === 'redirect'
           ? { description: 'Redirect' }
           : route.produces
-            ? { description: 'File', content: { [route.produces]: { schema: { type: 'string', format: 'binary' } } } }
+            ? {
+                description: 'File',
+                content: { [route.produces]: { schema: { type: 'string', format: 'binary' } } },
+              }
             : {
                 description: 'Success envelope `{ success: true, data, message?, meta? }`',
                 content: {
                   'application/json': {
                     schema: {
                       type: 'object',
-                      properties: { success: { type: 'boolean', enum: [true] }, data: {}, message: { type: 'string' }, meta: { type: 'object' } },
+                      properties: {
+                        success: { type: 'boolean', enum: [true] },
+                        data: {},
+                        message: { type: 'string' },
+                        meta: { type: 'object' },
+                      },
                     },
                   },
                 },
               },
       '400': errorResponse,
-      ...(route.access !== 'public' && route.access !== 'optional' ? { '401': errorResponse, '403': errorResponse } : {}),
+      ...(route.access !== 'public' && route.access !== 'optional'
+        ? { '401': errorResponse, '403': errorResponse }
+        : {}),
       '429': errorResponse,
     };
 
     const operation: Record<string, unknown> = {
       tags: [route.tag],
       summary: route.summary,
-      description: [route.description, ACCESS_NOTES[route.access], route.permission ? `Permission: \`${route.permission}\`.` : null]
+      description: [
+        route.description,
+        ACCESS_NOTES[route.access],
+        route.permission ? `Permission: \`${route.permission}\`.` : null,
+      ]
         .filter(Boolean)
         .join('\n\n'),
       parameters: [...pathParams, ...parametersFrom(query, 'query', false)],
@@ -111,12 +144,19 @@ export function buildOpenApiDocument(routes: RouteDef[], serverUrl: string): Rec
         required: true,
         content: {
           'multipart/form-data': {
-            schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } }, required: ['file'] },
+            schema: {
+              type: 'object',
+              properties: { file: { type: 'string', format: 'binary' } },
+              required: ['file'],
+            },
           },
         },
       };
     } else if (body) {
-      operation.requestBody = { required: true, content: { 'application/json': { schema: toSchema(body) } } };
+      operation.requestBody = {
+        required: true,
+        content: { 'application/json': { schema: toSchema(body) } },
+      };
     }
     paths[path] = { ...(paths[path] ?? {}), [route.method]: operation };
   }

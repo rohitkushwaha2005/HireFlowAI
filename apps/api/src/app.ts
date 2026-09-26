@@ -60,7 +60,11 @@ export function createApp(container: Container, options: CreateAppOptions = {}):
   app.get('/api/docs/openapi.json', (_req, res) => {
     res.json(openApi);
   });
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApi, { customSiteTitle: 'HireFlow AI API' }));
+  app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openApi, { customSiteTitle: 'HireFlow AI API' }),
+  );
 
   app.use('/api', limiters.global, buildApiRouter(container, routes));
 

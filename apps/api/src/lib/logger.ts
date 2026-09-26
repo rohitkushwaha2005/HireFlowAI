@@ -22,7 +22,9 @@ export const REDACT_PATHS = [
   '*.extractedText',
 ];
 
-export function createLogger(config: Pick<AppConfig, 'logLevel' | 'isProduction' | 'isTest'>): Logger {
+export function createLogger(
+  config: Pick<AppConfig, 'logLevel' | 'isProduction' | 'isTest'>,
+): Logger {
   return pino({
     level: config.isTest ? 'silent' : config.logLevel,
     redact: { paths: REDACT_PATHS, censor: '[redacted]' },
@@ -33,7 +35,11 @@ export function createLogger(config: Pick<AppConfig, 'logLevel' | 'isProduction'
       : {
           transport: {
             target: 'pino-pretty',
-            options: { colorize: true, translateTime: 'HH:MM:ss.l', ignore: 'pid,hostname,service' },
+            options: {
+              colorize: true,
+              translateTime: 'HH:MM:ss.l',
+              ignore: 'pid,hostname,service',
+            },
           },
         }),
   });

@@ -51,15 +51,31 @@ function sessionFrom(res: request.Response): Session {
   };
 }
 
-export async function registerRecruiter(app: Express, email: string, organizationName = 'Acme Hiring'): Promise<Session> {
+export async function registerRecruiter(
+  app: Express,
+  email: string,
+  organizationName = 'Acme Hiring',
+): Promise<Session> {
   const res = await request(app)
     .post('/api/auth/register')
-    .send({ email, password: PASSWORD, firstName: 'Rae', lastName: 'Cruiter', role: 'RECRUITER', organizationName })
+    .send({
+      email,
+      password: PASSWORD,
+      firstName: 'Rae',
+      lastName: 'Cruiter',
+      role: 'RECRUITER',
+      organizationName,
+    })
     .expect(201);
   return sessionFrom(res);
 }
 
-export async function registerCandidate(app: Express, email: string, firstName = 'Casey', lastName = 'Candidate'): Promise<Session> {
+export async function registerCandidate(
+  app: Express,
+  email: string,
+  firstName = 'Casey',
+  lastName = 'Candidate',
+): Promise<Session> {
   const res = await request(app)
     .post('/api/auth/register')
     .send({ email, password: PASSWORD, firstName, lastName, role: 'CANDIDATE' })
@@ -85,7 +101,11 @@ Requirements:
 Nice to have:
 - AWS and Docker`;
 
-export async function createPublishedJob(app: Express, recruiter: Session, title = 'Full Stack Developer'): Promise<{ id: string; slug: string }> {
+export async function createPublishedJob(
+  app: Express,
+  recruiter: Session,
+  title = 'Full Stack Developer',
+): Promise<{ id: string; slug: string }> {
   const analysis = await request(app)
     .post('/api/jobs/analyze')
     .set(auth(recruiter))
@@ -110,7 +130,10 @@ export async function createPublishedJob(app: Express, recruiter: Session, title
       ],
     })
     .expect(201);
-  await request(app).post(`/api/jobs/${created.body.data.id}/publish`).set(auth(recruiter)).expect(200);
+  await request(app)
+    .post(`/api/jobs/${created.body.data.id}/publish`)
+    .set(auth(recruiter))
+    .expect(200);
   return { id: created.body.data.id, slug: created.body.data.slug };
 }
 
@@ -118,18 +141,31 @@ export async function resumePdf(fixture: CandidateFixture = CANDIDATES[0]!): Pro
   return renderResumePdf(fixture);
 }
 
-export async function uploadResume(app: Express, candidate: Session, fixture?: CandidateFixture): Promise<string> {
+export async function uploadResume(
+  app: Express,
+  candidate: Session,
+  fixture?: CandidateFixture,
+): Promise<string> {
   const res = await request(app)
     .post('/api/resumes/upload')
     .set(auth(candidate))
-    .attach('file', await resumePdf(fixture), { filename: 'resume.pdf', contentType: 'application/pdf' })
+    .attach('file', await resumePdf(fixture), {
+      filename: 'resume.pdf',
+      contentType: 'application/pdf',
+    })
     .expect(202);
   return res.body.data.id as string;
 }
 
 /** Extracts the one-time token from the most recent email with the given subject fragment. */
-export function tokenFromEmail(email: ConsoleEmailProvider, to: string, subjectIncludes: string): string {
-  const message = [...email.sent].reverse().find((m) => m.to === to && m.subject.includes(subjectIncludes));
+export function tokenFromEmail(
+  email: ConsoleEmailProvider,
+  to: string,
+  subjectIncludes: string,
+): string {
+  const message = [...email.sent]
+    .reverse()
+    .find((m) => m.to === to && m.subject.includes(subjectIncludes));
   const token = message?.text.match(/token=([\w-]+)/)?.[1];
   if (!token) throw new Error(`No email with a token for ${to} (${subjectIncludes})`);
   return token;

@@ -29,7 +29,8 @@ export interface ApplicationListParams {
 export function useApplications(params: ApplicationListParams) {
   return useQuery({
     queryKey: keys.applications.list(params),
-    queryFn: () => getPage<ApplicationListItemDto>('/applications', toQuery({ ...params, pageSize: 20 })),
+    queryFn: () =>
+      getPage<ApplicationListItemDto>('/applications', toQuery({ ...params, pageSize: 20 })),
     placeholderData: keepPreviousData,
   });
 }
@@ -78,7 +79,11 @@ export function useMoveApplication() {
   const invalidate = useInvalidateApplications();
   return useMutation({
     mutationFn: ({ id, from, to, note }: MoveVariables) =>
-      patch<ApplicationDetailDto>(`/applications/${id}/status`, { status: to, fromStatus: from, ...(note ? { note } : {}) }),
+      patch<ApplicationDetailDto>(`/applications/${id}/status`, {
+        status: to,
+        fromStatus: from,
+        ...(note ? { note } : {}),
+      }),
     meta: { silent: true },
     onMutate: async ({ id, to, jobId }) => {
       const key = keys.applications.pipeline(jobId);
@@ -92,7 +97,11 @@ export function useMoveApplication() {
               const without = column.cards.filter((c) => c.id !== id);
               const removed = without.length !== column.cards.length;
               if (column.status === to) {
-                return { ...column, cards: [{ ...card, status: to }, ...without], total: column.total + (removed ? 0 : 1) };
+                return {
+                  ...column,
+                  cards: [{ ...card, status: to }, ...without],
+                  total: column.total + (removed ? 0 : 1),
+                };
               }
               return { ...column, cards: without, total: column.total - (removed ? 1 : 0) };
             }),
@@ -113,8 +122,10 @@ export function useMoveApplication() {
 export function useAddNote(applicationId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: string) => post<ApplicationNoteDto>(`/applications/${applicationId}/notes`, { body }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.applications.detail(applicationId) }),
+    mutationFn: (body: string) =>
+      post<ApplicationNoteDto>(`/applications/${applicationId}/notes`, { body }),
+    onSuccess: () =>
+      void qc.invalidateQueries({ queryKey: keys.applications.detail(applicationId) }),
   });
 }
 
@@ -132,9 +143,12 @@ export function useRecalculateMatch(applicationId: string) {
 export function useGenerateQuestions(applicationId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: GenerateQuestionsInput) => post<InterviewQuestionDto[]>(`/applications/${applicationId}/interview-questions`, input),
+    mutationFn: (input: GenerateQuestionsInput) =>
+      post<InterviewQuestionDto[]>(`/applications/${applicationId}/interview-questions`, input),
     onSuccess: (questions) => {
-      qc.setQueryData<ApplicationDetailDto>(keys.applications.detail(applicationId), (prev) => (prev ? { ...prev, questions } : prev));
+      qc.setQueryData<ApplicationDetailDto>(keys.applications.detail(applicationId), (prev) =>
+        prev ? { ...prev, questions } : prev,
+      );
       toast.success(`Generated ${questions.length} interview questions`);
     },
   });
@@ -145,7 +159,8 @@ export function useGenerateQuestions(applicationId: string) {
 export function useApply(jobId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { resumeId: string; coverLetter?: string }) => post<CandidateApplicationDto>(`/jobs/${jobId}/applications`, input),
+    mutationFn: (input: { resumeId: string; coverLetter?: string }) =>
+      post<CandidateApplicationDto>(`/jobs/${jobId}/applications`, input),
     meta: { silent: true },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.me.applications });
@@ -157,7 +172,10 @@ export function useApply(jobId: string) {
 }
 
 export function useMyApplications() {
-  return useQuery({ queryKey: keys.me.applications, queryFn: () => get<CandidateApplicationDto[]>('/applications/mine') });
+  return useQuery({
+    queryKey: keys.me.applications,
+    queryFn: () => get<CandidateApplicationDto[]>('/applications/mine'),
+  });
 }
 
 export function useMyApplication(id: string | undefined) {

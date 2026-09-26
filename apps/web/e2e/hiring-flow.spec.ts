@@ -35,7 +35,9 @@ async function signIn(page: Page, email: string) {
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
 
-test('recruiter publishes a job, candidate applies, recruiter reviews and shortlists', async ({ browser }) => {
+test('recruiter publishes a job, candidate applies, recruiter reviews and shortlists', async ({
+  browser,
+}) => {
   // ── Recruiter creates and publishes a job with AI analysis ──
   const recruiterContext = await browser.newContext();
   const recruiter = await recruiterContext.newPage();

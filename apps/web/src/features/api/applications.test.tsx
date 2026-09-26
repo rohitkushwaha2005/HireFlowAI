@@ -36,13 +36,18 @@ const board = (): PipelineDto => ({
 function setup() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   client.setQueryData(keys.applications.pipeline(undefined), board());
-  const wrapper = ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  );
   const hook = renderHook(() => useMoveApplication(), { wrapper });
   return { client, hook };
 }
 
 const columnIds = (client: QueryClient, status: string) =>
-  client.getQueryData<PipelineDto>(keys.applications.pipeline(undefined))!.columns.find((c) => c.status === status)!.cards.map((c) => c.id);
+  client
+    .getQueryData<PipelineDto>(keys.applications.pipeline(undefined))!
+    .columns.find((c) => c.status === status)!
+    .cards.map((c) => c.id);
 
 describe('useMoveApplication (Kanban)', () => {
   beforeEach(() => {
@@ -58,7 +63,10 @@ describe('useMoveApplication (Kanban)', () => {
 
     await waitFor(() => expect(columnIds(client, 'SHORTLISTED')).toEqual(['app-1']));
     expect(columnIds(client, 'APPLIED')).toEqual([]);
-    expect(patchMock).toHaveBeenCalledWith('/applications/app-1/status', { status: 'SHORTLISTED', fromStatus: 'APPLIED' });
+    expect(patchMock).toHaveBeenCalledWith('/applications/app-1/status', {
+      status: 'SHORTLISTED',
+      fromStatus: 'APPLIED',
+    });
     resolve({});
   });
 
@@ -68,9 +76,11 @@ describe('useMoveApplication (Kanban)', () => {
 
     let failure: unknown = null;
     await act(async () => {
-      await hook.result.current.mutateAsync({ id: 'app-1', from: 'APPLIED', to: 'SHORTLISTED' }).catch((e: unknown) => {
-        failure = e;
-      });
+      await hook.result.current
+        .mutateAsync({ id: 'app-1', from: 'APPLIED', to: 'SHORTLISTED' })
+        .catch((e: unknown) => {
+          failure = e;
+        });
     });
 
     expect((failure as Error | null)?.message).toBe('Conflict');

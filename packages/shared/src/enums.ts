@@ -23,7 +23,14 @@ export const EMPLOYMENT_TYPES = [
 ] as const;
 export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
-export const EXPERIENCE_LEVELS = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'PRINCIPAL'] as const;
+export const EXPERIENCE_LEVELS = [
+  'INTERN',
+  'JUNIOR',
+  'MID',
+  'SENIOR',
+  'LEAD',
+  'PRINCIPAL',
+] as const;
 export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
 
 export const REMOTE_TYPES = ['ONSITE', 'HYBRID', 'REMOTE'] as const;
@@ -93,7 +100,14 @@ export type SkillSource = (typeof SKILL_SOURCES)[number];
 export const PROFICIENCY_LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
 export type Proficiency = (typeof PROFICIENCY_LEVELS)[number];
 
-export const INTERVIEW_TYPES = ['PHONE', 'VIDEO', 'ONSITE', 'TECHNICAL', 'BEHAVIORAL', 'PANEL'] as const;
+export const INTERVIEW_TYPES = [
+  'PHONE',
+  'VIDEO',
+  'ONSITE',
+  'TECHNICAL',
+  'BEHAVIORAL',
+  'PANEL',
+] as const;
 export type InterviewType = (typeof INTERVIEW_TYPES)[number];
 
 export const INTERVIEW_STATUSES = ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'] as const;

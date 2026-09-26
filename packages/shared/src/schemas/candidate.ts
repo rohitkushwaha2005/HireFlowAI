@@ -10,14 +10,11 @@ import {
 } from './common';
 
 /** ISO date (YYYY-MM-DD) or YYYY-MM, coerced to a Date; empty → null. */
-export const flexibleDate = z.preprocess(
-  (v) => {
-    if (v === '' || v === undefined || v === null) return null;
-    if (typeof v === 'string' && /^\d{4}-\d{2}$/.test(v)) return `${v}-01`;
-    return v;
-  },
-  z.coerce.date().nullable(),
-);
+export const flexibleDate = z.preprocess((v) => {
+  if (v === '' || v === undefined || v === null) return null;
+  if (typeof v === 'string' && /^\d{4}-\d{2}$/.test(v)) return `${v}-01`;
+  return v;
+}, z.coerce.date().nullable());
 
 export const updateCandidateProfileSchema = z.object({
   headline: nullableText(160),

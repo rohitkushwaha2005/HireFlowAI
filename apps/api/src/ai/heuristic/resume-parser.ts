@@ -12,24 +12,53 @@ import {
  * intentionally conservative: when unsure it returns null rather than guessing.
  */
 
-type Section = 'header' | 'summary' | 'experience' | 'education' | 'skills' | 'projects' | 'certifications' | 'other';
+type Section =
+  | 'header'
+  | 'summary'
+  | 'experience'
+  | 'education'
+  | 'skills'
+  | 'projects'
+  | 'certifications'
+  | 'other';
 
 const SECTION_PATTERNS: Array<[Section, RegExp]> = [
   ['summary', /^(professional\s+|career\s+)?(summary|profile|about(\s+me)?|objective)$/i],
-  ['experience', /^(work\s+|professional\s+|relevant\s+)?(experience|employment(\s+history)?|work\s+history)$/i],
+  [
+    'experience',
+    /^(work\s+|professional\s+|relevant\s+)?(experience|employment(\s+history)?|work\s+history)$/i,
+  ],
   ['education', /^(education|academic\s+background)(\s*(&|and)\s*training)?$/i],
-  ['skills', /^(technical\s+|core\s+|key\s+)?(skills|competencies|technologies|tech\s+stack)(\s*(&|and)\s*tools)?$/i],
+  [
+    'skills',
+    /^(technical\s+|core\s+|key\s+)?(skills|competencies|technologies|tech\s+stack)(\s*(&|and)\s*tools)?$/i,
+  ],
   ['projects', /^(selected\s+|personal\s+|key\s+|side\s+)?projects$/i],
   ['certifications', /^(certifications?|licenses?(\s*(&|and)\s*certifications)?|courses)$/i],
   ['other', /^(awards|honou?rs|publications|interests|languages|volunteer(ing)?|references)$/i],
 ];
 
-const MONTH = '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?';
+const MONTH =
+  '(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\\.?';
 const DATE = `(?:${MONTH}\\s+\\d{4}|\\d{1,2}/\\d{4}|\\d{4})`;
-const RANGE_RE = new RegExp(`(${DATE})\\s*(?:-|–|—|to)\\s*(${DATE}|present|current|now|today)`, 'i');
+const RANGE_RE = new RegExp(
+  `(${DATE})\\s*(?:-|–|—|to)\\s*(${DATE}|present|current|now|today)`,
+  'i',
+);
 
 const MONTHS: Record<string, number> = {
-  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  jan: 1,
+  feb: 2,
+  mar: 3,
+  apr: 4,
+  may: 5,
+  jun: 6,
+  jul: 7,
+  aug: 8,
+  sep: 9,
+  oct: 10,
+  nov: 11,
+  dec: 12,
 };
 
 const TITLE_WORDS =
@@ -41,7 +70,10 @@ const URL_RE = /\b((?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^\
 const BULLET_RE = /^\s*(?:[-*•·▪◦‣–]|\d+[.)])\s+/;
 
 function isHeading(line: string): Section | null {
-  const cleaned = line.replace(/[:\-_=|]+$/g, '').replace(/^[#\s]+/, '').trim();
+  const cleaned = line
+    .replace(/[:\-_=|]+$/g, '')
+    .replace(/^[#\s]+/, '')
+    .trim();
   if (!cleaned || cleaned.length > 40) return null;
   for (const [section, pattern] of SECTION_PATTERNS) if (pattern.test(cleaned)) return section;
   return null;
@@ -116,7 +148,11 @@ function parseExperience(lines: string[]): ResumeAnalysis['workExperience'] {
     const range = RANGE_RE.exec(line);
     if (range && !BULLET_RE.test(line)) {
       flush();
-      let header = line.replace(range[0], '').replace(/[|,–—-]\s*$/, '').replace(/\(\s*\)/, '').trim();
+      let header = line
+        .replace(range[0], '')
+        .replace(/[|,–—-]\s*$/, '')
+        .replace(/\(\s*\)/, '')
+        .trim();
       if (header.length < 3 && pendingHeader) header = pendingHeader;
       else if (pendingHeader && !TITLE_WORDS.test(header) && TITLE_WORDS.test(pendingHeader)) {
         header = `${pendingHeader} | ${header}`;
@@ -163,8 +199,10 @@ function parseExperience(lines: string[]): ResumeAnalysis['workExperience'] {
 
 function educationLevel(text: string): EducationLevel | null {
   if (/\b(ph\.?\s?d|doctor(ate)?|d\.?phil)\b/i.test(text)) return 'DOCTORATE';
-  if (/\b(master'?s?|m\.?\s?sc?\.?|m\.?eng|mba|m\.?tech|m\.?a\.)(?=\W|$)/i.test(text)) return 'MASTER';
-  if (/\b(bachelor'?s?|b\.?\s?sc?\.?|b\.?eng|b\.?tech|b\.?a\.|b\.?e\.)(?=\W|$)/i.test(text)) return 'BACHELOR';
+  if (/\b(master'?s?|m\.?\s?sc?\.?|m\.?eng|mba|m\.?tech|m\.?a\.)(?=\W|$)/i.test(text))
+    return 'MASTER';
+  if (/\b(bachelor'?s?|b\.?\s?sc?\.?|b\.?eng|b\.?tech|b\.?a\.|b\.?e\.)(?=\W|$)/i.test(text))
+    return 'BACHELOR';
   if (/\bassociate'?s?\b/i.test(text)) return 'ASSOCIATE';
   if (/\b(high school|secondary school|ged)\b/i.test(text)) return 'HIGH_SCHOOL';
   return null;
@@ -183,11 +221,19 @@ function parseEducation(lines: string[]): ResumeAnalysis['education'] {
     }
     const range = RANGE_RE.exec(line);
     const years = line.match(/\b(19|20)\d{2}\b/g) ?? [];
-    const withoutDates = line.replace(range?.[0] ?? '', '').replace(/\(\s*\)/g, '').trim();
+    const withoutDates = line
+      .replace(range?.[0] ?? '', '')
+      .replace(/\(\s*\)/g, '')
+      .trim();
     const parts = splitHeader(withoutDates);
-    const institution = parts.find((p) => INSTITUTION_WORDS.test(p)) ?? parts.find((p) => !educationLevel(p)) ?? 'Unknown';
+    const institution =
+      parts.find((p) => INSTITUTION_WORDS.test(p)) ??
+      parts.find((p) => !educationLevel(p)) ??
+      'Unknown';
     const degreePart = parts.find((p) => educationLevel(p)) ?? null;
-    const field = degreePart ? (/\b(?:in|of)\s+([A-Za-z &]+)$/i.exec(degreePart)?.[1]?.trim() ?? null) : null;
+    const field = degreePart
+      ? (/\b(?:in|of)\s+([A-Za-z &]+)$/i.exec(degreePart)?.[1]?.trim() ?? null)
+      : null;
     const grade = /\b(c?gpa)[:\s]*([\d.]+(?:\s*\/\s*[\d.]+)?)/i.exec(line);
     entries.push({
       institution: institution.slice(0, 160),
@@ -234,29 +280,46 @@ function parseProjects(lines: string[]): ResumeAnalysis['projects'] {
     });
   }
   for (const project of projects) {
-    project.technologies = extractKnownSkills(`${project.name} ${project.description ?? ''}`).map((s) => s.name);
+    project.technologies = extractKnownSkills(`${project.name} ${project.description ?? ''}`).map(
+      (s) => s.name,
+    );
   }
   return projects;
 }
 
 function parseHeader(lines: string[], fullText: string) {
   const email = EMAIL_RE.exec(fullText)?.[0] ?? null;
-  const phone = lines.map((l) => PHONE_RE.exec(l.replace(EMAIL_RE, ''))?.[1]).find((p) => p && p.replace(/\D/g, '').length >= 8) ?? null;
-  const urls = [...fullText.matchAll(URL_RE)].map((m) => m[1]!).filter((u) => !EMAIL_RE.test(u) && /[a-z]\.[a-z]/i.test(u) && (u.includes('/') || u.startsWith('www') || u.startsWith('http')));
+  const phone =
+    lines
+      .map((l) => PHONE_RE.exec(l.replace(EMAIL_RE, ''))?.[1])
+      .find((p) => p && p.replace(/\D/g, '').length >= 8) ?? null;
+  const urls = [...fullText.matchAll(URL_RE)]
+    .map((m) => m[1]!)
+    .filter(
+      (u) =>
+        !EMAIL_RE.test(u) &&
+        /[a-z]\.[a-z]/i.test(u) &&
+        (u.includes('/') || u.startsWith('www') || u.startsWith('http')),
+    );
   const normalizeUrl = (u: string) => (u.startsWith('http') ? u : `https://${u}`);
   const linkedin = urls.find((u) => /linkedin\.com/i.test(u)) ?? null;
   const github = urls.find((u) => /github\.com/i.test(u)) ?? null;
   const others = urls.filter((u) => u !== linkedin && u !== github);
 
   const name =
-    lines.find((l) => /^[A-Za-z][A-Za-z.'-]+(?:\s+[A-Za-z][A-Za-z.'-]+){1,3}$/.test(l) && !TITLE_WORDS.test(l)) ?? null;
+    lines.find(
+      (l) =>
+        /^[A-Za-z][A-Za-z.'-]+(?:\s+[A-Za-z][A-Za-z.'-]+){1,3}$/.test(l) && !TITLE_WORDS.test(l),
+    ) ?? null;
   const headline =
-    lines.find((l) => l !== name && TITLE_WORDS.test(l) && !EMAIL_RE.test(l) && l.length < 100) ?? null;
+    lines.find((l) => l !== name && TITLE_WORDS.test(l) && !EMAIL_RE.test(l) && l.length < 100) ??
+    null;
   const location =
     lines
       .flatMap((l) => l.split(/\s*[|•·]\s*/))
       .map((p) => p.trim())
-      .find((p) => /^[A-Z][a-zA-Z .'-]+,\s*[A-Z][a-zA-Z .'-]+$/.test(p) && !TITLE_WORDS.test(p)) ?? null;
+      .find((p) => /^[A-Z][a-zA-Z .'-]+,\s*[A-Z][a-zA-Z .'-]+$/.test(p) && !TITLE_WORDS.test(p)) ??
+    null;
 
   return {
     name,
@@ -274,7 +337,10 @@ function parseHeader(lines: string[], fullText: string) {
 }
 
 /** Years using each skill, from dated roles whose text mentions it (overlaps merged). */
-function skillYears(skillKey: string, experiences: ResumeAnalysis['workExperience']): number | null {
+function skillYears(
+  skillKey: string,
+  experiences: ResumeAnalysis['workExperience'],
+): number | null {
   const positions = experiences
     .filter((exp) =>
       extractKnownSkills(`${exp.title} ${exp.description ?? ''}`).some((s) => s.key === skillKey),
@@ -296,7 +362,9 @@ export function parseResumeHeuristically(text: string): ResumeAnalysis {
   const workExperience = parseExperience(sections.get('experience') ?? []);
   const education = parseEducation(sections.get('education') ?? []);
   const projects = parseProjects(sections.get('projects') ?? []);
-  const certifications = (sections.get('certifications') ?? []).map(stripBullet).filter((c) => c.length <= 160);
+  const certifications = (sections.get('certifications') ?? [])
+    .map(stripBullet)
+    .filter((c) => c.length <= 160);
   const summaryLines = sections.get('summary') ?? [];
 
   const listed = parseSkillList(sections.get('skills') ?? []);
@@ -340,4 +408,3 @@ export function parseResumeHeuristically(text: string): ResumeAnalysis {
     links: contact.links,
   };
 }
-

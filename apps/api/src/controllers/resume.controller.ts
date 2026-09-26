@@ -10,10 +10,15 @@ export function createResumeController({ services }: Container) {
     upload: handle({}, async ({ req }) => {
       const file = assertPdfUpload(req.file);
       const resume = await resumes.upload(authOf(req).userId, file);
-      return accepted(resume, 'Resume uploaded. We are extracting your profile — this usually takes a few seconds.');
+      return accepted(
+        resume,
+        'Resume uploaded. We are extracting your profile — this usually takes a few seconds.',
+      );
     }),
     list: handle({}, async ({ req }) => ok(await resumes.list(authOf(req).userId))),
-    get: handle({ params: idParamSchema }, async ({ req, params }) => ok(await resumes.get(authOf(req), params.id))),
+    get: handle({ params: idParamSchema }, async ({ req, params }) =>
+      ok(await resumes.get(authOf(req), params.id)),
+    ),
     download: handle({ params: idParamSchema }, async ({ req, res, params }) => {
       const file = await resumes.download(authOf(req), params.id, req.ip ?? null);
       res.setHeader('Content-Type', file.mimeType);
@@ -28,7 +33,9 @@ export function createResumeController({ services }: Container) {
       accepted(await resumes.retry(authOf(req).userId, params.id), 'Parsing restarted'),
     ),
     setPrimary: handle({ params: idParamSchema }, async ({ req, params }) =>
-      ok(await resumes.setPrimary(authOf(req).userId, params.id), { message: 'Primary resume updated' }),
+      ok(await resumes.setPrimary(authOf(req).userId, params.id), {
+        message: 'Primary resume updated',
+      }),
     ),
     remove: handle({ params: idParamSchema }, async ({ req, params }) => {
       await resumes.delete(authOf(req).userId, params.id);

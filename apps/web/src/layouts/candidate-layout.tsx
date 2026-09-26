@@ -1,4 +1,13 @@
-import { Briefcase, CalendarClock, FileText, Home, ListChecks, Menu, Settings, UserRound } from 'lucide-react';
+import {
+  Briefcase,
+  CalendarClock,
+  FileText,
+  Home,
+  ListChecks,
+  Menu,
+  Settings,
+  UserRound,
+} from 'lucide-react';
 import * as React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { Logo, ThemeToggle, UserMenu, VerifyEmailBanner } from '@/components/app-chrome';
@@ -17,7 +26,10 @@ const NAV = [
 
 function NavItems({ vertical, onNavigate }: { vertical?: boolean; onNavigate?: () => void }) {
   return (
-    <nav aria-label="Candidate" className={cn(vertical ? 'flex flex-col gap-1 p-3' : 'hidden items-center gap-1 md:flex')}>
+    <nav
+      aria-label="Candidate"
+      className={cn(vertical ? 'flex flex-col gap-1 p-3' : 'hidden items-center gap-1 md:flex')}
+    >
       {NAV.map((item) => (
         <NavLink
           key={item.to}
@@ -27,7 +39,9 @@ function NavItems({ vertical, onNavigate }: { vertical?: boolean; onNavigate?: (
           className={({ isActive }) =>
             cn(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+              isActive
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )
           }
         >
@@ -51,7 +65,13 @@ export function CandidateLayout() {
       <VerifyEmailBanner />
       <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(true)} aria-label="Open navigation">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setOpen(true)}
+            aria-label="Open navigation"
+          >
             <Menu />
           </Button>
           <Logo to="/portal" />

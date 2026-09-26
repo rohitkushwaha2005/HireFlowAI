@@ -16,7 +16,12 @@ export interface CandidateSearchHit {
   topSkills: string[];
   similarity: number;
   reasons: string[];
-  applications: Array<{ applicationId: string; jobTitle: string; status: ApplicationStatus; score: number | null }>;
+  applications: Array<{
+    applicationId: string;
+    jobTitle: string;
+    status: ApplicationStatus;
+    score: number | null;
+  }>;
 }
 
 export interface SkillCandidateHit {
@@ -25,7 +30,12 @@ export interface SkillCandidateHit {
   headline: string | null;
   totalExperience: number | null;
   matchingSkills: Array<{ skill: string; yearsExperience: number | null }>;
-  bestApplication: { applicationId: string; jobTitle: string; status: ApplicationStatus; score: number | null } | null;
+  bestApplication: {
+    applicationId: string;
+    jobTitle: string;
+    status: ApplicationStatus;
+    score: number | null;
+  } | null;
 }
 
 export interface MatchSummary {
@@ -108,5 +118,10 @@ export interface PipelineSummary {
 export interface InterviewQuestionsResult {
   applicationId: string;
   generated: boolean;
-  questions: Array<{ category: QuestionCategory; difficulty: QuestionDifficulty; question: string; expectedSignals: string[] }>;
+  questions: Array<{
+    category: QuestionCategory;
+    difficulty: QuestionDifficulty;
+    question: string;
+    expectedSignals: string[];
+  }>;
 }

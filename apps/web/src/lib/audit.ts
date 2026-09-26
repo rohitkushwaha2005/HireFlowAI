@@ -26,7 +26,9 @@ const ACTION_LABELS: Record<(typeof AUDIT_ACTIONS)[number], string> = {
 export function describeAudit(entry: AuditLogDto): string {
   const meta = entry.metadata ?? {};
   const detail =
-    typeof meta.to === 'string' && typeof meta.from === 'string' && entry.entityType === 'Application'
+    typeof meta.to === 'string' &&
+    typeof meta.from === 'string' &&
+    entry.entityType === 'Application'
       ? ` (${APPLICATION_STATUS_LABELS[meta.from as keyof typeof APPLICATION_STATUS_LABELS] ?? meta.from} → ${APPLICATION_STATUS_LABELS[meta.to as keyof typeof APPLICATION_STATUS_LABELS] ?? meta.to})`
       : typeof meta.title === 'string'
         ? ` “${meta.title}”`

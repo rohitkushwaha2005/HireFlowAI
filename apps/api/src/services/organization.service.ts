@@ -29,7 +29,8 @@ export class OrganizationService {
   /** A staff user without an organization (e.g. invited then removed) can create a new one. */
   async create(userId: string, input: CreateOrganizationInput): Promise<OrganizationDto> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    if (user.role === 'CANDIDATE') throw new ForbiddenError('Candidate accounts cannot create organizations');
+    if (user.role === 'CANDIDATE')
+      throw new ForbiddenError('Candidate accounts cannot create organizations');
     if (input.slug) {
       const taken = await this.prisma.organization.findUnique({ where: { slug: input.slug } });
       if (taken) throw new ConflictError('This URL is already taken');
@@ -57,7 +58,9 @@ export class OrganizationService {
         data: {
           ...(input.name !== undefined ? { name: input.name } : {}),
           ...(input.logoUrl !== undefined ? { logoUrl: input.logoUrl } : {}),
-          ...(input.matchingWeights ? { matchingWeights: { ...normalizeWeights(input.matchingWeights) } } : {}),
+          ...(input.matchingWeights
+            ? { matchingWeights: { ...normalizeWeights(input.matchingWeights) } }
+            : {}),
         },
       });
       await this.audit.record(
@@ -79,7 +82,15 @@ export class OrganizationService {
         where: { organizationId: actor.organizationId },
         select: { id: true },
       });
-      await Promise.all(jobs.map((job) => this.dispatcher.dispatch('matching.job', { jobId: job.id }, { jobId: `match-job-${job.id}` })));
+      await Promise.all(
+        jobs.map((job) =>
+          this.dispatcher.dispatch(
+            'matching.job',
+            { jobId: job.id },
+            { jobId: `match-job-${job.id}` },
+          ),
+        ),
+      );
     }
     return toOrganizationDto(org);
   }
@@ -116,7 +127,9 @@ export class OrganizationService {
 
     let user = await this.prisma.user.findUnique({ where: { email: input.email } });
     if (user?.role === 'CANDIDATE') {
-      throw new ConflictError('This email belongs to a candidate account and cannot join a hiring team');
+      throw new ConflictError(
+        'This email belongs to a candidate account and cannot join a hiring team',
+      );
     }
     if (user) {
       const existing = await this.prisma.organizationMember.findUnique({
@@ -127,7 +140,12 @@ export class OrganizationService {
 
     const isNewUser = !user;
     user ??= await this.prisma.user.create({
-      data: { email: input.email, firstName: input.firstName, lastName: input.lastName, role: globalRole },
+      data: {
+        email: input.email,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        role: globalRole,
+      },
     });
 
     const member = await this.prisma.$transaction(async (tx) => {
@@ -137,7 +155,12 @@ export class OrganizationService {
       });
       await this.audit.record(
         actor,
-        { action: 'MEMBER_INVITED', entityType: 'Member', entityId: created.id, metadata: { email: input.email, role: input.role } },
+        {
+          action: 'MEMBER_INVITED',
+          entityType: 'Member',
+          entityId: created.id,
+          metadata: { email: input.email, role: input.role },
+        },
         tx,
       );
       return created;
@@ -170,20 +193,32 @@ export class OrganizationService {
   }
 
   private async findMember(organizationId: string, memberId: string) {
-    const member = await this.prisma.organizationMember.findFirst({ where: { id: memberId, organizationId } });
+    const member = await this.prisma.organizationMember.findFirst({
+      where: { id: memberId, organizationId },
+    });
     if (!member) throw new NotFoundError('Member');
     return member;
   }
 
-  async updateMemberRole(actor: Actor, memberId: string, input: UpdateMemberRoleInput): Promise<void> {
+  async updateMemberRole(
+    actor: Actor,
+    memberId: string,
+    input: UpdateMemberRoleInput,
+  ): Promise<void> {
     const member = await this.findMember(actor.organizationId, memberId);
     if (member.role === 'OWNER') throw new InvalidStateError("The owner's role cannot be changed");
-    if (member.userId === actor.userId) throw new InvalidStateError('You cannot change your own role');
+    if (member.userId === actor.userId)
+      throw new InvalidStateError('You cannot change your own role');
     await this.prisma.$transaction(async (tx) => {
       await tx.organizationMember.update({ where: { id: member.id }, data: { role: input.role } });
       await this.audit.record(
         actor,
-        { action: 'MEMBER_ROLE_CHANGED', entityType: 'Member', entityId: member.id, metadata: { from: member.role, to: input.role } },
+        {
+          action: 'MEMBER_ROLE_CHANGED',
+          entityType: 'Member',
+          entityId: member.id,
+          metadata: { from: member.role, to: input.role },
+        },
         tx,
       );
     });
@@ -195,7 +230,11 @@ export class OrganizationService {
     if (member.userId === actor.userId) throw new InvalidStateError('You cannot remove yourself');
     await this.prisma.$transaction(async (tx) => {
       await tx.organizationMember.delete({ where: { id: member.id } });
-      await this.audit.record(actor, { action: 'MEMBER_REMOVED', entityType: 'Member', entityId: member.id }, tx);
+      await this.audit.record(
+        actor,
+        { action: 'MEMBER_REMOVED', entityType: 'Member', entityId: member.id },
+        tx,
+      );
     });
   }
 }

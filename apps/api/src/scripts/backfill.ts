@@ -15,9 +15,17 @@ async function main(): Promise<void> {
   configureHttp();
   const matchesOnly = process.argv.includes('--matches');
   // Inline queue so work happens in this process; embeddings are triggered explicitly below.
-  const config = loadConfig({ ...process.env, QUEUE_DRIVER: 'inline', EMAIL_PROVIDER: 'console', LOG_LEVEL: 'warn' });
+  const config = loadConfig({
+    ...process.env,
+    QUEUE_DRIVER: 'inline',
+    EMAIL_PROVIDER: 'console',
+    LOG_LEVEL: 'warn',
+  });
   const logger = createLogger(config);
-  const container = buildContainer(config, logger, { email: new ConsoleEmailProvider(logger), redis: null });
+  const container = buildContainer(config, logger, {
+    email: new ConsoleEmailProvider(logger),
+    redis: null,
+  });
   const { prisma, services } = container;
   const out = (line: string) => process.stdout.write(`${line}\n`);
 
@@ -38,6 +46,8 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  process.stderr.write(`Backfill failed: ${error instanceof Error ? error.stack : String(error)}\n`);
+  process.stderr.write(
+    `Backfill failed: ${error instanceof Error ? error.stack : String(error)}\n`,
+  );
   process.exit(1);
 });

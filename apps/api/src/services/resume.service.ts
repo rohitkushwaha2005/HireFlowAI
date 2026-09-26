@@ -10,12 +10,7 @@ import type { Prisma, PrismaClient } from '@hireflow/database';
 import type { AIService } from '../ai/ai-service';
 import { partialDateToDate } from '../ai/heuristic/resume-parser';
 import { randomToken, sha256 } from '../lib/crypto';
-import {
-  ForbiddenError,
-  InvalidStateError,
-  NotFoundError,
-  errorMessage,
-} from '../lib/errors';
+import { ForbiddenError, InvalidStateError, NotFoundError, errorMessage } from '../lib/errors';
 import type { Logger } from '../lib/logger';
 import { extractPdfText } from '../lib/pdf';
 import type { StorageProvider } from '../lib/storage';
@@ -49,7 +44,10 @@ export class ResumeService {
   ) {}
 
   private async profileFor(userId: string) {
-    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId }, select: { id: true } });
+    const profile = await this.prisma.candidateProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
     if (!profile) throw new ForbiddenError('Only candidates can manage resumes');
     return profile;
   }
@@ -69,7 +67,10 @@ export class ResumeService {
    * Stores the validated PDF, records it as PENDING and queues parsing. Returns immediately;
    * parsing happens in the worker. The newest upload becomes the primary resume.
    */
-  async upload(userId: string, file: { originalname: string; mimetype: string; buffer: Buffer; size: number }): Promise<ResumeDto> {
+  async upload(
+    userId: string,
+    file: { originalname: string; mimetype: string; buffer: Buffer; size: number },
+  ): Promise<ResumeDto> {
     const profile = await this.profileFor(userId);
     const checksum = sha256(file.buffer);
 
@@ -86,7 +87,10 @@ export class ResumeService {
     await this.storage.put(key, file.buffer, 'application/pdf');
 
     const resume = await this.prisma.$transaction(async (tx) => {
-      await tx.resume.updateMany({ where: { candidateId: profile.id, isPrimary: true }, data: { isPrimary: false } });
+      await tx.resume.updateMany({
+        where: { candidateId: profile.id, isPrimary: true },
+        data: { isPrimary: false },
+      });
       return tx.resume.create({
         data: {
           candidateId: profile.id,
@@ -101,7 +105,11 @@ export class ResumeService {
       });
     });
 
-    await this.dispatcher.dispatch('resume.process', { resumeId: resume.id }, { jobId: `resume-${resume.id}` });
+    await this.dispatcher.dispatch(
+      'resume.process',
+      { resumeId: resume.id },
+      { jobId: `resume-${resume.id}` },
+    );
     this.logger.info({ resumeId: resume.id, size: file.size }, 'Resume uploaded and queued');
     return toResumeDto(resume);
   }
@@ -118,31 +126,46 @@ export class ResumeService {
 
   async get(auth: AuthContext, resumeId: string): Promise<ResumeDto> {
     await this.assertCanRead(auth, resumeId);
-    const resume = await this.prisma.resume.findUniqueOrThrow({ where: { id: resumeId }, select: resumeSelect });
+    const resume = await this.prisma.resume.findUniqueOrThrow({
+      where: { id: resumeId },
+      select: resumeSelect,
+    });
     return toResumeDto(resume);
   }
 
   async setPrimary(userId: string, resumeId: string): Promise<ResumeDto> {
     const resume = await this.ownedResume(userId, resumeId);
     await this.prisma.$transaction([
-      this.prisma.resume.updateMany({ where: { candidateId: resume.candidateId, isPrimary: true }, data: { isPrimary: false } }),
+      this.prisma.resume.updateMany({
+        where: { candidateId: resume.candidateId, isPrimary: true },
+        data: { isPrimary: false },
+      }),
       this.prisma.resume.update({ where: { id: resumeId }, data: { isPrimary: true } }),
     ]);
     if (resume.parsingStatus === 'COMPLETED') {
-      await this.dispatcher.dispatch('resume.process', { resumeId }, { jobId: `resume-primary-${resumeId}-${Date.now()}` });
+      await this.dispatcher.dispatch(
+        'resume.process',
+        { resumeId },
+        { jobId: `resume-primary-${resumeId}-${Date.now()}` },
+      );
     }
     return toResumeDto({ ...resume, isPrimary: true });
   }
 
   async retry(userId: string, resumeId: string): Promise<ResumeDto> {
     const resume = await this.ownedResume(userId, resumeId);
-    if (resume.parsingStatus !== 'FAILED') throw new InvalidStateError('Only failed resumes can be retried');
+    if (resume.parsingStatus !== 'FAILED')
+      throw new InvalidStateError('Only failed resumes can be retried');
     const updated = await this.prisma.resume.update({
       where: { id: resumeId },
       data: { parsingStatus: 'PENDING', parsingError: null, parsingAttempts: 0 },
       select: resumeSelect,
     });
-    await this.dispatcher.dispatch('resume.process', { resumeId }, { jobId: `resume-retry-${resumeId}-${Date.now()}` });
+    await this.dispatcher.dispatch(
+      'resume.process',
+      { resumeId },
+      { jobId: `resume-retry-${resumeId}-${Date.now()}` },
+    );
     return toResumeDto(updated);
   }
 
@@ -152,18 +175,23 @@ export class ResumeService {
       where: { resumeId, status: { notIn: ['REJECTED', 'WITHDRAWN', 'HIRED'] } },
     });
     if (activeApplications > 0) {
-      throw new InvalidStateError('This resume is attached to an active application and cannot be deleted');
+      throw new InvalidStateError(
+        'This resume is attached to an active application and cannot be deleted',
+      );
     }
     await this.prisma.resume.delete({ where: { id: resumeId } });
-    await this.storage.delete(resume.fileUrl).catch((error: unknown) =>
-      this.logger.warn({ err: error, resumeId }, 'Failed to delete resume object'),
-    );
+    await this.storage
+      .delete(resume.fileUrl)
+      .catch((error: unknown) =>
+        this.logger.warn({ err: error, resumeId }, 'Failed to delete resume object'),
+      );
     if (resume.isPrimary) {
       const next = await this.prisma.resume.findFirst({
         where: { candidateId: resume.candidateId },
         orderBy: { createdAt: 'desc' },
       });
-      if (next) await this.prisma.resume.update({ where: { id: next.id }, data: { isPrimary: true } });
+      if (next)
+        await this.prisma.resume.update({ where: { id: next.id }, data: { isPrimary: true } });
     }
   }
 
@@ -173,7 +201,9 @@ export class ResumeService {
    */
   private async assertCanRead(auth: AuthContext, resumeId: string): Promise<string | null> {
     if (auth.role === 'CANDIDATE') {
-      const own = await this.prisma.resume.count({ where: { id: resumeId, candidate: { userId: auth.userId } } });
+      const own = await this.prisma.resume.count({
+        where: { id: resumeId, candidate: { userId: auth.userId } },
+      });
       if (!own) throw new NotFoundError('Resume');
       return null;
     }
@@ -188,7 +218,11 @@ export class ResumeService {
     return access.job.organizationId;
   }
 
-  async download(auth: AuthContext, resumeId: string, ipAddress: string | null): Promise<ResumeDownload> {
+  async download(
+    auth: AuthContext,
+    resumeId: string,
+    ipAddress: string | null,
+  ): Promise<ResumeDownload> {
     const organizationId = await this.assertCanRead(auth, resumeId);
     const resume = await this.prisma.resume.findUniqueOrThrow({ where: { id: resumeId } });
     const buffer = await this.storage.get(resume.fileUrl);
@@ -198,7 +232,12 @@ export class ResumeService {
       });
       await this.audit.recordQuietly(
         { userId: auth.userId, organizationId, orgRole: membership.role, ipAddress },
-        { action: 'RESUME_VIEWED', entityType: 'Resume', entityId: resumeId, metadata: { candidateId: resume.candidateId } },
+        {
+          action: 'RESUME_VIEWED',
+          entityType: 'Resume',
+          entityId: resumeId,
+          metadata: { candidateId: resume.candidateId },
+        },
       );
     }
     return { buffer, fileName: resume.fileName, mimeType: resume.mimeType };
@@ -238,11 +277,16 @@ export class ResumeService {
             aiProvider: this.ai.providerName,
           },
         });
-        const isPrimary = resume.isPrimary || (await tx.resume.count({ where: { candidateId: resume.candidateId } })) === 1;
+        const isPrimary =
+          resume.isPrimary ||
+          (await tx.resume.count({ where: { candidateId: resume.candidateId } })) === 1;
         if (isPrimary) await applyAnalysisToProfile(tx, resume.candidateId, analysis);
       });
 
-      this.logger.info({ resumeId, provider: this.ai.providerName, skills: analysis.skills.length }, 'Resume parsed');
+      this.logger.info(
+        { resumeId, provider: this.ai.providerName, skills: analysis.skills.length },
+        'Resume parsed',
+      );
       await this.dispatcher.dispatch(
         'embedding.candidate',
         { candidateId: resume.candidateId },
@@ -250,19 +294,30 @@ export class ResumeService {
       );
     } catch (error) {
       // Bad input fails immediately; outages (AI, storage) are retried with backoff.
-      const retryable = !(error instanceof ResumeProcessingError) && attempts < MAX_PARSING_ATTEMPTS;
+      const retryable =
+        !(error instanceof ResumeProcessingError) && attempts < MAX_PARSING_ATTEMPTS;
       await this.prisma.resume.update({
         where: { id: resumeId },
         data: retryable
           ? { parsingStatus: 'PENDING', parsingError: `Retrying: ${errorMessage(error)}` }
           : { parsingStatus: 'FAILED', parsingError: errorMessage(error).slice(0, 500) },
       });
-      this.logger.warn({ resumeId, attempts, retryable, err: errorMessage(error) }, 'Resume processing failed');
+      this.logger.warn(
+        { resumeId, attempts, retryable, err: errorMessage(error) },
+        'Resume processing failed',
+      );
       if (retryable) throw error;
       // Matching can still run on whatever profile data exists.
-      const applications = await this.prisma.application.findMany({ where: { resumeId }, select: { id: true } });
+      const applications = await this.prisma.application.findMany({
+        where: { resumeId },
+        select: { id: true },
+      });
       for (const app of applications) {
-        await this.dispatcher.dispatch('matching.application', { applicationId: app.id }, { jobId: `match-app-${app.id}-${Date.now()}` });
+        await this.dispatcher.dispatch(
+          'matching.application',
+          { applicationId: app.id },
+          { jobId: `match-app-${app.id}-${Date.now()}` },
+        );
       }
     }
   }
@@ -285,7 +340,9 @@ export class ResumeService {
 }
 
 function maxEducation(levels: Array<EducationLevel | null>): EducationLevel | null {
-  const ranks = levels.filter((l): l is EducationLevel => l !== null).map((l) => EDUCATION_LEVELS.indexOf(l));
+  const ranks = levels
+    .filter((l): l is EducationLevel => l !== null)
+    .map((l) => EDUCATION_LEVELS.indexOf(l));
   return ranks.length ? EDUCATION_LEVELS[Math.max(...ranks)]! : null;
 }
 
@@ -370,7 +427,10 @@ export async function applyAnalysisToProfile(
     where: { candidateId },
     select: { startDate: true, endDate: true, current: true },
   });
-  const allEducation = await tx.education.findMany({ where: { candidateId }, select: { level: true } });
+  const allEducation = await tx.education.findMany({
+    where: { candidateId },
+    select: { level: true },
+  });
   const computedYears = totalExperienceYears(allExperience);
   const latest = analysis.workExperience.find((w) => w.current) ?? null;
 
@@ -386,9 +446,15 @@ export async function applyAnalysisToProfile(
       githubUrl: fill(profile.githubUrl, analysis.links.github),
       portfolioUrl: fill(profile.portfolioUrl, analysis.links.portfolio),
       currentRole: analysis.currentRole ?? latest?.title ?? profile.currentRole,
-      totalExperience: computedYears > 0 ? computedYears : (analysis.totalExperienceYears ?? profile.totalExperience),
+      totalExperience:
+        computedYears > 0
+          ? computedYears
+          : (analysis.totalExperienceYears ?? profile.totalExperience),
       highestEducation: maxEducation(allEducation.map((e) => e.level)) ?? profile.highestEducation,
-      certifications: [...new Set([...profile.certifications, ...analysis.certifications])].slice(0, 40),
+      certifications: [...new Set([...profile.certifications, ...analysis.certifications])].slice(
+        0,
+        40,
+      ),
     },
   });
 }

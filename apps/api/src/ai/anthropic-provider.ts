@@ -136,12 +136,17 @@ export class AnthropicProvider implements AIProvider {
       this.logger.warn({ task, issues: error.issues.slice(0, 5) }, 'AI output failed validation');
       return new AIUnavailableError('The AI response did not match the expected format');
     }
-    if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
+    if (
+      error instanceof Anthropic.AuthenticationError ||
+      error instanceof Anthropic.PermissionDeniedError
+    ) {
       this.logger.error({ task, status: error.status }, 'AI provider rejected credentials');
       return new AIUnavailableError('The AI provider rejected the configured credentials');
     }
     if (error instanceof Anthropic.RateLimitError) {
-      return new AIUnavailableError('The AI provider is rate limiting requests; please retry shortly');
+      return new AIUnavailableError(
+        'The AI provider is rate limiting requests; please retry shortly',
+      );
     }
     if (error instanceof Anthropic.BadRequestError) {
       this.logger.error({ task, err: error.message }, 'AI request rejected as invalid');
@@ -202,15 +207,15 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async answerHiringQuestion(input: HiringQuestionInput): Promise<HiringAnswer> {
-    const tools: Anthropic.Beta.BetaTool[] = (Object.keys(copilotToolSchemas) as CopilotToolName[]).map(
-      (name) => ({
-        name,
-        description: COPILOT_TOOL_DESCRIPTIONS[name],
-        input_schema: z.toJSONSchema(copilotToolSchemas[name], {
-          target: 'draft-7',
-        }) as Anthropic.Beta.BetaTool.InputSchema,
-      }),
-    );
+    const tools: Anthropic.Beta.BetaTool[] = (
+      Object.keys(copilotToolSchemas) as CopilotToolName[]
+    ).map((name) => ({
+      name,
+      description: COPILOT_TOOL_DESCRIPTIONS[name],
+      input_schema: z.toJSONSchema(copilotToolSchemas[name], {
+        target: 'draft-7',
+      }) as Anthropic.Beta.BetaTool.InputSchema,
+    }));
 
     const focus = input.focusJob
       ? `\n\n(The recruiter is currently focused on the job "${input.focusJob.title}", jobId ${input.focusJob.id}. Scope tools to it when the question is about applicants.)`
@@ -239,7 +244,8 @@ export class AnthropicProvider implements AIProvider {
 
         if (response.stop_reason === 'refusal') {
           return {
-            answer: "I can't help with that request. Try asking about candidates' skills, experience or match results.",
+            answer:
+              "I can't help with that request. Try asking about candidates' skills, experience or match results.",
             toolsUsed: input.toolbox.used(),
           };
         }
@@ -254,14 +260,20 @@ export class AnthropicProvider implements AIProvider {
             toolUses.map(async (block): Promise<Anthropic.Beta.BetaToolResultBlockParam> => {
               const parsed = parseToolInput(block.name, block.input);
               if (!parsed.ok) {
-                return { type: 'tool_result', tool_use_id: block.id, content: parsed.error, is_error: true };
+                return {
+                  type: 'tool_result',
+                  tool_use_id: block.id,
+                  content: parsed.error,
+                  is_error: true,
+                };
               }
               try {
-                const output = await input.toolbox.execute(
-                  parsed.name,
-                  parsed.input as never,
-                );
-                return { type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(output) };
+                const output = await input.toolbox.execute(parsed.name, parsed.input as never);
+                return {
+                  type: 'tool_result',
+                  tool_use_id: block.id,
+                  content: JSON.stringify(output),
+                };
               } catch (error) {
                 this.logger.warn({ tool: block.name, err: error }, 'Copilot tool failed');
                 return {
@@ -291,7 +303,8 @@ export class AnthropicProvider implements AIProvider {
         };
       }
       return {
-        answer: 'That question needed more steps than allowed. Please narrow it down (for example, to one job or skill).',
+        answer:
+          'That question needed more steps than allowed. Please narrow it down (for example, to one job or skill).',
         toolsUsed: input.toolbox.used(),
       };
     } catch (error) {

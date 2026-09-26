@@ -23,12 +23,19 @@ interface LayoutInput {
   footnote?: string;
 }
 
-function layout({ preheader, heading, paragraphs, action, footnote }: LayoutInput): { html: string; text: string } {
-  const body = paragraphs.map((p) => `<p style="margin:0 0 16px;line-height:1.6">${escapeHtml(p)}</p>`).join('');
+function layout({ preheader, heading, paragraphs, action, footnote }: LayoutInput): {
+  html: string;
+  text: string;
+} {
+  const body = paragraphs
+    .map((p) => `<p style="margin:0 0 16px;line-height:1.6">${escapeHtml(p)}</p>`)
+    .join('');
   const button = action
     ? `<p style="margin:24px 0"><a href="${escapeHtml(action.url)}" style="background:#4f46e5;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">${escapeHtml(action.label)}</a></p>`
     : '';
-  const foot = footnote ? `<p style="margin:24px 0 0;color:#6b7280;font-size:13px">${escapeHtml(footnote)}</p>` : '';
+  const foot = footnote
+    ? `<p style="margin:24px 0 0;color:#6b7280;font-size:13px">${escapeHtml(footnote)}</p>`
+    : '';
   const html = `<!doctype html><html><body style="margin:0;background:#f4f4f5;font-family:Inter,Segoe UI,Arial,sans-serif;color:#18181b">
 <span style="display:none;opacity:0">${escapeHtml(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
@@ -36,16 +43,37 @@ function layout({ preheader, heading, paragraphs, action, footnote }: LayoutInpu
 <tr><td><p style="margin:0 0 24px;font-weight:700;color:#4f46e5">HireFlow AI</p>
 <h1 style="margin:0 0 16px;font-size:20px">${escapeHtml(heading)}</h1>${body}${button}${foot}</td></tr></table>
 </td></tr></table></body></html>`;
-  const text = [heading, '', ...paragraphs, ...(action ? ['', `${action.label}: ${action.url}`] : []), ...(footnote ? ['', footnote] : [])].join('\n');
+  const text = [
+    heading,
+    '',
+    ...paragraphs,
+    ...(action ? ['', `${action.label}: ${action.url}`] : []),
+    ...(footnote ? ['', footnote] : []),
+  ].join('\n');
   return { html, text };
 }
 
 export interface EmailTemplates {
   emailVerification: { firstName: string; url: string };
   passwordReset: { firstName: string; url: string };
-  memberInvitation: { firstName: string; organizationName: string; inviterName: string; url: string };
-  applicationReceived: { firstName: string; jobTitle: string; organizationName: string; url: string };
-  newApplicationForRecruiter: { recruiterFirstName: string; candidateName: string; jobTitle: string; url: string };
+  memberInvitation: {
+    firstName: string;
+    organizationName: string;
+    inviterName: string;
+    url: string;
+  };
+  applicationReceived: {
+    firstName: string;
+    jobTitle: string;
+    organizationName: string;
+    url: string;
+  };
+  newApplicationForRecruiter: {
+    recruiterFirstName: string;
+    candidateName: string;
+    jobTitle: string;
+    url: string;
+  };
   applicationStatusUpdated: {
     firstName: string;
     jobTitle: string;
@@ -106,7 +134,8 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
       heading: `Hi ${firstName}`,
       paragraphs: ['We received a request to reset your password. The link expires in 1 hour.'],
       action: { label: 'Choose a new password', url },
-      footnote: "If you didn't request this, you can ignore this email — your password is unchanged.",
+      footnote:
+        "If you didn't request this, you can ignore this email — your password is unchanged.",
     }),
   }),
   memberInvitation: ({ firstName, organizationName, inviterName, url }) => ({
@@ -114,7 +143,10 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
     ...layout({
       preheader: `Join ${organizationName} on HireFlow AI`,
       heading: `Hi ${firstName}`,
-      paragraphs: [`${inviterName} invited you to join ${organizationName}'s hiring team.`, 'Set a password to activate your account.'],
+      paragraphs: [
+        `${inviterName} invited you to join ${organizationName}'s hiring team.`,
+        'Set a password to activate your account.',
+      ],
       action: { label: 'Accept invitation', url },
     }),
   }),
@@ -123,7 +155,10 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
     ...layout({
       preheader: `${organizationName} received your application`,
       heading: `Thanks for applying, ${firstName}`,
-      paragraphs: [`${organizationName} has received your application for ${jobTitle}.`, 'You can track its status at any time.'],
+      paragraphs: [
+        `${organizationName} has received your application for ${jobTitle}.`,
+        'You can track its status at any time.',
+      ],
       action: { label: 'View application', url },
     }),
   }),
@@ -132,7 +167,9 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
     ...layout({
       preheader: `${candidateName} applied to ${jobTitle}`,
       heading: `Hi ${recruiterFirstName}`,
-      paragraphs: [`${candidateName} applied to ${jobTitle}. The resume is being processed and a match score will be ready shortly.`],
+      paragraphs: [
+        `${candidateName} applied to ${jobTitle}. The resume is being processed and a match score will be ready shortly.`,
+      ],
       action: { label: 'Review application', url },
     }),
   }),
@@ -148,7 +185,17 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
       action: { label: 'View application', url },
     }),
   }),
-  interviewScheduled: ({ firstName, jobTitle, organizationName, when, duration, type, meetingUrl, location, url }) => ({
+  interviewScheduled: ({
+    firstName,
+    jobTitle,
+    organizationName,
+    when,
+    duration,
+    type,
+    meetingUrl,
+    location,
+    url,
+  }) => ({
     subject: `Interview scheduled: ${jobTitle}`,
     ...layout({
       preheader: `${when} · ${duration} minutes`,
@@ -167,7 +214,10 @@ const renderers: { [K in EmailTemplateName]: Renderer<K> } = {
     ...layout({
       preheader: `Your interview is at ${when}`,
       heading: `Hi ${firstName}`,
-      paragraphs: [`This is a reminder of your interview for ${jobTitle} at ${when}.`, ...(meetingUrl ? [`Meeting link: ${meetingUrl}`] : [])],
+      paragraphs: [
+        `This is a reminder of your interview for ${jobTitle} at ${when}.`,
+        ...(meetingUrl ? [`Meeting link: ${meetingUrl}`] : []),
+      ],
       action: { label: 'View interview details', url },
     }),
   }),

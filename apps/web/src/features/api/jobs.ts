@@ -25,7 +25,11 @@ export interface JobListParams {
 }
 
 export function useAuthConfig() {
-  return useQuery({ queryKey: keys.authConfig, queryFn: () => get<AuthConfigDto>('/auth/config'), staleTime: Infinity });
+  return useQuery({
+    queryKey: keys.authConfig,
+    queryFn: () => get<AuthConfigDto>('/auth/config'),
+    staleTime: Infinity,
+  });
 }
 
 export function useJobs(params: JobListParams) {
@@ -37,13 +41,21 @@ export function useJobs(params: JobListParams) {
 }
 
 export function useJob(id: string | undefined) {
-  return useQuery({ queryKey: keys.jobs.detail(id ?? ''), queryFn: () => get<JobDetailDto>(`/jobs/${id}`), enabled: !!id });
+  return useQuery({
+    queryKey: keys.jobs.detail(id ?? ''),
+    queryFn: () => get<JobDetailDto>(`/jobs/${id}`),
+    enabled: !!id,
+  });
 }
 
-export function useJobApplications(jobId: string, params: { page: number; sort?: string; order?: string; status?: string[]; search?: string }) {
+export function useJobApplications(
+  jobId: string,
+  params: { page: number; sort?: string; order?: string; status?: string[]; search?: string },
+) {
   return useQuery({
     queryKey: keys.jobs.applications(jobId, params),
-    queryFn: () => getPage<ApplicationListItemDto>(`/jobs/${jobId}/applications`, toQuery({ ...params })),
+    queryFn: () =>
+      getPage<ApplicationListItemDto>(`/jobs/${jobId}/applications`, toQuery({ ...params })),
     placeholderData: keepPreviousData,
   });
 }
@@ -91,7 +103,8 @@ const TRANSITION_MESSAGES: Record<JobTransition, string> = {
 export function useJobTransition() {
   const invalidate = useInvalidateJobs();
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: JobTransition }) => post<JobDetailDto>(`/jobs/${id}/${action}`),
+    mutationFn: ({ id, action }: { id: string; action: JobTransition }) =>
+      post<JobDetailDto>(`/jobs/${id}/${action}`),
     onSuccess: (_job, { action }) => {
       invalidate();
       toast.success(TRANSITION_MESSAGES[action]);
@@ -129,7 +142,8 @@ export interface JobAnalysisResult {
 
 export function useAnalyzeJob() {
   return useMutation({
-    mutationFn: (input: { title: string; description: string }) => post<JobAnalysisResult>('/jobs/analyze', input),
+    mutationFn: (input: { title: string; description: string }) =>
+      post<JobAnalysisResult>('/jobs/analyze', input),
   });
 }
 

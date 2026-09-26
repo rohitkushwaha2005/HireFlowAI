@@ -18,7 +18,10 @@ type Captured = { url: string; body: Record<string, unknown> };
 function stubFetch(responses: Array<Record<string, unknown> | { status: number; body: unknown }>) {
   const calls: Captured[] = [];
   const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
-    calls.push({ url: String(input), body: JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown> });
+    calls.push({
+      url: String(input),
+      body: JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>,
+    });
     const next = responses.shift();
     if (!next) throw new Error('No stubbed response left');
     const isError = 'status' in next && typeof next.status === 'number' && next.status >= 400;
@@ -59,10 +62,18 @@ const ANALYSIS: JobAnalysis = {
 
 describe('AnthropicProvider', () => {
   it('requests structured output with adaptive thinking and the refusal fallback, and parses the result', async () => {
-    const { fetchImpl, calls } = stubFetch([message([{ type: 'text', text: JSON.stringify(ANALYSIS) }])]);
-    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, { fetch: fetchImpl, maxRetries: 0 });
+    const { fetchImpl, calls } = stubFetch([
+      message([{ type: 'text', text: JSON.stringify(ANALYSIS) }]),
+    ]);
+    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
 
-    const result = await provider.analyzeJob({ title: 'Full Stack Engineer', description: 'We need React.' });
+    const result = await provider.analyzeJob({
+      title: 'Full Stack Engineer',
+      description: 'We need React.',
+    });
 
     expect(result).toEqual(ANALYSIS);
     const body = calls[0]!.body;
@@ -70,17 +81,29 @@ describe('AnthropicProvider', () => {
     expect(body.model).toBe('claude-opus-5');
     expect(body.thinking).toEqual({ type: 'adaptive' });
     expect(body.fallbacks).toBe('default');
-    const outputConfig = body.output_config as { effort: string; format: { type: string; schema: { properties: object } } };
+    const outputConfig = body.output_config as {
+      effort: string;
+      format: { type: string; schema: { properties: object } };
+    };
     expect(outputConfig.effort).toBe('low');
     expect(outputConfig.format.type).toBe('json_schema');
-    expect(Object.keys(outputConfig.format.schema.properties)).toEqual(expect.arrayContaining(['requiredSkills', 'preferredSkills']));
+    expect(Object.keys(outputConfig.format.schema.properties)).toEqual(
+      expect.arrayContaining(['requiredSkills', 'preferredSkills']),
+    );
     expect(JSON.stringify(body.messages)).toContain('We need React.');
   });
 
   it('rejects output that does not match the schema', async () => {
-    const { fetchImpl } = stubFetch([message([{ type: 'text', text: JSON.stringify({ summary: 'x' }) }])]);
-    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, { fetch: fetchImpl, maxRetries: 0 });
-    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toBeInstanceOf(AIUnavailableError);
+    const { fetchImpl } = stubFetch([
+      message([{ type: 'text', text: JSON.stringify({ summary: 'x' }) }]),
+    ]);
+    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
+    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toBeInstanceOf(
+      AIUnavailableError,
+    );
   });
 
   it('treats refusals and truncation as unavailable instead of parsing partial output', async () => {
@@ -88,20 +111,40 @@ describe('AnthropicProvider', () => {
       message([{ type: 'text', text: '' }], 'refusal'),
       message([{ type: 'text', text: '{"summary": "tru' }], 'max_tokens'),
     ]);
-    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, { fetch: fetchImpl, maxRetries: 0 });
+    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
     await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toThrow(/declined/);
-    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toThrow(/truncated/);
+    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toThrow(
+      /truncated/,
+    );
   });
 
   it('maps API errors to AIUnavailableError', async () => {
-    const { fetchImpl } = stubFetch([{ status: 401, body: { type: 'error', error: { type: 'authentication_error', message: 'bad key' } } }]);
-    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, { fetch: fetchImpl, maxRetries: 0 });
-    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toThrow(/credentials/);
+    const { fetchImpl } = stubFetch([
+      {
+        status: 401,
+        body: { type: 'error', error: { type: 'authentication_error', message: 'bad key' } },
+      },
+    ]);
+    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
+    await expect(provider.analyzeJob({ title: 'T', description: 'D' })).rejects.toThrow(
+      /credentials/,
+    );
   });
 
   it('omits the server-side fallback for models that do not support it', async () => {
-    const { fetchImpl, calls } = stubFetch([message([{ type: 'text', text: JSON.stringify(ANALYSIS) }])]);
-    const provider = new AnthropicProvider('sk-test', 'claude-sonnet-5', logger, { fetch: fetchImpl, maxRetries: 0 });
+    const { fetchImpl, calls } = stubFetch([
+      message([{ type: 'text', text: JSON.stringify(ANALYSIS) }]),
+    ]);
+    const provider = new AnthropicProvider('sk-test', 'claude-sonnet-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
     await provider.analyzeJob({ title: 'T', description: 'D' });
     expect(calls[0]!.body.fallbacks).toBeUndefined();
   });
@@ -110,8 +153,18 @@ describe('AnthropicProvider', () => {
     const { fetchImpl, calls } = stubFetch([
       message(
         [
-          { type: 'tool_use', id: 'toolu_1', name: 'find_candidates_by_skills', input: { skills: ['React', 'Node.js'] } },
-          { type: 'tool_use', id: 'toolu_2', name: 'find_candidates_by_skills', input: { skills: [] } },
+          {
+            type: 'tool_use',
+            id: 'toolu_1',
+            name: 'find_candidates_by_skills',
+            input: { skills: ['React', 'Node.js'] },
+          },
+          {
+            type: 'tool_use',
+            id: 'toolu_2',
+            name: 'find_candidates_by_skills',
+            input: { skills: [] },
+          },
         ],
         'tool_use',
       ),
@@ -126,14 +179,27 @@ describe('AnthropicProvider', () => {
       retrieved: () => [],
       used: () => ['find_candidates_by_skills'],
     };
-    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, { fetch: fetchImpl, maxRetries: 0 });
+    const provider = new AnthropicProvider('sk-test', 'claude-opus-5', logger, {
+      fetch: fetchImpl,
+      maxRetries: 0,
+    });
 
-    const answer = await provider.answerHiringQuestion({ question: 'Who knows React?', history: [], toolbox, focusJob: null });
+    const answer = await provider.answerHiringQuestion({
+      question: 'Who knows React?',
+      history: [],
+      toolbox,
+      focusJob: null,
+    });
 
     expect(answer.answer).toBe('**Maya Chen** has 5 years of React.');
     // Only the valid tool call executes; the invalid one returns an error result to the model.
-    expect(executed).toEqual([{ name: 'find_candidates_by_skills', input: { skills: ['React', 'Node.js'] } }]);
-    const second = calls[1]!.body.messages as Array<{ role: string; content: Array<{ type: string; is_error?: boolean }> }>;
+    expect(executed).toEqual([
+      { name: 'find_candidates_by_skills', input: { skills: ['React', 'Node.js'] } },
+    ]);
+    const second = calls[1]!.body.messages as Array<{
+      role: string;
+      content: Array<{ type: string; is_error?: boolean }>;
+    }>;
     const toolResults = second.at(-1)!;
     expect(toolResults.role).toBe('user');
     expect(toolResults.content.map((c) => c.type)).toEqual(['tool_result', 'tool_result']);

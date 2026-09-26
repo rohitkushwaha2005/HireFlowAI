@@ -6,7 +6,12 @@ import { defineConfig } from 'tsup';
  * external and are installed in the runtime image.
  */
 export default defineConfig({
-  entry: { server: 'src/server.ts', worker: 'src/worker.ts', seed: 'src/scripts/seed.ts', backfill: 'src/scripts/backfill.ts' },
+  entry: {
+    server: 'src/server.ts',
+    worker: 'src/worker.ts',
+    seed: 'src/scripts/seed.ts',
+    backfill: 'src/scripts/backfill.ts',
+  },
   format: ['esm'],
   platform: 'node',
   target: 'node22',

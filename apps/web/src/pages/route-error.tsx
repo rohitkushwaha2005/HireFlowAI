@@ -12,9 +12,14 @@ export function RouteError() {
       : 'Unknown error';
   const chunkFailed = /dynamically imported module|Failed to fetch/i.test(message);
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center" role="alert">
+    <div
+      className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center"
+      role="alert"
+    >
       <AlertTriangle className="size-10 text-destructive" />
-      <h1 className="text-xl font-semibold">{chunkFailed ? 'A new version is available' : 'Something went wrong'}</h1>
+      <h1 className="text-xl font-semibold">
+        {chunkFailed ? 'A new version is available' : 'Something went wrong'}
+      </h1>
       <p className="max-w-md text-sm text-muted-foreground">
         {chunkFailed ? 'Reload the page to get the latest version of HireFlow AI.' : message}
       </p>

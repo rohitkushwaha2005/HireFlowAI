@@ -27,7 +27,12 @@ function normalize(error: unknown): AppError | null {
   if (error instanceof SyntaxError && 'body' in error) {
     return new ValidationError('Malformed JSON body');
   }
-  if (typeof error === 'object' && error !== null && 'type' in error && error.type === 'entity.too.large') {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'type' in error &&
+    error.type === 'entity.too.large'
+  ) {
     return new PayloadTooLargeError('The request body is too large');
   }
   return null;

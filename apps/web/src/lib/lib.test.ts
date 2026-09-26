@@ -4,7 +4,17 @@ import { formatSalary, formatYears, pluralize } from './utils';
 
 describe('toQuery', () => {
   it('drops empty values and joins arrays for the API csv parser', () => {
-    expect(toQuery({ q: 'react', status: ['APPLIED', 'SCREENING'], empty: '', none: undefined, list: [], page: 2, flag: false })).toEqual({
+    expect(
+      toQuery({
+        q: 'react',
+        status: ['APPLIED', 'SCREENING'],
+        empty: '',
+        none: undefined,
+        list: [],
+        page: 2,
+        flag: false,
+      }),
+    ).toEqual({
       q: 'react',
       status: 'APPLIED,SCREENING',
       page: 2,

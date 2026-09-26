@@ -3,7 +3,9 @@ import { slugify, totalExperienceYears } from './text';
 
 describe('slugify', () => {
   it('produces url-safe slugs', () => {
-    expect(slugify('Senior Full-Stack Engineer (Remote)')).toBe('senior-full-stack-engineer-remote');
+    expect(slugify('Senior Full-Stack Engineer (Remote)')).toBe(
+      'senior-full-stack-engineer-remote',
+    );
     expect(slugify('Café Développeur')).toBe('cafe-developpeur');
     expect(slugify('!!!')).toBe('item');
   });

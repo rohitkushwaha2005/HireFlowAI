@@ -85,7 +85,11 @@ export class AuthService {
     };
   }
 
-  private async createSession(userId: string, meta: RequestMeta, familyId?: string): Promise<AuthResult> {
+  private async createSession(
+    userId: string,
+    meta: RequestMeta,
+    familyId?: string,
+  ): Promise<AuthResult> {
     const me = await this.me(userId);
     const accessToken = await this.tokens.signAccessToken({
       id: me.user.id,
@@ -100,10 +104,18 @@ export class AuthService {
 
   // ── Registration / login ──────────────────────────────────────────────────
 
-  async uniqueOrganizationSlug(name: string, db: Prisma.TransactionClient | PrismaClient = this.prisma): Promise<string> {
+  async uniqueOrganizationSlug(
+    name: string,
+    db: Prisma.TransactionClient | PrismaClient = this.prisma,
+  ): Promise<string> {
     const base = slugify(name, 50);
     for (let attempt = 0; attempt < 20; attempt++) {
-      const slug = attempt === 0 ? base : `${base}-${randomToken(3).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      const slug =
+        attempt === 0
+          ? base
+          : `${base}-${randomToken(3)
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, '')}`;
       const exists = await db.organization.findUnique({ where: { slug }, select: { id: true } });
       if (!exists) return slug;
     }
@@ -111,7 +123,10 @@ export class AuthService {
   }
 
   async register(input: RegisterInput, meta: RequestMeta): Promise<AuthResult> {
-    const existing = await this.prisma.user.findUnique({ where: { email: input.email }, select: { id: true } });
+    const existing = await this.prisma.user.findUnique({
+      where: { email: input.email },
+      select: { id: true },
+    });
     if (existing) throw new ConflictError('An account with this email already exists');
 
     const passwordHash = await hashPassword(input.password);
@@ -149,7 +164,10 @@ export class AuthService {
       select: { id: true, passwordHash: true },
     });
     // Always run a hash verification so timing does not reveal whether the account exists.
-    const valid = await verifyPassword(user?.passwordHash ?? (await dummyPasswordHash()), input.password);
+    const valid = await verifyPassword(
+      user?.passwordHash ?? (await dummyPasswordHash()),
+      input.password,
+    );
     if (!user || !user.passwordHash || !valid) {
       throw new UnauthorizedError('Incorrect email or password');
     }
@@ -160,7 +178,11 @@ export class AuthService {
   async refresh(refreshToken: string, meta: RequestMeta): Promise<AuthResult> {
     const { userId, refresh } = await this.tokens.rotateRefreshToken(refreshToken, meta);
     const me = await this.me(userId);
-    const accessToken = await this.tokens.signAccessToken({ id: me.user.id, email: me.user.email, role: me.user.role });
+    const accessToken = await this.tokens.signAccessToken({
+      id: me.user.id,
+      email: me.user.email,
+      role: me.user.role,
+    });
     return { session: { ...me, accessToken, expiresIn: this.tokens.accessTtlSeconds }, refresh };
   }
 
@@ -170,7 +192,11 @@ export class AuthService {
 
   // ── One-time tokens ───────────────────────────────────────────────────────
 
-  async createOneTimeToken(userId: string, type: VerificationTokenType, ttlMs: number): Promise<string> {
+  async createOneTimeToken(
+    userId: string,
+    type: VerificationTokenType,
+    ttlMs: number,
+  ): Promise<string> {
     const token = randomToken(32);
     await this.prisma.$transaction([
       // Only the latest token of each type stays valid.
@@ -186,7 +212,9 @@ export class AuthService {
   }
 
   private async consumeOneTimeToken(token: string, type: VerificationTokenType): Promise<string> {
-    const record = await this.prisma.verificationToken.findUnique({ where: { tokenHash: sha256(token) } });
+    const record = await this.prisma.verificationToken.findUnique({
+      where: { tokenHash: sha256(token) },
+    });
     if (!record || record.type !== type || record.consumedAt || record.expiresAt < new Date()) {
       throw new ValidationError('This link is invalid or has expired');
     }
@@ -198,11 +226,22 @@ export class AuthService {
     return record.userId;
   }
 
-  private async sendVerificationEmail(userId: string, email: string, firstName: string): Promise<void> {
-    const token = await this.createOneTimeToken(userId, 'EMAIL_VERIFICATION', EMAIL_VERIFICATION_TTL_MS);
+  private async sendVerificationEmail(
+    userId: string,
+    email: string,
+    firstName: string,
+  ): Promise<void> {
+    const token = await this.createOneTimeToken(
+      userId,
+      'EMAIL_VERIFICATION',
+      EMAIL_VERIFICATION_TTL_MS,
+    );
     await this.dispatcher.dispatch(
       'email.send',
-      emailJob(email, 'emailVerification', { firstName, url: `${this.config.webUrl}/verify-email?token=${token}` }),
+      emailJob(email, 'emailVerification', {
+        firstName,
+        url: `${this.config.webUrl}/verify-email?token=${token}`,
+      }),
     );
   }
 
@@ -316,16 +355,23 @@ export class AuthService {
     });
     if (!profileResponse.ok) throw new UnauthorizedError('Google sign-in failed');
     const profile = (await profileResponse.json()) as Partial<GoogleProfile>;
-    if (!profile.sub || !profile.email) throw new UnauthorizedError('Google did not return an email');
+    if (!profile.sub || !profile.email)
+      throw new UnauthorizedError('Google did not return an email');
     return profile as GoogleProfile;
   }
 
-  async googleSignIn(code: string, role: Extract<UserRole, 'CANDIDATE' | 'RECRUITER'>, meta: RequestMeta): Promise<AuthResult> {
+  async googleSignIn(
+    code: string,
+    role: Extract<UserRole, 'CANDIDATE' | 'RECRUITER'>,
+    meta: RequestMeta,
+  ): Promise<AuthResult> {
     const profile = await this.fetchGoogleProfile(code);
     if (!profile.email_verified) throw new UnauthorizedError('Your Google email is not verified');
     const email = profile.email.toLowerCase();
 
-    let user = await this.prisma.user.findFirst({ where: { OR: [{ googleId: profile.sub }, { email }] } });
+    let user = await this.prisma.user.findFirst({
+      where: { OR: [{ googleId: profile.sub }, { email }] },
+    });
     if (user) {
       if (!user.googleId) {
         user = await this.prisma.user.update({

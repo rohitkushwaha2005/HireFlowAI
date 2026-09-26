@@ -41,7 +41,10 @@ const router = createBrowserRouter([
             children: [
               { path: '/login', element: page(() => import('@/pages/auth/login')) },
               { path: '/register', element: page(() => import('@/pages/auth/register')) },
-              { path: '/forgot-password', element: page(() => import('@/pages/auth/forgot-password')) },
+              {
+                path: '/forgot-password',
+                element: page(() => import('@/pages/auth/forgot-password')),
+              },
             ],
           },
           { path: '/reset-password', element: page(() => import('@/pages/auth/reset-password')) },
@@ -61,11 +64,23 @@ const router = createBrowserRouter([
               { path: 'jobs', element: page(() => import('@/pages/recruiter/jobs')) },
               { path: 'jobs/new', element: page(() => import('@/pages/recruiter/job-editor')) },
               { path: 'jobs/:id', element: page(() => import('@/pages/recruiter/job-detail')) },
-              { path: 'jobs/:id/edit', element: page(() => import('@/pages/recruiter/job-editor')) },
+              {
+                path: 'jobs/:id/edit',
+                element: page(() => import('@/pages/recruiter/job-editor')),
+              },
               { path: 'candidates', element: page(() => import('@/pages/recruiter/candidates')) },
-              { path: 'candidates/:id', element: page(() => import('@/pages/recruiter/candidate-detail')) },
-              { path: 'applications', element: page(() => import('@/pages/recruiter/applications')) },
-              { path: 'applications/:id', element: page(() => import('@/pages/recruiter/application-detail')) },
+              {
+                path: 'candidates/:id',
+                element: page(() => import('@/pages/recruiter/candidate-detail')),
+              },
+              {
+                path: 'applications',
+                element: page(() => import('@/pages/recruiter/applications')),
+              },
+              {
+                path: 'applications/:id',
+                element: page(() => import('@/pages/recruiter/application-detail')),
+              },
               { path: 'interviews', element: page(() => import('@/pages/recruiter/interviews')) },
               { path: 'analytics', element: page(() => import('@/pages/recruiter/analytics')) },
               { path: 'copilot', element: page(() => import('@/pages/recruiter/copilot')) },
@@ -85,8 +100,14 @@ const router = createBrowserRouter([
               { index: true, element: page(() => import('@/pages/candidate/dashboard')) },
               { path: 'jobs', element: page(() => import('@/pages/public/job-board')) },
               { path: 'jobs/:slug', element: page(() => import('@/pages/public/job-detail')) },
-              { path: 'applications', element: page(() => import('@/pages/candidate/applications')) },
-              { path: 'applications/:id', element: page(() => import('@/pages/candidate/application-detail')) },
+              {
+                path: 'applications',
+                element: page(() => import('@/pages/candidate/applications')),
+              },
+              {
+                path: 'applications/:id',
+                element: page(() => import('@/pages/candidate/application-detail')),
+              },
               { path: 'profile', element: page(() => import('@/pages/candidate/profile')) },
               { path: 'resume', element: page(() => import('@/pages/candidate/resume')) },
               { path: 'interviews', element: page(() => import('@/pages/candidate/interviews')) },

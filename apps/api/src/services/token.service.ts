@@ -60,7 +60,11 @@ export class TokenService {
     return { userId: payload.sub, email: payload.email, role: role as UserRole };
   }
 
-  async issueRefreshToken(userId: string, meta: RequestMeta, familyId?: string): Promise<IssuedRefreshToken> {
+  async issueRefreshToken(
+    userId: string,
+    meta: RequestMeta,
+    familyId?: string,
+  ): Promise<IssuedRefreshToken> {
     const token = randomToken(48);
     const expiresAt = new Date(Date.now() + this.config.refreshTokenTtlDays * 86_400_000);
     await this.prisma.refreshToken.create({
@@ -81,7 +85,9 @@ export class TokenService {
     token: string,
     meta: RequestMeta,
   ): Promise<{ userId: string; refresh: IssuedRefreshToken }> {
-    const existing = await this.prisma.refreshToken.findUnique({ where: { tokenHash: sha256(token) } });
+    const existing = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash: sha256(token) },
+    });
     if (!existing) throw new UnauthorizedError('Invalid session');
 
     if (existing.revokedAt) {
@@ -92,7 +98,8 @@ export class TokenService {
       });
       throw new UnauthorizedError('Session revoked. Please sign in again.');
     }
-    if (existing.expiresAt < new Date()) throw new UnauthorizedError('Session expired. Please sign in again.');
+    if (existing.expiresAt < new Date())
+      throw new UnauthorizedError('Session expired. Please sign in again.');
 
     const refresh = await this.issueRefreshToken(existing.userId, meta, existing.familyId);
     await this.prisma.refreshToken.update({
@@ -103,7 +110,9 @@ export class TokenService {
   }
 
   async revokeRefreshToken(token: string): Promise<void> {
-    const existing = await this.prisma.refreshToken.findUnique({ where: { tokenHash: sha256(token) } });
+    const existing = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash: sha256(token) },
+    });
     if (!existing) return;
     await this.prisma.refreshToken.updateMany({
       where: { familyId: existing.familyId, revokedAt: null },

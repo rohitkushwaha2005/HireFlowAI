@@ -5,7 +5,14 @@ import { AIBadge, EmptyState, ErrorState, ListSkeleton, PageHeader } from '@/com
 import { ParsingStatusBadge } from '@/components/domain';
 import { ConfirmDialog, FormError } from '@/components/forms';
 import { Badge, Button, Card, CardContent, Progress } from '@/components/ui';
-import { openResume, useDeleteResume, useMyResumes, useRetryResume, useSetPrimaryResume, useUploadResume } from '@/features/api/candidates';
+import {
+  openResume,
+  useDeleteResume,
+  useMyResumes,
+  useRetryResume,
+  useSetPrimaryResume,
+  useUploadResume,
+} from '@/features/api/candidates';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { cn, formatBytes, timeAgo } from '@/lib/utils';
 
@@ -21,8 +28,10 @@ function Dropzone() {
   const handle = (file: File | undefined) => {
     setLocalError(null);
     if (!file) return;
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) return setLocalError('Please upload a PDF file.');
-    if (file.size > MAX_MB * 1024 * 1024) return setLocalError(`The file is larger than ${MAX_MB} MB.`);
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'))
+      return setLocalError('Please upload a PDF file.');
+    if (file.size > MAX_MB * 1024 * 1024)
+      return setLocalError(`The file is larger than ${MAX_MB} MB.`);
     setProgress(0);
     upload.mutate({ file, onProgress: setProgress }, { onSettled: () => setProgress(null) });
   };
@@ -35,9 +44,16 @@ function Dropzone() {
         aria-label="Upload a PDF resume"
         onClick={() => input.current?.click()}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && input.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); handle(e.dataTransfer.files[0]); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          handle(e.dataTransfer.files[0]);
+        }}
         className={cn(
           'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors focus-visible:outline-2 focus-visible:outline-ring',
           dragging ? 'border-primary bg-accent/50' : 'hover:border-primary/60 hover:bg-muted/40',
@@ -45,8 +61,20 @@ function Dropzone() {
       >
         <Upload className="mb-3 size-8 text-primary" />
         <p className="font-medium">Drop your resume here or click to browse</p>
-        <p className="mt-1 text-sm text-muted-foreground">PDF, up to {MAX_MB} MB. We’ll extract your skills, experience and education automatically.</p>
-        <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" tabIndex={-1} onChange={(e) => { handle(e.target.files?.[0]); e.target.value = ''; }} />
+        <p className="mt-1 text-sm text-muted-foreground">
+          PDF, up to {MAX_MB} MB. We’ll extract your skills, experience and education automatically.
+        </p>
+        <input
+          ref={input}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(e) => {
+            handle(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
       </div>
       {progress !== null && <Progress value={progress} aria-label="Upload progress" />}
       <FormError error={localError ? new Error(localError) : upload.error} />
@@ -65,18 +93,53 @@ function ResumeRow({ resume }: { resume: ResumeDto }) {
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2 font-medium">
           <span className="truncate">{resume.fileName}</span>
-          {resume.isPrimary && <Badge><Star /> Primary</Badge>}
+          {resume.isPrimary && (
+            <Badge>
+              <Star /> Primary
+            </Badge>
+          )}
           <AIBadge provider={resume.parsingStatus === 'COMPLETED' ? resume.aiProvider : null} />
         </p>
-        <p className="text-xs text-muted-foreground">{formatBytes(resume.fileSize)} · uploaded {timeAgo(resume.createdAt)}</p>
-        {resume.parsingStatus === 'FAILED' && resume.parsingError && <p className="mt-1 text-xs text-destructive">{resume.parsingError}</p>}
+        <p className="text-xs text-muted-foreground">
+          {formatBytes(resume.fileSize)} · uploaded {timeAgo(resume.createdAt)}
+        </p>
+        {resume.parsingStatus === 'FAILED' && resume.parsingError && (
+          <p className="mt-1 text-xs text-destructive">{resume.parsingError}</p>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <ParsingStatusBadge status={resume.parsingStatus} />
-        <Button variant="ghost" size="sm" onClick={() => void openResume(resume.id)}>Open</Button>
-        {resume.parsingStatus === 'FAILED' && <Button variant="outline" size="sm" onClick={() => retry.mutate(resume.id)} loading={retry.isPending}><RotateCcw /> Retry</Button>}
-        {!resume.isPrimary && <Button variant="outline" size="sm" onClick={() => primary.mutate(resume.id)} loading={primary.isPending}>Make primary</Button>}
-        <Button variant="ghost" size="icon-sm" onClick={() => setConfirm(true)} aria-label={`Delete ${resume.fileName}`}><Trash2 /></Button>
+        <Button variant="ghost" size="sm" onClick={() => void openResume(resume.id)}>
+          Open
+        </Button>
+        {resume.parsingStatus === 'FAILED' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => retry.mutate(resume.id)}
+            loading={retry.isPending}
+          >
+            <RotateCcw /> Retry
+          </Button>
+        )}
+        {!resume.isPrimary && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => primary.mutate(resume.id)}
+            loading={primary.isPending}
+          >
+            Make primary
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setConfirm(true)}
+          aria-label={`Delete ${resume.fileName}`}
+        >
+          <Trash2 />
+        </Button>
       </div>
       <ConfirmDialog
         open={confirm}
@@ -97,12 +160,31 @@ export default function ResumePage() {
   const { data, isLoading, isError, error, refetch } = useMyResumes();
   return (
     <div className="space-y-6">
-      <PageHeader title="Resume" description="Your primary resume is used for new applications and to build your profile." />
-      <Card><CardContent className="pt-5"><Dropzone /></CardContent></Card>
-      {isLoading ? <ListSkeleton rows={2} /> : isError ? <ErrorState error={error} onRetry={() => void refetch()} /> : !data?.length ? (
-        <EmptyState icon={FileText} title="No resumes yet" description="Upload a PDF to get started." />
+      <PageHeader
+        title="Resume"
+        description="Your primary resume is used for new applications and to build your profile."
+      />
+      <Card>
+        <CardContent className="pt-5">
+          <Dropzone />
+        </CardContent>
+      </Card>
+      {isLoading ? (
+        <ListSkeleton rows={2} />
+      ) : isError ? (
+        <ErrorState error={error} onRetry={() => void refetch()} />
+      ) : !data?.length ? (
+        <EmptyState
+          icon={FileText}
+          title="No resumes yet"
+          description="Upload a PDF to get started."
+        />
       ) : (
-        <Card className="divide-y overflow-hidden">{data.map((r) => <ResumeRow key={r.id} resume={r} />)}</Card>
+        <Card className="divide-y overflow-hidden">
+          {data.map((r) => (
+            <ResumeRow key={r.id} resume={r} />
+          ))}
+        </Card>
       )}
     </div>
   );

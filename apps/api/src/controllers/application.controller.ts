@@ -14,12 +14,16 @@ export function createApplicationController({ services }: Container) {
   const { applications, matching, interviews } = services;
   return {
     // Candidate
-    mine: handle({}, async ({ req }) => ok(await applications.listForCandidate(authOf(req).userId))),
+    mine: handle({}, async ({ req }) =>
+      ok(await applications.listForCandidate(authOf(req).userId)),
+    ),
     mineDetail: handle({ params: idParamSchema }, async ({ req, params }) =>
       ok(await applications.getForCandidate(authOf(req).userId, params.id)),
     ),
     withdraw: handle({ params: idParamSchema }, async ({ req, params }) =>
-      ok(await applications.withdraw(authOf(req).userId, params.id), { message: 'Application withdrawn' }),
+      ok(await applications.withdraw(authOf(req).userId, params.id), {
+        message: 'Application withdrawn',
+      }),
     ),
 
     // Recruiter
@@ -30,22 +34,37 @@ export function createApplicationController({ services }: Container) {
     pipeline: handle({ query: pipelineQuerySchema }, async ({ req, query }) =>
       ok(await applications.pipeline(actorOf(req).organizationId, query)),
     ),
-    get: handle({ params: idParamSchema }, async ({ req, params }) => ok(await applications.get(actorOf(req).organizationId, params.id))),
-    updateStatus: handle({ params: idParamSchema, body: updateApplicationStatusSchema }, async ({ req, params, body }) =>
-      ok(await applications.updateStatus(actorOf(req), params.id, body), { message: 'Status updated' }),
+    get: handle({ params: idParamSchema }, async ({ req, params }) =>
+      ok(await applications.get(actorOf(req).organizationId, params.id)),
     ),
-    addNote: handle({ params: idParamSchema, body: addApplicationNoteSchema }, async ({ req, params, body }) =>
-      created(await applications.addNote(actorOf(req), params.id, body)),
+    updateStatus: handle(
+      { params: idParamSchema, body: updateApplicationStatusSchema },
+      async ({ req, params, body }) =>
+        ok(await applications.updateStatus(actorOf(req), params.id, body), {
+          message: 'Status updated',
+        }),
     ),
-    getMatch: handle({ params: idParamSchema }, async ({ req, params }) => ok(await matching.get(actorOf(req).organizationId, params.id))),
+    addNote: handle(
+      { params: idParamSchema, body: addApplicationNoteSchema },
+      async ({ req, params, body }) =>
+        created(await applications.addNote(actorOf(req), params.id, body)),
+    ),
+    getMatch: handle({ params: idParamSchema }, async ({ req, params }) =>
+      ok(await matching.get(actorOf(req).organizationId, params.id)),
+    ),
     runMatch: handle({ params: idParamSchema }, async ({ req, params }) =>
       ok(await matching.recalculate(actorOf(req), params.id), { message: 'Match recalculated' }),
     ),
     questions: handle({ params: idParamSchema }, async ({ req, params }) =>
       ok(await interviews.listQuestions(actorOf(req).organizationId, params.id)),
     ),
-    generateQuestions: handle({ params: idParamSchema, body: generateQuestionsSchema }, async ({ req, params, body }) =>
-      created(await interviews.generateQuestions(actorOf(req), params.id, body), 'Interview questions generated'),
+    generateQuestions: handle(
+      { params: idParamSchema, body: generateQuestionsSchema },
+      async ({ req, params, body }) =>
+        created(
+          await interviews.generateQuestions(actorOf(req), params.id, body),
+          'Interview questions generated',
+        ),
     ),
   };
 }

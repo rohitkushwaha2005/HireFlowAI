@@ -36,6 +36,9 @@ export function assertPdfUpload(file: Express.Multer.File | undefined): Express.
 /** Strips path components and unsafe characters from a client-supplied file name. */
 export function sanitizeFileName(name: string): string {
   const base = name.split(/[\\/]/).pop() ?? 'resume.pdf';
-  const cleaned = base.replace(/[^\w.\- ()]/g, '_').replace(/\s+/g, ' ').trim();
+  const cleaned = base
+    .replace(/[^\w.\- ()]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim();
   return (cleaned || 'resume.pdf').slice(0, 120);
 }

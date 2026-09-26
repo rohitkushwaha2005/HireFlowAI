@@ -13,8 +13,14 @@ type Block = 'intro' | 'responsibilities' | 'required' | 'preferred' | 'other';
 
 const BLOCK_PATTERNS: Array<[Block, RegExp]> = [
   ['preferred', /(nice[\s-]to[\s-]have|preferred|bonus|pluses|good[\s-]to[\s-]have|extra credit)/i],
-  ['required', /(requirements|qualifications|must[\s-]have|what you('ll)?\s+(need|bring)|you have|about you|skills|who you are)/i],
-  ['responsibilities', /(responsibilities|what you('ll)?\s+do|the role|your impact|day[\s-]to[\s-]day|you will)/i],
+  [
+    'required',
+    /(requirements|qualifications|must[\s-]have|what you('ll)?\s+(need|bring)|you have|about you|skills|who you are)/i,
+  ],
+  [
+    'responsibilities',
+    /(responsibilities|what you('ll)?\s+do|the role|your impact|day[\s-]to[\s-]day|you will)/i,
+  ],
   ['other', /(benefits|perks|about us|compensation|why join|equal opportunity)/i],
 ];
 
@@ -55,9 +61,16 @@ function seniorityFromTitle(title: string): ExperienceLevel | null {
 
 function educationFrom(text: string): EducationLevel | null {
   if (/\bno degree required\b/i.test(text)) return 'NONE';
-  if (/\b(ph\.?d|doctorate)\b/i.test(text) && !/\b(bachelor|master)/i.test(text)) return 'DOCTORATE';
-  if (/\b(master'?s|m\.?s\.?)\s+(degree|in)\b/i.test(text) && !/\bbachelor/i.test(text)) return 'MASTER';
-  if (/\b(bachelor'?s?|b\.?s\.?|bs\/ms|degree in|university degree|computer science degree)\b/i.test(text)) return 'BACHELOR';
+  if (/\b(ph\.?d|doctorate)\b/i.test(text) && !/\b(bachelor|master)/i.test(text))
+    return 'DOCTORATE';
+  if (/\b(master'?s|m\.?s\.?)\s+(degree|in)\b/i.test(text) && !/\bbachelor/i.test(text))
+    return 'MASTER';
+  if (
+    /\b(bachelor'?s?|b\.?s\.?|bs\/ms|degree in|university degree|computer science degree)\b/i.test(
+      text,
+    )
+  )
+    return 'BACHELOR';
   return null;
 }
 
@@ -93,11 +106,14 @@ export function analyzeJobHeuristically(title: string, description: string): Job
   const preferredSkills = hasStructure ? extractKnownSkills(preferredText) : [];
   const preferredKeys = new Set(preferredSkills.map((s) => s.key));
   const requiredSource = hasStructure ? `${title}\n${requiredText}` : `${title}\n${description}`;
-  const requiredSkills = extractKnownSkills(requiredSource).filter((s) => !preferredKeys.has(s.key));
+  const requiredSkills = extractKnownSkills(requiredSource).filter(
+    (s) => !preferredKeys.has(s.key),
+  );
 
   const requirementLines = requiredText.split('\n');
   const toRequirement = (skill: (typeof requiredSkills)[number], required: boolean) => {
-    const line = requirementLines.find((l) => l.toLowerCase().includes(skill.name.toLowerCase())) ?? '';
+    const line =
+      requirementLines.find((l) => l.toLowerCase().includes(skill.name.toLowerCase())) ?? '';
     return {
       skill: skill.name,
       category: skill.category,
@@ -106,14 +122,19 @@ export function analyzeJobHeuristically(title: string, description: string): Job
     };
   };
 
-  const overallYears = /(\d+)\+?\s*(?:-\s*\d+\s*)?years?(?:\s+of)?\s+(?:professional\s+|relevant\s+|industry\s+|hands-on\s+)?(?:experience|software|engineering|development)/i.exec(
-    requiredText || description,
-  );
+  const overallYears =
+    /(\d+)\+?\s*(?:-\s*\d+\s*)?years?(?:\s+of)?\s+(?:professional\s+|relevant\s+|industry\s+|hands-on\s+)?(?:experience|software|engineering|development)/i.exec(
+      requiredText || description,
+    );
 
   const responsibilityLines = blocks.get('responsibilities') ?? [];
-  const responsibilities = (responsibilityLines.length
-    ? responsibilityLines
-    : description.split(/\r?\n/).filter((l) => BULLET_RE.test(l)).slice(0, 8)
+  const responsibilities = (
+    responsibilityLines.length
+      ? responsibilityLines
+      : description
+          .split(/\r?\n/)
+          .filter((l) => BULLET_RE.test(l))
+          .slice(0, 8)
   )
     .map((l) => l.replace(BULLET_RE, '').trim())
     .filter((l) => l.length > 10)

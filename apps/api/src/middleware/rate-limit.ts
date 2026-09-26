@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import { rateLimit, type Options } from 'express-rate-limit';
+import { ipKeyGenerator, rateLimit, type Options } from 'express-rate-limit';
 import { RedisStore, type RedisReply } from 'rate-limit-redis';
 import type { Redis } from 'ioredis';
 import { RateLimitedError } from '../lib/errors';
@@ -37,7 +37,10 @@ export function createRateLimiters(redis: Redis | null, disabled = false): RateL
     });
   };
 
-  const userKey: Options['keyGenerator'] = (req) => req.auth?.userId ?? req.ip ?? 'anonymous';
+  // Authenticated routes limit per user; otherwise per IP, grouping IPv6 addresses by /56 subnet
+  // so a client cannot evade limits by rotating addresses within its allocation.
+  const userKey: Options['keyGenerator'] = (req) =>
+    req.auth?.userId ?? ipKeyGenerator(req.ip ?? '0.0.0.0');
 
   return {
     global: make('global', { windowMs: 60_000, limit: 300 }),

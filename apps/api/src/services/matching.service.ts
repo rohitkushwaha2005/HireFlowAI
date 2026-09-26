@@ -36,7 +36,13 @@ export class MatchingService {
             educationLevel: true,
             organization: { select: { matchingWeights: true } },
             requirements: {
-              select: { skill: true, normalizedSkill: true, required: true, weight: true, minimumYears: true },
+              select: {
+                skill: true,
+                normalizedSkill: true,
+                required: true,
+                weight: true,
+                minimumYears: true,
+              },
               orderBy: { position: 'asc' },
             },
           },
@@ -52,11 +58,17 @@ export class MatchingService {
     });
     if (!application) return null;
     if (application.status === 'WITHDRAWN') return null;
-    if (application.resume && ['PENDING', 'PROCESSING'].includes(application.resume.parsingStatus)) {
+    if (
+      application.resume &&
+      ['PENDING', 'PROCESSING'].includes(application.resume.parsingStatus)
+    ) {
       return null;
     }
 
-    const semanticSimilarity = await this.vectors.candidateJobSimilarity(application.candidateId, application.jobId);
+    const semanticSimilarity = await this.vectors.candidateJobSimilarity(
+      application.candidateId,
+      application.jobId,
+    );
     const result = computeMatch({
       job: {
         requirements: application.job.requirements,
@@ -114,7 +126,9 @@ export class MatchingService {
   }
 
   private async assertInOrganization(organizationId: string, applicationId: string): Promise<void> {
-    const exists = await this.prisma.application.count({ where: { id: applicationId, job: { organizationId } } });
+    const exists = await this.prisma.application.count({
+      where: { id: applicationId, job: { organizationId } },
+    });
     if (!exists) throw new NotFoundError('Application');
   }
 

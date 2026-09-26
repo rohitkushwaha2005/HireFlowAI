@@ -1,14 +1,14 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
 
 onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
+  - '@prisma/client'
+  - '@prisma/engines'
   - prisma
   - esbuild
   - onnxruntime-node
   - protobufjs
   - sharp
   - msgpackr-extract
-  - "@node-rs/argon2"
+  - '@node-rs/argon2'

@@ -1,4 +1,8 @@
-import { buildCandidateEmbeddingText, buildJobEmbeddingText, buildJobRequirementsText } from '@hireflow/shared';
+import {
+  buildCandidateEmbeddingText,
+  buildJobEmbeddingText,
+  buildJobRequirementsText,
+} from '@hireflow/shared';
 import type { PrismaClient } from '@hireflow/database';
 import type { AIService } from '../ai/ai-service';
 import type { Logger } from '../lib/logger';
@@ -23,7 +27,10 @@ export class EmbeddingService {
       where: { id: candidateId },
       include: {
         skills: { select: { skill: true } },
-        experiences: { select: { title: true, company: true, description: true }, orderBy: { startDate: { sort: 'desc', nulls: 'last' } } },
+        experiences: {
+          select: { title: true, company: true, description: true },
+          orderBy: { startDate: { sort: 'desc', nulls: 'last' } },
+        },
         education: { select: { degree: true, field: true } },
         projects: { select: { name: true, description: true, technologies: true } },
         resumes: {
@@ -52,10 +59,17 @@ export class EmbeddingService {
     }
     const resume = profile.resumes[0];
     if (resume?.extractedText) {
-      await this.vectors.setResumeEmbedding(resume.id, await this.ai.generateEmbedding(resume.extractedText));
+      await this.vectors.setResumeEmbedding(
+        resume.id,
+        await this.ai.generateEmbedding(resume.extractedText),
+      );
     }
     this.logger.info({ candidateId, chars: text.length }, 'Candidate embedded');
-    await this.dispatcher.dispatch('matching.candidate', { candidateId }, { jobId: `match-candidate-${candidateId}-${Date.now()}` });
+    await this.dispatcher.dispatch(
+      'matching.candidate',
+      { candidateId },
+      { jobId: `match-candidate-${candidateId}-${Date.now()}` },
+    );
   }
 
   async embedJob(jobId: string): Promise<void> {
@@ -72,11 +86,21 @@ export class EmbeddingService {
         responsibilities: job.responsibilities,
         requirements: job.requirements,
       }),
-      job.requirements.length ? `${job.title}\n${buildJobRequirementsText(job.requirements)}` : job.title,
+      job.requirements.length
+        ? `${job.title}\n${buildJobRequirementsText(job.requirements)}`
+        : job.title,
     ]);
     if (!description) throw new Error('Embedding provider returned no vector');
-    await this.vectors.setJobEmbeddings(jobId, description, job.requirements.length && requirements ? requirements : null);
+    await this.vectors.setJobEmbeddings(
+      jobId,
+      description,
+      job.requirements.length && requirements ? requirements : null,
+    );
     this.logger.info({ jobId }, 'Job embedded');
-    await this.dispatcher.dispatch('matching.job', { jobId }, { jobId: `match-job-${jobId}-${Date.now()}` });
+    await this.dispatcher.dispatch(
+      'matching.job',
+      { jobId },
+      { jobId: `match-job-${jobId}-${Date.now()}` },
+    );
   }
 }

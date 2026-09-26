@@ -444,7 +444,12 @@ export interface DashboardAnalyticsDto {
   };
   applicationsOverTime: Array<{ date: string; count: number }>;
   pipeline: Array<{ status: ApplicationStatus; count: number }>;
-  applicationsPerJob: Array<{ jobId: string; title: string; count: number; averageScore: number | null }>;
+  applicationsPerJob: Array<{
+    jobId: string;
+    title: string;
+    count: number;
+    averageScore: number | null;
+  }>;
   topSkills: Array<{ skill: string; count: number }>;
   funnel: Array<{ stage: string; count: number; conversion: number | null }>;
   conversion: {

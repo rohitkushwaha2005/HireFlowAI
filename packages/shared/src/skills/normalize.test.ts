@@ -67,14 +67,18 @@ describe('extractKnownSkills', () => {
     const keys = extractKnownSkills(
       'Built real-time dashboards with React, Node.js and PostgreSQL on AWS; CI/CD via GitHub Actions. Used C++ and C#.',
     ).map((s) => s.key);
-    expect(keys).toEqual(expect.arrayContaining(['react', 'nodejs', 'postgresql', 'aws', 'cicd', 'c++', 'c#']));
+    expect(keys).toEqual(
+      expect.arrayContaining(['react', 'nodejs', 'postgresql', 'aws', 'cicd', 'c++', 'c#']),
+    );
   });
 
   it('matches ambiguous English words only when capitalized like the technology', () => {
     expect(extractKnownSkills('APIs with Node and Express').map((s) => s.key)).toEqual(
       expect.arrayContaining(['nodejs', 'express']),
     );
-    const plain = extractKnownSkills('Able to express ideas clearly and node trees').map((s) => s.key);
+    const plain = extractKnownSkills('Able to express ideas clearly and node trees').map(
+      (s) => s.key,
+    );
     expect(plain).not.toContain('express');
     expect(plain).not.toContain('nodejs');
   });

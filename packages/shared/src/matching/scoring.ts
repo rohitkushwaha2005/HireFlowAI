@@ -359,7 +359,12 @@ export function explainMatch(
   if (result.educationScore !== null) parts.push(`Education ${result.educationScore}/100.`);
   if (result.semanticScore !== null) parts.push(`Semantic fit ${result.semanticScore}/100.`);
   if (requiredMissing.length > 0) {
-    parts.push(`Gaps: ${listPhrase(requiredMissing.map((r) => r.skill), 3)}.`);
+    parts.push(
+      `Gaps: ${listPhrase(
+        requiredMissing.map((r) => r.skill),
+        3,
+      )}.`,
+    );
   }
 
   return { explanation: parts.join(' '), highlights, concerns };

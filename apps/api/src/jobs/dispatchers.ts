@@ -30,13 +30,20 @@ export class BullMqDispatcher implements JobDispatcher {
   private queue(name: QueueName): Queue {
     let queue = this.queues.get(name);
     if (!queue) {
-      queue = new Queue(name, { connection: this.connection, defaultJobOptions: DEFAULT_JOB_OPTIONS });
+      queue = new Queue(name, {
+        connection: this.connection,
+        defaultJobOptions: DEFAULT_JOB_OPTIONS,
+      });
       this.queues.set(name, queue);
     }
     return queue;
   }
 
-  async dispatch<K extends JobName>(name: K, payload: JobPayloads[K], options: DispatchOptions = {}): Promise<void> {
+  async dispatch<K extends JobName>(
+    name: K,
+    payload: JobPayloads[K],
+    options: DispatchOptions = {},
+  ): Promise<void> {
     await this.queue(JOB_QUEUE[name]).add(name, payload, {
       ...(options.jobId ? { jobId: options.jobId.replace(/:/g, '-') } : {}),
       ...(options.delayMs ? { delay: options.delayMs } : {}),

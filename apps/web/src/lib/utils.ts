@@ -12,13 +12,16 @@ const toDate = (value: string | Date | null | undefined): Date | null => {
   return isValid(date) ? date : null;
 };
 
-export function formatDate(value: string | Date | null | undefined, pattern = 'MMM d, yyyy'): string {
+export function formatDate(
+  value: string | Date | null | undefined,
+  pattern = 'MMM d, yyyy',
+): string {
   const date = toDate(value);
   return date ? format(date, pattern) : '—';
 }
 
 export function formatDateTime(value: string | Date | null | undefined): string {
-  return formatDate(value, "EEE, MMM d · h:mm a");
+  return formatDate(value, 'EEE, MMM d · h:mm a');
 }
 
 export function formatMonthYear(value: string | null | undefined): string {
@@ -30,9 +33,18 @@ export function timeAgo(value: string | Date | null | undefined): string {
   return date ? `${formatDistanceToNowStrict(date)} ago` : '—';
 }
 
-export function formatSalary(min: number | null, max: number | null, currency: string): string | null {
+export function formatSalary(
+  min: number | null,
+  max: number | null,
+  currency: string,
+): string | null {
   if (min === null && max === null) return null;
-  const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0, notation: 'compact' });
+  const fmt = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+    notation: 'compact',
+  });
   if (min !== null && max !== null) return `${fmt.format(min)} – ${fmt.format(max)}`;
   return min !== null ? `From ${fmt.format(min)}` : `Up to ${fmt.format(max!)}`;
 }
