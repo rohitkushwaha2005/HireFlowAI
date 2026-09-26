@@ -1,9 +1,9 @@
 import { ShieldAlert } from 'lucide-react';
 import * as React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router';
+import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router';
 import type { Permission } from '@hireflow/shared';
 import { EmptyState, PageLoader } from '@/components/common';
-import { homePathFor, useAuth } from './use-auth';
+import { homePathFor, safeNextPath, useAuth } from './use-auth';
 
 /**
  * Route guards mirror the API's authorization so users are not shown screens they cannot use.
@@ -24,10 +24,15 @@ export function RequireAuth({ role }: { role: 'staff' | 'candidate' }) {
   return <Outlet />;
 }
 
+/**
+ * Auth pages (login/register) are for signed-out users. Once a session exists — including the
+ * moment sign-in succeeds — the user is sent to a safe same-origin `next` path or their home.
+ */
 export function GuestOnly() {
   const { status, me } = useAuth();
+  const [params] = useSearchParams();
   if (status === 'loading') return <PageLoader />;
-  if (status === 'authenticated') return <Navigate to={homePathFor(me)} replace />;
+  if (status === 'authenticated') return <Navigate to={safeNextPath(params.get('next')) ?? homePathFor(me)} replace />;
   return <Outlet />;
 }
 

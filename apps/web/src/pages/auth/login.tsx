@@ -5,7 +5,7 @@ import { loginSchema, type LoginInput } from '@hireflow/shared';
 import { FormError, FormField } from '@/components/forms';
 import { Button, Input, Separator } from '@/components/ui';
 import { useAuthConfig } from '@/features/api/jobs';
-import { homePathFor, useAuth } from '@/features/auth/use-auth';
+import { homePathFor, safeNextPath, useAuth } from '@/features/auth/use-auth';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { apiBaseUrl } from '@/lib/api';
 
@@ -40,8 +40,7 @@ export default function LoginPage() {
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       const session = await login(values);
-      const next = params.get('next');
-      navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : homePathFor(session), { replace: true });
+      navigate(safeNextPath(params.get('next')) ?? homePathFor(session), { replace: true });
     } catch (error) {
       form.setError('root', { message: error instanceof Error ? error.message : 'Sign in failed' });
     }

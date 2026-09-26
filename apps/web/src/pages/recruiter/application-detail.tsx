@@ -34,12 +34,18 @@ function StageControls({ application }: { application: ApplicationDetailDto }) {
     if (['REJECTED', 'OFFER', 'HIRED'].includes(to)) setConfirm(to);
     else move.mutate({ id: application.id, from: application.status, to });
   };
-  const next: Partial<Record<string, PipelineStage>> = { APPLIED: 'SCREENING', SCREENING: 'SHORTLISTED', SHORTLISTED: 'INTERVIEW', INTERVIEW: 'OFFER', OFFER: 'HIRED' };
+  // Primary action per stage; new applicants can be shortlisted directly or sent to screening.
+  const next: Partial<Record<string, PipelineStage>> = { APPLIED: 'SHORTLISTED', SCREENING: 'SHORTLISTED', SHORTLISTED: 'INTERVIEW', INTERVIEW: 'OFFER', OFFER: 'HIRED' };
   const nextStage = next[application.status];
 
   return (
     <Can permission="applications:move">
       <div className="flex flex-wrap gap-2">
+        {application.status === 'APPLIED' && (
+          <Button variant="outline" onClick={() => request('SCREENING')} disabled={move.isPending}>
+            Move to Screening
+          </Button>
+        )}
         {nextStage && (
           <Button onClick={() => request(nextStage)} loading={move.isPending}>
             <CheckCircle2 /> {nextStage === 'SHORTLISTED' ? 'Shortlist' : `Move to ${APPLICATION_STATUS_LABELS[nextStage]}`}

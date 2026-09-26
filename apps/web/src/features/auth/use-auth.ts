@@ -10,6 +10,12 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+/** Accepts only same-origin relative paths as redirect targets (prevents open redirects). */
+export function safeNextPath(next: string | null): string | null {
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) return null;
+  return next;
+}
+
 /** Where a signed-in user lands by default. */
 export function homePathFor(me: MeDto | null): string {
   if (!me) return '/login';

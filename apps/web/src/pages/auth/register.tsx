@@ -7,7 +7,7 @@ import { PASSWORD_MIN_LENGTH, registerSchema, type RegisterInput } from '@hirefl
 import { FormError, FormField } from '@/components/forms';
 import { applyServerErrors } from '@/lib/form-errors';
 import { Button, Input } from '@/components/ui';
-import { homePathFor, useAuth } from '@/features/auth/use-auth';
+import { homePathFor, safeNextPath, useAuth } from '@/features/auth/use-auth';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { cn } from '@/lib/utils';
 import { GoogleButton } from './login';
@@ -34,8 +34,7 @@ export default function RegisterPage() {
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       const session = await signUp(values);
-      const next = params.get('next');
-      navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : homePathFor(session), { replace: true });
+      navigate(safeNextPath(params.get('next')) ?? homePathFor(session), { replace: true });
     } catch (error) {
       if (!applyServerErrors(error, form.setError)) {
         form.setError('root', { message: error instanceof Error ? error.message : 'Registration failed' });
