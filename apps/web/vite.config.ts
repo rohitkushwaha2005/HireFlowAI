@@ -27,8 +27,9 @@ export default defineConfig(({ mode }) => {
           // Stable vendor chunks cache across deploys; route pages are lazy-loaded separately.
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
-            if (/[\/](react|react-dom|react-router|scheduler)[\/]/.test(id)) return 'react';
-            if (/[\/](recharts|d3-[^\/]+|victory-vendor|es-toolkit|immer|@reduxjs|react-redux|reselect)[\/]/.test(id)) return 'charts';
+            // Vite module ids always use forward slashes, on every OS.
+            if (/\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(id)) return 'react';
+            if (/\/node_modules\/(recharts|d3-[^/]+|victory-vendor|es-toolkit|immer|@reduxjs|react-redux|reselect)\//.test(id)) return 'charts';
             if (id.includes('@dnd-kit')) return 'dnd';
             if (/@radix-ui|radix-ui|@floating-ui/.test(id)) return 'radix';
             return 'vendor';
