@@ -23,7 +23,7 @@ Legend: `[x]` done and verified · `[~]` implemented, not verifiable in this env
 - [x] **15 Notifications** — provider abstraction (SMTP verified with Mailpit, console), templates, queued delivery, debounced status emails
 - [~] **15 Resend provider** — implemented; needs `EMAIL_API_KEY`
 - [x] **16 Security review** — see [SECURITY.md](SECURITY.md) review log (5 findings fixed)
-- [x] **17 Testing** — shared 47, API unit 37, API integration 27, web 8, Playwright E2E (dev stack and Docker stack)
+- [x] **17 Testing** — shared 47, API unit 37, API integration 27, web 8, Playwright E2E 4 (dev stack and Docker stack)
 - [x] **18 Docker + CI** — production images verified end to end with E2E; GitHub Actions workflow
 - [~] **18 CI run** — workflow written and each step run locally; not yet executed on GitHub (no remote configured)
 - [x] **19 UI polish** — reviewed via screenshots; responsive, loading/empty/error states, a11y fixes
