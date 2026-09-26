@@ -1,4 +1,5 @@
 import {
+  areSkillsRelated,
   buildPagination,
   EDUCATION_LEVELS,
   extractKnownSkills,
@@ -79,6 +80,10 @@ export function explainSearchHit(query: string, row: Pick<ListRow, 'skills' | 'e
       `Has ${shared.map((s) => (s.yearsExperience ? `${s.skill} (${s.yearsExperience} yrs)` : s.skill)).join(', ')}.`,
     );
   }
+  const related = row.skills.filter(
+    (s) => !querySkills.has(s.normalizedSkill) && [...querySkills].some((q) => areSkillsRelated(q, s.normalizedSkill)),
+  );
+  if (related.length) reasons.push(`Related experience: ${related.map((s) => s.skill).join(', ')}.`);
   const terms = query
     .toLowerCase()
     .split(/[^a-z0-9+#.]+/)

@@ -120,10 +120,16 @@ export function analyzeJobHeuristically(title: string, description: string): Job
     .slice(0, 12);
 
   const location = /\blocation:\s*([^\n]+)/i.exec(description)?.[1]?.trim() ?? null;
-  const sentences = description.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]/g) ?? [description];
+  // Summary from the introduction only (never from bullet lists); fall back to a generated line.
+  const intro = (blocks.get('intro') ?? []).filter((l) => !BULLET_RE.test(l)).join(' ');
+  const sentences = intro.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]/g) ?? [];
+  const topSkills = requiredSkills.slice(0, 3).map((s) => s.name);
+  const summary =
+    sentences.slice(0, 2).join(' ').trim() ||
+    `${title} role${topSkills.length ? ` focused on ${topSkills.join(', ')}` : ''}.`;
 
   return {
-    summary: sentences.slice(0, 2).join(' ').trim().slice(0, 400),
+    summary: summary.slice(0, 400),
     requiredSkills: requiredSkills.map((s) => toRequirement(s, true)),
     preferredSkills: preferredSkills.map((s) => toRequirement(s, false)),
     minYearsExperience: overallYears ? Number(overallYears[1]) : null,

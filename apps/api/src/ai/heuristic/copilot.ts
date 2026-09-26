@@ -24,7 +24,7 @@ import type { HiringAnswer, HiringQuestionInput } from '../types';
  */
 
 const NOTE =
-  '\n\n_Heuristic mode: answers are assembled from database queries without an LLM. Configure `AI_API_KEY` for conversational answers._';
+  '\n\n_Heuristic mode: answers are assembled from database queries without an LLM. Add an Anthropic API key for conversational answers._';
 
 function bold(name: string): string {
   return `**${name}**`;

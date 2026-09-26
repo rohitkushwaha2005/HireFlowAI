@@ -67,7 +67,7 @@ export const SKILL_TAXONOMY: Record<string, SkillDefinition> = {
   restapi: { name: 'REST APIs', category: 'CONCEPT', aliases: ['rest', 'restful', 'restfulapis', 'restapis'] },
   grpc: { name: 'gRPC', category: 'CONCEPT' },
   websockets: { name: 'WebSockets', category: 'CONCEPT', aliases: ['websocket', 'socketio', 'ws'], related: ['realtime'] },
-  realtime: { name: 'Real-time systems', category: 'CONCEPT', aliases: ['realtimeapplications', 'realtimesystems'], related: ['websockets'] },
+  realtime: { name: 'Real-time systems', category: 'CONCEPT', aliases: ['real-time', 'real time', 'real-time applications', 'realtime applications', 'real-time systems', 'realtimeapplications', 'realtimesystems'], related: ['websockets'] },
   microservices: { name: 'Microservices', category: 'CONCEPT', aliases: ['microservicearchitecture'], related: ['distributedsystems'] },
   distributedsystems: { name: 'Distributed systems', category: 'CONCEPT', related: ['microservices'] },
   systemdesign: { name: 'System design', category: 'CONCEPT', aliases: ['softwarearchitecture'], related: ['distributedsystems'] },
