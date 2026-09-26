@@ -15,7 +15,7 @@ import * as React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import type { Permission } from '@hireflow/shared';
 import { Logo, ThemeToggle, UserMenu, VerifyEmailBanner } from '@/components/app-chrome';
-import { Badge, Button, Dialog, DialogTitle, SheetContent, Tooltip } from '@/components/ui';
+import { Badge, Button, Dialog, DialogTitle, Select, SheetContent, Tooltip } from '@/components/ui';
 import { useAuthConfig } from '@/features/api/jobs';
 import { useAuth } from '@/features/auth/use-auth';
 import { cn } from '@/lib/utils';
@@ -51,7 +51,8 @@ const NAV: NavItem[] = [
 ];
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
-  const { can, membership } = useAuth();
+  const { can, membership, me, switchOrganization } = useAuth();
+  const memberships = me?.memberships ?? [];
   const { data: config } = useAuthConfig();
   return (
     <div className="flex h-full flex-col">
@@ -59,10 +60,25 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <Logo to="/app" />
       </div>
       <div className="px-3 pb-3">
-        <div className="rounded-lg border bg-card px-3 py-2">
-          <p className="text-xs text-muted-foreground">Organization</p>
-          <p className="truncate text-sm font-medium">{membership?.organizationName}</p>
-        </div>
+        {memberships.length > 1 ? (
+          <div className="space-y-1">
+            <p className="px-1 text-xs text-muted-foreground">Organization</p>
+            <Select
+              aria-label="Switch organization"
+              value={membership?.organizationId}
+              onValueChange={switchOrganization}
+              options={memberships.map((m) => ({
+                value: m.organizationId,
+                label: m.organizationName,
+              }))}
+            />
+          </div>
+        ) : (
+          <div className="rounded-lg border bg-card px-3 py-2">
+            <p className="text-xs text-muted-foreground">Organization</p>
+            <p className="truncate text-sm font-medium">{membership?.organizationName}</p>
+          </div>
+        )}
       </div>
       <nav aria-label="Main" className="flex-1 space-y-0.5 overflow-y-auto px-3">
         {NAV.filter((item) => can(item.permission)).map((item) => (

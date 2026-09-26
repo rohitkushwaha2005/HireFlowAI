@@ -87,11 +87,14 @@ Argon2id (`@node-rs/argon2`, prebuilt binaries — no node-gyp).
 tests are deterministic. Jobs are idempotent (keyed by entity id) and retried with exponential
 backoff.
 
-## ADR-012 Object storage via S3 API; MinIO locally
+## ADR-012 Object storage via S3 API; SeaweedFS locally
 
 **Decision:** `StorageProvider` interface with an S3 implementation (`@aws-sdk/client-s3`) that works
-with AWS S3 and MinIO, plus a local-filesystem implementation for tests. Resumes are never public;
-downloads go through an authorized API endpoint that streams the object (or a short-lived signed URL).
+with AWS S3 and any S3-compatible server, plus a local-filesystem implementation for tests. Resumes
+are never public; downloads go through an authorized, audited API endpoint that streams the object.
+**Amended during Phase 2:** the MinIO images are no longer published on Docker Hub, so local
+development uses SeaweedFS in S3 mode. The API creates the bucket on startup (tolerating S3 servers
+that reject `HeadBucket`), so no init container is needed.
 
 ## ADR-013 Email via provider interface
 
@@ -123,3 +126,58 @@ a tool in that turn. Conversations are persisted for history.
 
 The brief shows a `hireflow-ai/` folder; the provided working directory `HireFlowAI/` is used as the
 repository root with the same internal structure.
+
+## ADR-018 Pin Prisma 6, Vite 7 and Zod 4
+
+At implementation time Prisma 8 was a release candidate and Prisma 7 had moved to mandatory driver
+adapters and a new generator; `@vitejs/plugin-react` 6 required Vite 8. **Decision:** Prisma 6.19
+(stable, well understood, supports `Unsupported` vector columns and `postgresqlExtensions`), Vite 7
+with plugin-react 5, Zod 4 (supported by the Anthropic SDK's structured-output helpers and
+`@hookform/resolvers` 5). jsdom is pinned to 26 because newer versions require `require(esm)`,
+which Node enables by default only from 22.12.
+
+## ADR-019 Migrations are applied with `migrate deploy`; vector indexes are hand-written
+
+Prisma cannot model indexes on `Unsupported("vector")` columns, so `migrate dev` always proposes
+dropping them. **Decision:** `pnpm db:migrate` runs `prisma migrate deploy` (no drift detection, never
+resets data); new migrations are created with `pnpm db:migration:new`, which strips the spurious
+`DROP INDEX … _hnsw` statements.
+
+## ADR-020 Deterministic heuristic provider mirrors the LLM contract
+
+**Decision:** the heuristic provider implements the full `AIProvider` interface (parsing, analysis,
+questions, copilot) so every feature works offline and in CI, and it is visibly labelled. The
+copilot's heuristic mode routes intents to the _same_ server tools the LLM uses, so grounding and
+tenancy rules are exercised identically.
+
+## ADR-021 Semantic calibration from seed data
+
+bge-small cosine similarities for profile ↔ job pairs cluster between 0.6 and 0.92. **Decision:**
+map the band [0.60, 0.90] to [0, 100]; values outside are clamped. The band is a constant in
+`@hireflow/shared` with unit tests; `backfill` recomputes matches after changes.
+
+## ADR-022 Hybrid search re-ranks an HNSW recall pool
+
+**Decision:** candidate search retrieves the 200 nearest profiles through the HNSW index inside the
+tenant/structured filters, then re-ranks by the better of profile and primary-resume similarity, so
+details that only appear in the resume still surface without losing index-backed performance.
+
+## ADR-023 One route table for routing and OpenAPI
+
+**Decision:** routes are declared as data (method, path, access level, permission, middleware,
+handler). `handle()` attaches the handler's Zod schemas, and the OpenAPI document is generated from
+the table, so documentation, validation and authorization cannot drift apart.
+
+## ADR-024 Session restore hint
+
+The SPA restores sessions from the httpOnly refresh cookie on load. **Decision:** a non-sensitive
+`localStorage` flag records that a session existed, so anonymous visitors do not trigger a
+guaranteed-401 refresh call (and console noise). The real credential remains the httpOnly cookie.
+
+## ADR-025 Kanban status changes use optimistic concurrency
+
+**Decision:** clients send `fromStatus`; the server applies a conditional update
+(`WHERE id AND status = from`) inside the transaction that writes the status event and audit entry.
+A stale move returns 409 with the current status, and the UI rolls back its optimistic update.
+Candidate status emails are delayed 60 s and skipped if the application has moved on, so an
+accidental drag that is undone never reaches the candidate.

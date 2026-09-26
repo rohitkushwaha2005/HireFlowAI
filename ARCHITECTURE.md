@@ -21,8 +21,8 @@
                     │           │              │ (same codebase)         │ matching, email, analytics
                     │           │              └──┬──────────┬───────────┘
           ┌─────────▼──┐   ┌────▼──────────┐      │          │
-          │ PostgreSQL │◀──┤ S3 / MinIO    │◀─────┘          ▼
-          │ + pgvector │   │ (resumes)     │           AI providers (Claude / heuristic dev),
+          │ PostgreSQL │◀──┤ S3 (resumes)  │◀─────┘          ▼
+          │ + pgvector │   │ SeaweedFS dev │           AI providers (Claude / heuristic dev),
           └────────────┘   └───────────────┘           local embedding model
 ```
 
@@ -41,24 +41,27 @@ packages/
   shared/     Zod schemas + inferred types shared by web and api, enums, skill taxonomy,
               pure matching/scoring functions, API response envelope types
   config/     Shared tsconfig / eslint presets
-docker/       Dockerfiles, nginx config
-docs/         API.md, DATABASE.md, AI_ARCHITECTURE.md, DEPLOYMENT.md, SECURITY.md
-scripts/      Dev helpers (sample resume generation, etc.)
+docker/       Dockerfiles, nginx config, Postgres init
+docs/         API.md, DATABASE.md, AI_ARCHITECTURE.md, DEPLOYMENT.md, screenshots/
+.github/      CI workflow
 ```
 
 ## Backend layering
 
 ```text
-routes/        Express routers: path + middleware composition only
-controllers/   HTTP adaptation: parse validated input, call service, shape response envelope
-services/      Business rules, authorization decisions that depend on data, orchestration, audit
-repositories/  Prisma queries (and raw SQL for pgvector); no business rules
-validators/    Zod request schemas (mostly re-exported from @hireflow/shared)
-middleware/    auth, RBAC, org context, validation, rate limit, request id/logging, errors, upload
-ai/            AIService facade, providers (anthropic, heuristic), embeddings, prompts
-jobs/          Queue definitions, dispatcher abstraction, processors
-lib/           storage, email, pdf, crypto, logger, cache
-config/        Env parsing (Zod) — the only place `process.env` is read
+routes/        The route table: path, access level, permission, middleware, handler (also feeds OpenAPI)
+controllers/   HTTP adaptation via handle(): Zod-validated body/query/params → service → envelope
+services/      Business rules, data-dependent authorization, transactions, audit, job dispatch
+repositories/  Shared Prisma includes, pgvector raw SQL, analytics SQL aggregations
+mappers/       Prisma rows → DTOs defined in @hireflow/shared
+middleware/    auth, RBAC/org context, rate limits, request id/logging, upload validation, errors
+ai/            AIService facade, providers (anthropic, heuristic), embeddings, prompts, copilot tools
+jobs/          Job catalogue, BullMQ + inline dispatchers (worker.ts consumes the queues)
+lib/           storage, email (providers + templates), pdf, crypto, logger, redis cache, errors
+docs/          OpenAPI generation from the route table
+scripts/       seed, backfill, resume PDF renderer
+config/        Env parsing (Zod) — the only place process.env is read
+container.ts   Composition root wiring concrete implementations (overridable in tests)
 ```
 
 Errors are thrown as `AppError` subclasses (`NotFoundError`, `ForbiddenError`, ...) and converted by
@@ -140,13 +143,14 @@ location, photo or other personal attributes.
 
 ## Background processing
 
-| Queue               | Producer                                                         | Work                                                                                  |
-| ------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `resume-processing` | resume upload, retry                                             | download file → extract PDF text → AI parse → normalize → persist → enqueue embedding |
-| `embeddings`        | resume parsed, job saved, profile edited                         | compute + store vectors → enqueue matching for affected applications                  |
-| `matching`          | application created, embeddings updated, job requirements edited | compute `CandidateMatch`                                                              |
-| `email`             | domain events                                                    | render template → send through `EmailProvider`                                        |
-| `analytics`         | scheduled                                                        | refresh cached dashboard aggregates in Redis                                          |
+| Queue                | Producer                                                         | Work                                                                                  |
+| -------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `resume-processing`  | resume upload, retry                                             | download file → extract PDF text → AI parse → normalize → persist → enqueue embedding |
+| `embeddings`         | resume parsed, job saved, profile edited                         | compute + store vectors → enqueue matching for affected applications                  |
+| `matching`           | application created, embeddings updated, job requirements edited | compute `CandidateMatch`                                                              |
+| `email`              | domain events                                                    | render template → send through `EmailProvider`                                        |
+| `analytics`          | pipeline changes                                                 | invalidate + recompute cached dashboard aggregates in Redis                           |
+| `email` (repeatable) | worker scheduler, every 15 minutes                               | interview reminders for the next 24 hours                                             |
 
 A `JobDispatcher` interface hides BullMQ; tests use an inline dispatcher so flows are deterministic.
 
@@ -158,7 +162,10 @@ A `JobDispatcher` interface hides BullMQ; tests use an inline dispatcher so flow
 - Forms with React Hook Form + the shared Zod schemas, so client and server validate identically.
 - Design system in `src/components/ui` (shadcn/ui pattern on Radix primitives) + composed components
   (`SearchInput`, `FilterPanel`, `EmptyState`, `ErrorState`, `Pagination`, …).
-- Feature folders (`features/jobs`, `features/applications`, …) own their API hooks and components.
+- Feature folders: `features/api` (query hooks + keys per domain), `features/auth` (session,
+  guards), `features/pipeline` (Kanban, application table), `features/applications` (match panel),
+  `features/candidates`, `features/interviews`. Pages in `pages/{public,auth,recruiter,candidate}`
+  are lazy-loaded per route.
 
 ## Observability
 
@@ -170,5 +177,6 @@ A `JobDispatcher` interface hides BullMQ; tests use an inline dispatcher so flow
 ## Deployment
 
 Docker images for `api` (also used for `worker`) and `web` (static build served by nginx, which also
-proxies `/api`). Compose runs Postgres (pgvector), Redis, MinIO, Mailpit, api, worker, web. See
-[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+proxies `/api`). Compose runs Postgres (pgvector), Redis, SeaweedFS (S3), Mailpit, api, worker, web.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Security controls and the review log are in
+[SECURITY.md](SECURITY.md).

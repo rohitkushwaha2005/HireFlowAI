@@ -22,6 +22,16 @@ export const REDACT_PATHS = [
   '*.extractedText',
 ];
 
+/** pino-pretty is a dev dependency; production images log plain JSON. */
+function prettyAvailable(): boolean {
+  try {
+    import.meta.resolve('pino-pretty');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function createLogger(
   config: Pick<AppConfig, 'logLevel' | 'isProduction' | 'isTest'>,
 ): Logger {
@@ -30,7 +40,7 @@ export function createLogger(
     redact: { paths: REDACT_PATHS, censor: '[redacted]' },
     base: { service: 'hireflow-api' },
     timestamp: pino.stdTimeFunctions.isoTime,
-    ...(config.isProduction || config.isTest
+    ...(config.isProduction || config.isTest || !prettyAvailable()
       ? {}
       : {
           transport: {

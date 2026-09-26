@@ -48,7 +48,12 @@ async function main(): Promise<void> {
     EMAIL_PROVIDER: 'console',
     LOG_LEVEL: process.env.SEED_LOG_LEVEL ?? 'warn',
   });
-  if (config.isProduction) throw new Error('Refusing to seed demo data in production');
+  // The local Docker demo runs production images; it opts in explicitly with ALLOW_DEMO_SEED=true.
+  if (config.isProduction && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'Refusing to seed demo data in production (set ALLOW_DEMO_SEED=true for a local demo stack)',
+    );
+  }
   const logger = createLogger(config);
   const container = buildContainer(config, logger, {
     email: new ConsoleEmailProvider(logger),
