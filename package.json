@@ -1,0 +1,46 @@
+{
+  "name": "hireflow-ai",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-powered Applicant Tracking System",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @hireflow/api --filter @hireflow/web dev",
+    "dev:api": "pnpm --filter @hireflow/api dev",
+    "dev:worker": "pnpm --filter @hireflow/api dev:worker",
+    "dev:web": "pnpm --filter @hireflow/web dev",
+    "build": "pnpm -r build",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm -r test:unit",
+    "test:integration": "pnpm --filter @hireflow/api test:integration",
+    "test:e2e": "pnpm --filter @hireflow/web test:e2e",
+    "db:generate": "pnpm --filter @hireflow/database generate",
+    "db:migrate": "pnpm --filter @hireflow/database migrate:dev",
+    "db:deploy": "pnpm --filter @hireflow/database migrate:deploy",
+    "db:seed": "pnpm --filter @hireflow/database seed",
+    "db:reset": "pnpm --filter @hireflow/database reset",
+    "db:studio": "pnpm --filter @hireflow/database studio",
+    "db:migration:new": "pnpm --filter @hireflow/database migrate:new"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^22",
+    "eslint": "^9",
+    "eslint-config-prettier": "^10",
+    "eslint-plugin-react-hooks": "^5",
+    "eslint-plugin-react-refresh": "^0.4",
+    "globals": "^16",
+    "prettier": "^3",
+    "typescript": "~5.8",
+    "typescript-eslint": "^8"
+  },
+  "type": "module"
+}
