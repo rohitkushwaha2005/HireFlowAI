@@ -58,10 +58,17 @@ export class AnthropicProvider implements AIProvider {
     apiKey: string | undefined,
     private readonly model: string,
     private readonly logger: Logger,
+    /** Test seam: a custom fetch lets tests exercise real SDK parsing without network access. */
+    clientOptions: { fetch?: typeof fetch; maxRetries?: number } = {},
   ) {
     this.name = `anthropic:${model}`;
     // Without an explicit key the SDK resolves credentials from the environment/profile.
-    this.client = new Anthropic({ ...(apiKey ? { apiKey } : {}), maxRetries: 3, timeout: 180_000 });
+    this.client = new Anthropic({
+      ...(apiKey ? { apiKey } : {}),
+      maxRetries: clientOptions.maxRetries ?? 3,
+      timeout: 180_000,
+      ...(clientOptions.fetch ? { fetch: clientOptions.fetch } : {}),
+    });
     this.fallbackParams = supportsServerFallback(model)
       ? { betas: [SERVER_FALLBACK_BETA], fallbacks: 'default' }
       : { betas: [] };
@@ -76,7 +83,9 @@ export class AnthropicProvider implements AIProvider {
   ): Promise<z.infer<S>> {
     const started = Date.now();
     try {
-      const response = await this.client.beta.messages.parse({
+      // `create` (not `parse`) so the stop reason is checked before any parsing: a refusal or a
+      // truncated response must never be mistaken for malformed JSON.
+      const response = await this.client.beta.messages.create({
         model: this.model,
         max_tokens: 16_000,
         system,
@@ -104,11 +113,18 @@ export class AnthropicProvider implements AIProvider {
       if (response.stop_reason === 'max_tokens') {
         throw new AIUnavailableError('The AI response was truncated; please retry');
       }
-      if (!response.parsed_output) {
+      const text = response.content
+        .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('');
+      let json: unknown;
+      try {
+        json = JSON.parse(text);
+      } catch {
         throw new AIUnavailableError('The AI response could not be parsed');
       }
-      // Re-validate: structured outputs constrain the shape, Zod enforces our contract.
-      return schema.parse(response.parsed_output);
+      // Structured outputs constrain the shape; Zod enforces our contract before anything is stored.
+      return schema.parse(json);
     } catch (error) {
       throw this.translateError(error, task);
     }
@@ -134,6 +150,10 @@ export class AnthropicProvider implements AIProvider {
     if (error instanceof Anthropic.APIError) {
       this.logger.warn({ task, status: error.status }, 'AI provider error');
       return new AIUnavailableError('The AI provider is temporarily unavailable');
+    }
+    if (error instanceof Anthropic.AnthropicError) {
+      this.logger.warn({ task, err: error.message }, 'AI client error');
+      return new AIUnavailableError('The AI provider returned an unexpected response');
     }
     return error instanceof Error ? error : new Error(String(error));
   }
