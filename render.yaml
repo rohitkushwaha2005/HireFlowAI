@@ -1,0 +1,63 @@
+# Render Blueprint for the public demo API (free plan).
+#
+# Runs the API as a single process: background jobs execute inline (QUEUE_DRIVER=inline), so no
+# Redis or separate worker is needed. Postgres (with pgvector) and S3-compatible storage come from
+# Supabase. The web app on Vercel proxies /api/* here, so cookies stay first-party.
+# Step-by-step guide: docs/DEMO_DEPLOYMENT.md
+services:
+  - type: web
+    name: hireflow-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health/ready
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '4000'
+      - key: API_PORT
+        value: '4000'
+      - key: RUN_MIGRATIONS
+        value: 'true'
+      - key: QUEUE_DRIVER
+        value: inline
+      - key: EMAIL_PROVIDER
+        value: console
+      - key: AI_PROVIDER
+        value: auto
+      - key: COOKIE_SECURE
+        value: 'true'
+      # Browser → Vercel edge → Render proxy → API
+      - key: TRUST_PROXY
+        value: '2'
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_FORCE_PATH_STYLE
+        value: 'true'
+      - key: S3_BUCKET
+        value: hireflow-resumes
+      # Filled in when the Blueprint is created (see docs/DEMO_DEPLOYMENT.md)
+      - key: WEB_URL
+        sync: false
+      - key: API_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      # Optional: set to use Claude instead of the built-in heuristic provider
+      - key: AI_API_KEY
+        sync: false

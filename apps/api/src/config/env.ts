@@ -10,6 +10,16 @@ const bool = z
   .optional()
   .transform((v) => v === 'true' || v === '1');
 
+/**
+ * Number of reverse proxies in front of the API: "true"/"1" = one (e.g. nginx), a larger number for
+ * chains such as Vercel → Render, "false"/unset = none.
+ */
+const proxyHops = z
+  .string()
+  .regex(/^(true|false|\d{1,2})?$/, 'must be true, false or a number of proxy hops')
+  .optional()
+  .transform((v) => (v === 'true' ? 1 : v && v !== 'false' ? Number(v) : 0));
+
 const optionalString = z
   .string()
   .optional()
@@ -66,7 +76,7 @@ const envSchema = z
 
     MAX_UPLOAD_MB: z.coerce.number().min(1).max(25).default(5),
     RUN_MIGRATIONS: bool,
-    TRUST_PROXY: bool,
+    TRUST_PROXY: proxyHops,
   })
   .superRefine((env, ctx) => {
     if (env.AI_PROVIDER === 'anthropic' && !env.AI_API_KEY) {
@@ -107,7 +117,8 @@ export interface AppConfig {
   apiUrl: string;
   databaseUrl: string;
   redisUrl: string;
-  trustProxy: boolean;
+  /** Reverse-proxy hops to trust for client IPs; 0 = none. */
+  trustProxy: number;
   runMigrations: boolean;
   auth: {
     accessSecret: string;

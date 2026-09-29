@@ -187,6 +187,8 @@ pnpm test:e2e             # Playwright journey against a running, seeded stack
 
 ## Deployment
 
+A free-tier public demo (Vercel + Render + Supabase, single-process API) is described step by step in [docs/DEMO_DEPLOYMENT.md](docs/DEMO_DEPLOYMENT.md).
+
 The API and worker ship as one image (`docker/api.Dockerfile`, different commands); the web app is a static build served by nginx, which also proxies `/api` so cookies stay first-party. Migrations run on API start when `RUN_MIGRATIONS=true`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a production checklist (secrets, HTTPS cookies, managed Postgres with pgvector, S3, scaling workers).
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)): lint, format check, typecheck, unit tests and build → integration tests on pgvector → Playwright E2E against a seeded stack → Docker image builds.

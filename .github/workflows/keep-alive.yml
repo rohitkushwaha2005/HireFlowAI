@@ -1,0 +1,17 @@
+name: Keep demo API awake
+
+# Render's free plan sleeps after 15 minutes without traffic, and the first request then takes
+# about a minute; Supabase pauses projects after a week without database activity. Pinging the
+# readiness endpoint (which queries the database) keeps both awake.
+# Set the repository variable DEMO_API_URL (e.g. https://hireflow-api.onrender.com) to enable.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    if: ${{ vars.DEMO_API_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl --silent --show-error --fail --max-time 90 "${{ vars.DEMO_API_URL }}/api/health/ready" || true
